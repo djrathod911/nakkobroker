@@ -54,6 +54,44 @@ function Discover() {
   const [heatmap, setHeatmap] = useState(false);
   const [satellite, setSatellite] = useState(false);
   const [showTrending, setShowTrending] = useState(true);
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  const { data: allListings = [] } = useQuery({
+    queryKey: ["listings"],
+    queryFn: fetchListings,
+  });
+
+  const { data: votedIds = [] } = useQuery({
+    queryKey: ["my-votes", user?.id],
+    queryFn: () => fetchMyVotedIds(user!.id),
+    enabled: !!user,
+  });
+
+  async function onVote(listingId: string) {
+    if (!user) {
+      toast("Sign in to upvote listings");
+      navigate({ to: "/auth" });
+      return;
+    }
+    try {
+      await toggleVote(listingId, user.id, votedIds.includes(listingId));
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["listings"] }),
+        queryClient.invalidateQueries({ queryKey: ["my-votes", user.id] }),
+      ]);
+    } catch {
+      toast.error("Could not register your vote");
+    }
+  }
+
+  async function onSignOut() {
+    await queryClient.cancelQueries();
+    queryClient.clear();
+    await supabase.auth.signOut();
+    toast.success("Signed out");
+  }
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -66,7 +104,7 @@ function Discover() {
       if (filters.amenities.length && !filters.amenities.every((a) => l.amenities.includes(a))) return false;
       return true;
     });
-  }, [query, filters]);
+  }, [query, filters, allListings]);
 
   const avgRent = results.length
     ? Math.round(results.reduce((sum, l) => sum + l.rent, 0) / results.length)
