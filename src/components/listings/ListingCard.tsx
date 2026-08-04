@@ -1,5 +1,13 @@
 import { motion } from "framer-motion";
-import { BadgeCheck, Bookmark, Share2, Users, AlertTriangle, TrainFront, Building2 } from "lucide-react";
+import {
+  BadgeCheck,
+  ArrowBigUp,
+  Share2,
+  Users,
+  AlertTriangle,
+  TrainFront,
+  Building2,
+} from "lucide-react";
 import { formatRent, type Listing } from "@/data/listings";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,9 +18,11 @@ interface ListingCardProps {
   active: boolean;
   onHover: (id: string) => void;
   onSelect: (id: string) => void;
+  voted?: boolean;
+  onVote?: (id: string) => void;
 }
 
-export function ListingCard({ listing, active, onHover, onSelect }: ListingCardProps) {
+export function ListingCard({ listing, active, onHover, onSelect, voted, onVote }: ListingCardProps) {
   return (
     <motion.article
       layout
@@ -86,8 +96,18 @@ export function ListingCard({ listing, active, onHover, onSelect }: ListingCardP
           )}
         </div>
         <div className="flex shrink-0 items-center gap-1 opacity-70 transition-opacity group-hover:opacity-100">
-          <Button size="icon" variant="ghost" className="size-8 rounded-full" aria-label="Save listing">
-            <Bookmark className="size-4" />
+          <Button
+            size="icon"
+            variant="ghost"
+            className={cn("size-8 rounded-full", voted && "bg-brand/15 text-brand")}
+            aria-label={voted ? "Remove upvote" : "Upvote listing"}
+            aria-pressed={!!voted}
+            onClick={(e) => {
+              e.stopPropagation();
+              onVote?.(listing.id);
+            }}
+          >
+            <ArrowBigUp className="size-4" />
           </Button>
           <Button size="icon" variant="ghost" className="size-8 rounded-full" aria-label="Share listing">
             <Share2 className="size-4" />

@@ -1,6 +1,8 @@
 import { useMemo, useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "sonner";
 import {
   Search,
   SlidersHorizontal,
@@ -12,6 +14,7 @@ import {
   Sparkles,
   TrendingUp,
   TrendingDown,
+  LogOut,
   X,
 } from "lucide-react";
 import { MapView } from "@/components/map/MapView";
@@ -20,7 +23,10 @@ import { FilterPanel, defaultFilters, type Filters } from "@/components/listings
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { listings as allListings, trendingAreas, formatRent } from "@/data/listings";
+import { trendingAreas, formatRent } from "@/data/listings";
+import { fetchListings, fetchMyVotedIds, toggleVote } from "@/lib/listings.api";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
 const TITLE = "NakkoBroker — Zero-brokerage rentals in Hyderabad";
@@ -48,6 +54,44 @@ function Discover() {
   const [heatmap, setHeatmap] = useState(false);
   const [satellite, setSatellite] = useState(false);
   const [showTrending, setShowTrending] = useState(true);
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  const { data: allListings = [] } = useQuery({
+    queryKey: ["listings"],
+    queryFn: fetchListings,
+  });
+
+  const { data: votedIds = [] } = useQuery({
+    queryKey: ["my-votes", user?.id],
+    queryFn: () => fetchMyVotedIds(user!.id),
+    enabled: !!user,
+  });
+
+  async function onVote(listingId: string) {
+    if (!user) {
+      toast("Sign in to upvote listings");
+      navigate({ to: "/auth" });
+      return;
+    }
+    try {
+      await toggleVote(listingId, user.id, votedIds.includes(listingId));
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["listings"] }),
+        queryClient.invalidateQueries({ queryKey: ["my-votes", user.id] }),
+      ]);
+    } catch {
+      toast.error("Could not register your vote");
+    }
+  }
+
+  async function onSignOut() {
+    await queryClient.cancelQueries();
+    queryClient.clear();
+    await supabase.auth.signOut();
+    toast.success("Signed out");
+  }
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -60,7 +104,7 @@ function Discover() {
       if (filters.amenities.length && !filters.amenities.every((a) => l.amenities.includes(a))) return false;
       return true;
     });
-  }, [query, filters]);
+  }, [query, filters, allListings]);
 
   const avgRent = results.length
     ? Math.round(results.reduce((sum, l) => sum + l.rent, 0) / results.length)
@@ -142,10 +186,27 @@ function Discover() {
                 </div>
               </SheetContent>
             </Sheet>
-            <Button className="rounded-2xl bg-brand text-brand-foreground hover:bg-brand/90">
-              <Plus className="size-4" />
-              <span className="hidden sm:inline">List your flat</span>
+            <Button asChild className="rounded-2xl bg-brand text-brand-foreground hover:bg-brand/90">
+              <Link to={user ? "/list-your-flat" : "/auth"}>
+                <Plus className="size-4" />
+                <span className="hidden sm:inline">List your flat</span>
+              </Link>
             </Button>
+            {user ? (
+              <Button
+                variant="secondary"
+                size="icon"
+                className="glass rounded-2xl border-0"
+                aria-label="Sign out"
+                onClick={onSignOut}
+              >
+                <LogOut className="size-4" />
+              </Button>
+            ) : (
+              <Button asChild variant="secondary" className="glass rounded-2xl border-0">
+                <Link to="/auth">Sign in</Link>
+              </Button>
+            )}
           </div>
         </div>
       </header>
@@ -242,6 +303,8 @@ function Discover() {
                   active={activeId === listing.id}
                   onHover={setActiveId}
                   onSelect={setActiveId}
+                  voted={votedIds.includes(listing.id)}
+                  onVote={onVote}
                 />
               ))
             )}
