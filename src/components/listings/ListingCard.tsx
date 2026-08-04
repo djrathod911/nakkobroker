@@ -1,8 +1,8 @@
 import { motion } from "framer-motion";
+import { Link } from "@tanstack/react-router";
 import {
   BadgeCheck,
   ArrowBigUp,
-  Share2,
   Users,
   AlertTriangle,
   TrainFront,
