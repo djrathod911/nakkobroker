@@ -1,5 +1,13 @@
 import { motion } from "framer-motion";
-import { BadgeCheck, Bookmark, Share2, Users, AlertTriangle, TrainFront, Building2 } from "lucide-react";
+import {
+  BadgeCheck,
+  ArrowBigUp,
+  Share2,
+  Users,
+  AlertTriangle,
+  TrainFront,
+  Building2,
+} from "lucide-react";
 import { formatRent, type Listing } from "@/data/listings";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,9 +18,11 @@ interface ListingCardProps {
   active: boolean;
   onHover: (id: string) => void;
   onSelect: (id: string) => void;
+  voted?: boolean;
+  onVote?: (id: string) => void;
 }
 
-export function ListingCard({ listing, active, onHover, onSelect }: ListingCardProps) {
+export function ListingCard({ listing, active, onHover, onSelect, voted, onVote }: ListingCardProps) {
   return (
     <motion.article
       layout
