@@ -303,6 +303,8 @@ function Discover() {
                   active={activeId === listing.id}
                   onHover={setActiveId}
                   onSelect={setActiveId}
+                  voted={votedIds.includes(listing.id)}
+                  onVote={onVote}
                 />
               ))
             )}
