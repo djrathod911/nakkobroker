@@ -187,7 +187,7 @@ function Discover() {
               </SheetContent>
             </Sheet>
             <Button asChild className="rounded-2xl bg-brand text-brand-foreground hover:bg-brand/90">
-              <Link to={user ? "/list-your-flat" : "/auth"}>
+              <Link to={user ? "/list-your-flat" : "/auth"} aria-label="List your flat">
                 <Plus className="size-4" />
                 <span className="hidden sm:inline">List your flat</span>
               </Link>
