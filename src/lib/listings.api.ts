@@ -67,7 +67,7 @@ export function toListing(row: DbListingRow): Listing {
 export async function fetchListings(): Promise<Listing[]> {
   const { data, error } = await supabase
     .from("listings")
-    .select("*")
+    .select(PUBLIC_COLUMNS)
     .eq("status", "published")
     .order("created_at", { ascending: false });
   if (error) throw error;
@@ -76,22 +76,36 @@ export async function fetchListings(): Promise<Listing[]> {
 
 export interface ListingDetail extends Listing {
   photoPaths: string[];
-  contactPhone: string | null;
   ownerId: string | null;
 }
 
 export async function fetchListingById(id: string): Promise<ListingDetail | null> {
-  const { data, error } = await supabase.from("listings").select("*").eq("id", id).maybeSingle();
+  const { data, error } = await supabase
+    .from("listings")
+    .select(PUBLIC_COLUMNS)
+    .eq("id", id)
+    .maybeSingle();
   if (error) throw error;
   if (!data) return null;
-  const row = data as unknown as DbListingRow & { contact_phone: string | null };
+  const row = data as unknown as DbListingRow;
   return {
     ...toListing(row),
     photoPaths: row.photos ?? [],
-    contactPhone: row.contact_phone ?? null,
     ownerId: row.owner_id,
   };
 }
+
+// Only signed-in users may read owner contact numbers (enforced by column-level grants).
+export async function fetchContactPhone(id: string): Promise<string | null> {
+  const { data, error } = await supabase
+    .from("listings")
+    .select("contact_phone")
+    .eq("id", id)
+    .maybeSingle();
+  if (error) throw error;
+  return (data?.contact_phone as string | null) ?? null;
+}
+
 
 export async function signedPhotoUrls(paths: string[]): Promise<string[]> {
   if (!paths.length) return [];
