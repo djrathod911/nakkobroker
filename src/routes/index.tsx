@@ -186,10 +186,27 @@ function Discover() {
                 </div>
               </SheetContent>
             </Sheet>
-            <Button className="rounded-2xl bg-brand text-brand-foreground hover:bg-brand/90">
-              <Plus className="size-4" />
-              <span className="hidden sm:inline">List your flat</span>
+            <Button asChild className="rounded-2xl bg-brand text-brand-foreground hover:bg-brand/90">
+              <Link to={user ? "/list-your-flat" : "/auth"}>
+                <Plus className="size-4" />
+                <span className="hidden sm:inline">List your flat</span>
+              </Link>
             </Button>
+            {user ? (
+              <Button
+                variant="secondary"
+                size="icon"
+                className="glass rounded-2xl border-0"
+                aria-label="Sign out"
+                onClick={onSignOut}
+              >
+                <LogOut className="size-4" />
+              </Button>
+            ) : (
+              <Button asChild variant="secondary" className="glass rounded-2xl border-0">
+                <Link to="/auth">Sign in</Link>
+              </Button>
+            )}
           </div>
         </div>
       </header>
