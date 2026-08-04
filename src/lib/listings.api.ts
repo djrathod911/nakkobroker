@@ -92,7 +92,7 @@ export async function fetchListingById(id: string): Promise<ListingDetail | null
 export async function signedPhotoUrls(paths: string[]): Promise<string[]> {
   if (!paths.length) return [];
   const { data } = await supabase.storage.from("listing-photos").createSignedUrls(paths, 3600);
-  return (data ?? []).map((d) => d.signedUrl).filter(Boolean);
+  return (data ?? []).map((d) => d.signedUrl).filter((u): u is string => !!u);
 }
 
 export async function fetchMyVotedIds(userId: string): Promise<string[]> {
