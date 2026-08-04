@@ -81,6 +81,13 @@ function ListingDetailPage() {
     enabled: !!user,
   });
 
+  const { data: contactPhone = null } = useQuery({
+    queryKey: ["listing-phone", id, user?.id],
+    queryFn: () => fetchContactPhone(id),
+    enabled: !!user,
+  });
+
+
   const voted = votedIds.includes(id);
 
   async function onVote() {
