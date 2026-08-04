@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
-import maplibregl, { Map as MapLibreMap, Marker } from "maplibre-gl";
+import * as maplibregl from "maplibre-gl";
+import type { Map as MapLibreMap, Marker, StyleSpecification } from "maplibre-gl";
 import { HYDERABAD_CENTER, shortRent, type Listing } from "@/data/listings";
 
 interface MapViewProps {
@@ -15,7 +16,7 @@ const RASTER_TILES = {
   satellite: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
 };
 
-function styleFor(satellite: boolean): maplibregl.StyleSpecification {
+function styleFor(satellite: boolean): StyleSpecification {
   return {
     version: 8,
     sources: {
@@ -69,7 +70,7 @@ export function MapView({ listings, activeId, onSelect, showHeatmap, satellite }
     }
 
     for (const listing of listings) {
-      let marker = markers.get(listing.id);
+      let marker: Marker | undefined = markers.get(listing.id);
       if (!marker) {
         const el = document.createElement("button");
         el.type = "button";
@@ -79,7 +80,7 @@ export function MapView({ listings, activeId, onSelect, showHeatmap, satellite }
         marker = new maplibregl.Marker({ element: el }).setLngLat([listing.lng, listing.lat]).addTo(map);
         markers.set(listing.id, marker);
       }
-      const el = marker.getElement();
+      const el = marker!.getElement();
       const active = activeId === listing.id;
       el.className = [
         "cursor-pointer rounded-full px-2.5 py-1 text-xs font-semibold tracking-tight transition-all duration-200",
