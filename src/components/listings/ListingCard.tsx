@@ -109,8 +109,16 @@ export function ListingCard({ listing, active, onHover, onSelect, voted, onVote 
           >
             <ArrowBigUp className="size-4" />
           </Button>
-          <Button size="icon" variant="ghost" className="size-8 rounded-full" aria-label="Share listing">
-            <Share2 className="size-4" />
+          <Button
+            asChild
+            size="sm"
+            variant="ghost"
+            className="h-8 rounded-full px-3 text-xs"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Link to="/listing/$id" params={{ id: listing.id }}>
+              Details
+            </Link>
           </Button>
         </div>
       </div>
