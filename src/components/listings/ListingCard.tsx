@@ -52,7 +52,7 @@ export function ListingCard({ listing, active, onHover, onSelect, voted, onVote 
               <Badge className="rounded-full bg-teal/15 text-teal">Board spotted</Badge>
             )}
           </div>
-          <h3 className="mt-2 truncate text-base font-semibold tracking-tight">{listing.title}</h3>
+          <h2 className="mt-2 truncate text-base font-semibold tracking-tight">{listing.title}</h2>
           <p className="truncate text-sm text-muted-foreground">
             {listing.area} · {listing.sqft} sqft · {listing.tenant}
           </p>

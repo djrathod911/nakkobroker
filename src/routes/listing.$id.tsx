@@ -28,23 +28,58 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 
 export const Route = createFileRoute("/listing/$id")({
-  head: () => ({
-    meta: [
-      { title: "Rental details — NakkoBroker Hyderabad" },
-      {
-        name: "description",
-        content:
-          "Full details for this zero-brokerage Hyderabad rental: rent, deposit, amenities, location and owner contact.",
-      },
-      { property: "og:title", content: "Rental details — NakkoBroker Hyderabad" },
-      {
-        property: "og:description",
-        content: "Zero-brokerage rental listed directly by the owner in Hyderabad.",
-      },
-      { property: "og:type", content: "article" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-  }),
+  loader: ({ params }) => fetchListingById(params.id),
+  head: ({ params, loaderData }) => {
+    const url = `https://nakkobroker.lovable.app/listing/${params.id}`;
+    if (!loaderData) {
+      return {
+        meta: [
+          { title: "Listing unavailable — NakkoBroker" },
+          { name: "robots", content: "noindex" },
+        ],
+      };
+    }
+    const l = loaderData;
+    const title = `${l.bhk} BHK in ${l.area} — ₹${l.rent.toLocaleString("en-IN")}/mo`;
+    const description = `${l.title} in ${l.area}, Hyderabad. ${l.sqft} sqft, ${l.furnishing}, deposit ₹${l.deposit.toLocaleString("en-IN")}. Zero brokerage, listed directly by the owner.`;
+    return {
+      meta: [
+        { title },
+        { name: "description", content: description },
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
+        { property: "og:type", content: "article" },
+        { property: "og:url", content: url },
+        { name: "twitter:card", content: "summary_large_image" },
+      ],
+      links: [{ rel: "canonical", href: url }],
+      scripts: [
+        {
+          type: "application/ld+json",
+          children: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "RealEstateListing",
+            name: l.title,
+            description,
+            url,
+            datePosted: new Date(Date.now() - l.postedDaysAgo * 86_400_000).toISOString(),
+            address: {
+              "@type": "PostalAddress",
+              addressLocality: l.area,
+              addressRegion: "Telangana",
+              addressCountry: "IN",
+            },
+            offers: {
+              "@type": "Offer",
+              price: l.rent,
+              priceCurrency: "INR",
+              availability: "https://schema.org/InStock",
+            },
+          }),
+        },
+      ],
+    };
+  },
   component: ListingDetailPage,
 });
 

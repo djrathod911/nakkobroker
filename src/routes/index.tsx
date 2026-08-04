@@ -41,8 +41,10 @@ export const Route = createFileRoute("/")({
       { property: "og:title", content: TITLE },
       { property: "og:description", content: DESCRIPTION },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://nakkobroker.lovable.app/" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
+    links: [{ rel: "canonical", href: "https://nakkobroker.lovable.app/" }],
   }),
   component: Discover,
 });
@@ -164,7 +166,7 @@ function Discover() {
           <div className="flex shrink-0 items-center gap-2">
             <Sheet>
               <SheetTrigger asChild>
-                <Button variant="secondary" className="glass rounded-2xl border-0">
+                <Button variant="secondary" aria-label="Filters" className="glass rounded-2xl border-0">
                   <SlidersHorizontal className="size-4" />
                   <span className="hidden sm:inline">Filters</span>
                   {activeFilterCount > 0 && (
@@ -187,7 +189,7 @@ function Discover() {
               </SheetContent>
             </Sheet>
             <Button asChild className="rounded-2xl bg-brand text-brand-foreground hover:bg-brand/90">
-              <Link to={user ? "/list-your-flat" : "/auth"}>
+              <Link to={user ? "/list-your-flat" : "/auth"} aria-label="List your flat">
                 <Plus className="size-4" />
                 <span className="hidden sm:inline">List your flat</span>
               </Link>
