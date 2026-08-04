@@ -19,6 +19,7 @@ import { Badge } from "@/components/ui/badge";
 import { MapView } from "@/components/map/MapView";
 import { formatRent } from "@/data/listings";
 import {
+  fetchContactPhone,
   fetchListingById,
   fetchMyVotedIds,
   signedPhotoUrls,
