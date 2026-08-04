@@ -14,7 +14,152 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      listing_votes: {
+        Row: {
+          created_at: string
+          id: string
+          listing_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          listing_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          listing_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "listing_votes_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      listings: {
+        Row: {
+          amenities: string[]
+          area: string
+          available_from: string
+          bhk: number
+          community_verified: boolean
+          contact_phone: string | null
+          created_at: string
+          deposit: number
+          furnishing: string
+          id: string
+          it_corridor_km: number
+          lat: number
+          lng: number
+          maintenance: number
+          metro_km: number
+          negotiable: boolean
+          owner_id: string | null
+          owner_verified: boolean
+          photos: string[]
+          rent: number
+          source: string
+          sqft: number
+          status: string
+          suspicious_price: boolean
+          tenant: string
+          title: string
+          updated_at: string
+          votes: number
+        }
+        Insert: {
+          amenities?: string[]
+          area: string
+          available_from?: string
+          bhk?: number
+          community_verified?: boolean
+          contact_phone?: string | null
+          created_at?: string
+          deposit?: number
+          furnishing?: string
+          id?: string
+          it_corridor_km?: number
+          lat: number
+          lng: number
+          maintenance?: number
+          metro_km?: number
+          negotiable?: boolean
+          owner_id?: string | null
+          owner_verified?: boolean
+          photos?: string[]
+          rent: number
+          source?: string
+          sqft?: number
+          status?: string
+          suspicious_price?: boolean
+          tenant?: string
+          title: string
+          updated_at?: string
+          votes?: number
+        }
+        Update: {
+          amenities?: string[]
+          area?: string
+          available_from?: string
+          bhk?: number
+          community_verified?: boolean
+          contact_phone?: string | null
+          created_at?: string
+          deposit?: number
+          furnishing?: string
+          id?: string
+          it_corridor_km?: number
+          lat?: number
+          lng?: number
+          maintenance?: number
+          metro_km?: number
+          negotiable?: boolean
+          owner_id?: string | null
+          owner_verified?: boolean
+          photos?: string[]
+          rent?: number
+          source?: string
+          sqft?: number
+          status?: string
+          suspicious_price?: boolean
+          tenant?: string
+          title?: string
+          updated_at?: string
+          votes?: number
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          points: number
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id: string
+          points?: number
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          points?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
