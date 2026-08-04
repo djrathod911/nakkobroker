@@ -164,7 +164,7 @@ function Discover() {
           <div className="flex shrink-0 items-center gap-2">
             <Sheet>
               <SheetTrigger asChild>
-                <Button variant="secondary" className="glass rounded-2xl border-0">
+                <Button variant="secondary" aria-label="Filters" className="glass rounded-2xl border-0">
                   <SlidersHorizontal className="size-4" />
                   <span className="hidden sm:inline">Filters</span>
                   {activeFilterCount > 0 && (
