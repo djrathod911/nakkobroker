@@ -29,6 +29,10 @@ export interface DbListingRow {
   created_at: string;
 }
 
+// contact_phone is intentionally excluded: it is not readable by signed-out visitors.
+const PUBLIC_COLUMNS =
+  "id,owner_id,title,area,bhk,rent,deposit,maintenance,negotiable,furnishing,tenant,owner_verified,community_verified,suspicious_price,metro_km,it_corridor_km,sqft,available_from,amenities,photos,lng,lat,source,votes,created_at";
+
 const daysAgo = (iso: string) =>
   Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 86_400_000));
 
