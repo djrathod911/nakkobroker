@@ -19,6 +19,7 @@ import { Badge } from "@/components/ui/badge";
 import { MapView } from "@/components/map/MapView";
 import { formatRent } from "@/data/listings";
 import {
+  fetchContactPhone,
   fetchListingById,
   fetchMyVotedIds,
   signedPhotoUrls,
@@ -79,6 +80,13 @@ function ListingDetailPage() {
     queryFn: () => fetchMyVotedIds(user!.id),
     enabled: !!user,
   });
+
+  const { data: contactPhone = null } = useQuery({
+    queryKey: ["listing-phone", id, user?.id],
+    queryFn: () => fetchContactPhone(id),
+    enabled: !!user,
+  });
+
 
   const voted = votedIds.includes(id);
 
@@ -267,14 +275,15 @@ function ListingDetailPage() {
                 >
                   <Link to="/auth">Sign in to view contact</Link>
                 </Button>
-              ) : listing.contactPhone ? (
+              ) : contactPhone ? (
                 showPhone ? (
                   <a
-                    href={`tel:${listing.contactPhone}`}
+                    href={`tel:${contactPhone}`}
                     className="mt-3 inline-flex items-center gap-2 text-lg font-semibold text-teal"
                   >
-                    <Phone className="size-4" aria-hidden /> {listing.contactPhone}
+                    <Phone className="size-4" aria-hidden /> {contactPhone}
                   </a>
+
                 ) : (
                   <Button
                     className="mt-3 rounded-2xl bg-brand text-brand-foreground hover:bg-brand/90"
