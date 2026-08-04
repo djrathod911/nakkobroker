@@ -96,8 +96,18 @@ export function ListingCard({ listing, active, onHover, onSelect, voted, onVote 
           )}
         </div>
         <div className="flex shrink-0 items-center gap-1 opacity-70 transition-opacity group-hover:opacity-100">
-          <Button size="icon" variant="ghost" className="size-8 rounded-full" aria-label="Save listing">
-            <Bookmark className="size-4" />
+          <Button
+            size="icon"
+            variant="ghost"
+            className={cn("size-8 rounded-full", voted && "bg-brand/15 text-brand")}
+            aria-label={voted ? "Remove upvote" : "Upvote listing"}
+            aria-pressed={!!voted}
+            onClick={(e) => {
+              e.stopPropagation();
+              onVote?.(listing.id);
+            }}
+          >
+            <ArrowBigUp className="size-4" />
           </Button>
           <Button size="icon" variant="ghost" className="size-8 rounded-full" aria-label="Share listing">
             <Share2 className="size-4" />
