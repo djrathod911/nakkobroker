@@ -70,6 +70,31 @@ export async function fetchListings(): Promise<Listing[]> {
   return (data as unknown as DbListingRow[]).map(toListing);
 }
 
+export interface ListingDetail extends Listing {
+  photoPaths: string[];
+  contactPhone: string | null;
+  ownerId: string | null;
+}
+
+export async function fetchListingById(id: string): Promise<ListingDetail | null> {
+  const { data, error } = await supabase.from("listings").select("*").eq("id", id).maybeSingle();
+  if (error) throw error;
+  if (!data) return null;
+  const row = data as unknown as DbListingRow & { contact_phone: string | null };
+  return {
+    ...toListing(row),
+    photoPaths: row.photos ?? [],
+    contactPhone: row.contact_phone ?? null,
+    ownerId: row.owner_id,
+  };
+}
+
+export async function signedPhotoUrls(paths: string[]): Promise<string[]> {
+  if (!paths.length) return [];
+  const { data } = await supabase.storage.from("listing-photos").createSignedUrls(paths, 3600);
+  return (data ?? []).map((d) => d.signedUrl).filter((u): u is string => !!u);
+}
+
 export async function fetchMyVotedIds(userId: string): Promise<string[]> {
   const { data, error } = await supabase
     .from("listing_votes")
