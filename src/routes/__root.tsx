@@ -78,14 +78,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "NakkoBroker — Zero-brokerage rentals in Hyderabad" },
+      { title: "NakkoBroker" },
       {
         name: "description",
         content:
           "Find flats directly from owners in Hyderabad on a live map. Community-verified, zero brokerage.",
       },
       { name: "author", content: "NakkoBroker" },
-      { property: "og:title", content: "NakkoBroker — Zero-brokerage rentals in Hyderabad" },
+      { property: "og:site_name", content: "NakkoBroker" },
+      { property: "og:title", content: "NakkoBroker" },
       {
         property: "og:description",
         content:
@@ -106,6 +107,28 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap",
       },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+    ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "Organization",
+              name: "NakkoBroker",
+              url: "https://nakkobroker.lovable.app",
+              description:
+                "Community-driven, zero-brokerage rental discovery platform for Hyderabad.",
+            },
+            {
+              "@type": "WebSite",
+              name: "NakkoBroker",
+              url: "https://nakkobroker.lovable.app",
+            },
+          ],
+        }),
+      },
     ],
   }),
 
