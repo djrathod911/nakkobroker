@@ -1,6 +1,8 @@
 import { useMemo, useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "sonner";
 import {
   Search,
   SlidersHorizontal,
@@ -12,6 +14,7 @@ import {
   Sparkles,
   TrendingUp,
   TrendingDown,
+  LogOut,
   X,
 } from "lucide-react";
 import { MapView } from "@/components/map/MapView";
@@ -20,7 +23,10 @@ import { FilterPanel, defaultFilters, type Filters } from "@/components/listings
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { listings as allListings, trendingAreas, formatRent } from "@/data/listings";
+import { trendingAreas, formatRent } from "@/data/listings";
+import { fetchListings, fetchMyVotedIds, toggleVote } from "@/lib/listings.api";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
 const TITLE = "NakkoBroker — Zero-brokerage rentals in Hyderabad";
