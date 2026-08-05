@@ -19,6 +19,8 @@ import {
 } from "lucide-react";
 import { MapView } from "@/components/map/MapView";
 import { ListingCard } from "@/components/listings/ListingCard";
+import { NotificationBell } from "@/components/alerts/NotificationBell";
+import { SaveAlertPanel } from "@/components/alerts/SaveAlertPanel";
 import { FilterPanel, defaultFilters, type Filters } from "@/components/listings/FilterPanel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -182,6 +184,7 @@ function Discover() {
                 </SheetHeader>
                 <div className="overflow-y-auto px-4 pb-8">
                   <FilterPanel filters={filters} onChange={setFilters} />
+                  <SaveAlertPanel filters={filters} userId={user?.id} />
                   <Button variant="ghost" className="mt-5 w-full" onClick={() => setFilters(defaultFilters)}>
                     Reset all
                   </Button>
@@ -195,15 +198,18 @@ function Discover() {
               </Link>
             </Button>
             {user ? (
-              <Button
-                variant="secondary"
-                size="icon"
-                className="glass rounded-2xl border-0"
-                aria-label="Sign out"
-                onClick={onSignOut}
-              >
-                <LogOut className="size-4" />
-              </Button>
+              <>
+                <NotificationBell userId={user.id} />
+                <Button
+                  variant="secondary"
+                  size="icon"
+                  className="glass rounded-2xl border-0"
+                  aria-label="Sign out"
+                  onClick={onSignOut}
+                >
+                  <LogOut className="size-4" />
+                </Button>
+              </>
             ) : (
               <Button asChild variant="secondary" className="glass rounded-2xl border-0">
                 <Link to="/auth">Sign in</Link>

@@ -136,6 +136,57 @@ export type Database = {
         }
         Relationships: []
       }
+      notifications: {
+        Row: {
+          alert_id: string | null
+          body: string
+          created_at: string
+          id: string
+          kind: string
+          listing_id: string | null
+          read: boolean
+          title: string
+          user_id: string
+        }
+        Insert: {
+          alert_id?: string | null
+          body?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          listing_id?: string | null
+          read?: boolean
+          title: string
+          user_id: string
+        }
+        Update: {
+          alert_id?: string | null
+          body?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          listing_id?: string | null
+          read?: boolean
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_alert_id_fkey"
+            columns: ["alert_id"]
+            isOneToOne: false
+            referencedRelation: "saved_alerts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -160,12 +211,57 @@ export type Database = {
         }
         Relationships: []
       }
+      saved_alerts: {
+        Row: {
+          amenities: string[]
+          bhk: number[]
+          created_at: string
+          daily_digest: boolean
+          furnishing: string[]
+          id: string
+          instant: boolean
+          max_rent: number
+          name: string
+          owner_only: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amenities?: string[]
+          bhk?: number[]
+          created_at?: string
+          daily_digest?: boolean
+          furnishing?: string[]
+          id?: string
+          instant?: boolean
+          max_rent?: number
+          name?: string
+          owner_only?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amenities?: string[]
+          bhk?: number[]
+          created_at?: string
+          daily_digest?: boolean
+          furnishing?: string[]
+          id?: string
+          instant?: boolean
+          max_rent?: number
+          name?: string
+          owner_only?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      send_daily_alert_digests: { Args: never; Returns: undefined }
     }
     Enums: {
       [_ in never]: never
