@@ -307,7 +307,7 @@ function Discover() {
                 <button
                   aria-label="Hide results panel"
                   className="inline-flex size-8 shrink-0 items-center justify-center rounded-full text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
-                  onClick={() => setResultsOpen(false)}
+                  onClick={() => { console.log("close clicked"); setResultsOpen(false); }}
                 >
                   <X className="size-4" />
                 </button>
