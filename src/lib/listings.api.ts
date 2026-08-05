@@ -159,13 +159,21 @@ export interface NewListingInput {
   source: string;
 }
 
-export async function createListing(input: NewListingInput, ownerId: string, files: File[]) {
+export async function createListing(
+  input: NewListingInput,
+  ownerId: string,
+  files: File[],
+  onProgress?: (done: number, total: number) => void,
+) {
   const photos: string[] = [];
-  for (const file of files.slice(0, 6)) {
+  const queue = files.slice(0, 6);
+  onProgress?.(0, queue.length);
+  for (const file of queue) {
     const path = `${ownerId}/${crypto.randomUUID()}-${file.name.replace(/[^\w.-]/g, "_")}`;
     const { error } = await supabase.storage.from("listing-photos").upload(path, file);
     if (error) throw error;
     photos.push(path);
+    onProgress?.(photos.length, queue.length);
   }
 
   const { data, error } = await supabase
