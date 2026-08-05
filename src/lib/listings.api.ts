@@ -189,3 +189,12 @@ export async function signedPhotoUrl(path: string) {
   const { data } = await supabase.storage.from("listing-photos").createSignedUrl(path, 3600);
   return data?.signedUrl ?? null;
 }
+
+export async function fetchVerifiedPhones(userId: string): Promise<string[]> {
+  const { data, error } = await supabase
+    .from("verified_phones")
+    .select("phone")
+    .eq("user_id", userId);
+  if (error) throw error;
+  return (data ?? []).map((r) => r.phone as string);
+}
