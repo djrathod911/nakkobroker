@@ -16,7 +16,7 @@ import {
   Trash2,
   TriangleAlert,
 } from "lucide-react";
-import { createListing } from "@/lib/listings.api";
+import { createListing, fetchVerifiedPhones } from "@/lib/listings.api";
 import {
   AMENITIES,
   AREAS,
@@ -29,11 +29,13 @@ import {
   emptyDraft,
   loadDraft,
   priceHint,
+  normalizeIndianPhone,
   saveDraft,
   stepSchemas,
   type FlatDraft,
 } from "@/lib/list-flat";
 import { PinPicker } from "@/components/list-flat/PinPicker";
+import { OwnerVerification } from "@/components/list-flat/OwnerVerification";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -83,6 +85,21 @@ function ListYourFlat() {
   const [dirty, setDirty] = useState(false);
   const dropRef = useRef<HTMLLabelElement>(null);
   const [dragOver, setDragOver] = useState(false);
+  const [verifiedPhones, setVerifiedPhones] = useState<string[]>([]);
+
+  // Owner verification is optional: we only surface which numbers are already confirmed.
+  useEffect(() => {
+    let alive = true;
+    supabase.auth.getUser().then(({ data }) => {
+      if (!data.user) return;
+      fetchVerifiedPhones(data.user.id)
+        .then((rows) => alive && setVerifiedPhones(rows))
+        .catch(() => undefined);
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   // Restore an in-progress draft so a refresh never loses the owner's work.
   useEffect(() => {
@@ -111,6 +128,11 @@ function ListYourFlat() {
 
   const num = (key: keyof FlatDraft) => (e: React.ChangeEvent<HTMLInputElement>) =>
     set({ [key]: Number(e.target.value) } as Partial<FlatDraft>);
+
+  const phoneVerified = useMemo(() => {
+    const n = normalizeIndianPhone(draft.contact_phone);
+    return !!n && verifiedPhones.includes(n);
+  }, [draft.contact_phone, verifiedPhones]);
 
   const progress = useMemo(() => completeness(draft, photos.length), [draft, photos.length]);
   const hint = useMemo(() => priceHint(draft), [draft]);
@@ -594,6 +616,12 @@ function ListYourFlat() {
                   Only signed-in tenants can reveal your number, and it is never shown to anonymous visitors or search
                   engines.
                 </p>
+
+                <OwnerVerification
+                  phone={draft.contact_phone.trim()}
+                  verified={phoneVerified}
+                  onVerified={(p) => setVerifiedPhones((prev) => (prev.includes(p) ? prev : [...prev, p]))}
+                />
 
                 <div className="rounded-2xl border border-border bg-secondary/30 p-4">
                   <div className="flex items-start justify-between gap-3">

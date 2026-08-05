@@ -176,3 +176,9 @@ export function completeness(draft: FlatDraft, photoCount: number): number {
   ];
   return Math.round((checks.filter(Boolean).length / checks.length) * 100);
 }
+
+/** Last 10 digits of a valid Indian mobile number, else null. */
+export function normalizeIndianPhone(input: string): string | null {
+  const last10 = input.replace(/\D/g, "").slice(-10);
+  return /^[6-9]\d{9}$/.test(last10) ? last10 : null;
+}
