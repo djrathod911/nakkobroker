@@ -16,6 +16,7 @@ import {
   TrendingDown,
   LogOut,
   X,
+  PanelRight,
 } from "lucide-react";
 import { MapView } from "@/components/map/MapView";
 import { ListingCard } from "@/components/listings/ListingCard";
@@ -58,6 +59,7 @@ function Discover() {
   const [heatmap, setHeatmap] = useState(false);
   const [satellite, setSatellite] = useState(false);
   const [showTrending, setShowTrending] = useState(true);
+  const [resultsOpen, setResultsOpen] = useState(true);
   const { user } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -282,48 +284,85 @@ function Discover() {
       </AnimatePresence>
 
       {/* Results panel */}
-      <section
-        aria-label="Search results"
-        className="absolute inset-x-0 bottom-0 z-20 max-h-[52dvh] sm:inset-y-0 sm:left-auto sm:right-0 sm:max-h-none sm:w-[400px] sm:p-5 sm:pt-24"
-      >
-        <div className="glass flex h-full flex-col rounded-t-3xl sm:rounded-3xl">
-          <div className="shrink-0 border-b border-border/60 px-4 py-3">
-            <h1 className="text-sm font-semibold tracking-tight">
-              {results.length} zero-brokerage {results.length === 1 ? "home" : "homes"} in Hyderabad
-            </h1>
-            <p className="text-xs text-muted-foreground">
-              {avgRent ? `Average ${formatRent(avgRent)}/month in this view` : "Adjust filters to see homes"}
-            </p>
-          </div>
-          <div className="flex-1 space-y-3 overflow-y-auto p-3">
-            {results.length === 0 ? (
-              <div className="grid h-full place-items-center px-6 text-center">
+      <AnimatePresence>
+        {resultsOpen && (
+          <motion.section
+            initial={{ opacity: 0, x: 24 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 24 }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
+            aria-label="Search results"
+            className="absolute inset-x-0 bottom-0 z-20 max-h-[52dvh] sm:inset-y-0 sm:left-auto sm:right-0 sm:max-h-none sm:w-[400px] sm:p-5 sm:pt-24"
+          >
+            <div className="glass flex h-full flex-col rounded-t-3xl sm:rounded-3xl">
+              <div className="flex shrink-0 items-start justify-between gap-2 border-b border-border/60 px-4 py-3">
                 <div>
-                  <p className="text-sm font-medium">No homes match yet</p>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    Widen your budget or clear a few filters to see more of Hyderabad.
+                  <h1 className="text-sm font-semibold tracking-tight">
+                    {results.length} zero-brokerage {results.length === 1 ? "home" : "homes"} in Hyderabad
+                  </h1>
+                  <p className="text-xs text-muted-foreground">
+                    {avgRent ? `Average ${formatRent(avgRent)}/month in this view` : "Adjust filters to see homes"}
                   </p>
-                  <Button variant="secondary" className="mt-4" onClick={() => setFilters(defaultFilters)}>
-                    Reset filters
-                  </Button>
                 </div>
+                <button
+                  aria-label="Hide results panel"
+                  className="inline-flex size-8 shrink-0 items-center justify-center rounded-full text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
+                  onClick={() => setResultsOpen(false)}
+                >
+                  <X className="size-4" />
+                </button>
               </div>
-            ) : (
-              results.map((listing) => (
-                <ListingCard
-                  key={listing.id}
-                  listing={listing}
-                  active={activeId === listing.id}
-                  onHover={setActiveId}
-                  onSelect={setActiveId}
-                  voted={votedIds.includes(listing.id)}
-                  onVote={onVote}
-                />
-              ))
-            )}
-          </div>
-        </div>
-      </section>
+              <div className="flex-1 space-y-3 overflow-y-auto p-3">
+                {results.length === 0 ? (
+                  <div className="grid h-full place-items-center px-6 text-center">
+                    <div>
+                      <p className="text-sm font-medium">No homes match yet</p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Widen your budget or clear a few filters to see more of Hyderabad.
+                      </p>
+                      <Button variant="secondary" className="mt-4" onClick={() => setFilters(defaultFilters)}>
+                        Reset filters
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  results.map((listing) => (
+                    <ListingCard
+                      key={listing.id}
+                      listing={listing}
+                      active={activeId === listing.id}
+                      onHover={setActiveId}
+                      onSelect={setActiveId}
+                      voted={votedIds.includes(listing.id)}
+                      onVote={onVote}
+                    />
+                  ))
+                )}
+              </div>
+            </div>
+          </motion.section>
+        )}
+      </AnimatePresence>
+
+      {/* Reopen results button */}
+      {!resultsOpen && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.9 }}
+          className="absolute bottom-5 right-5 z-20 sm:bottom-8 sm:right-8"
+        >
+          <Button
+            onClick={() => setResultsOpen(true)}
+            aria-label={`Show ${results.length} results`}
+            className="gap-2 rounded-full bg-brand px-4 text-brand-foreground shadow-lg hover:bg-brand/90"
+          >
+            <PanelRight className="size-4" />
+            <span className="hidden sm:inline">{results.length} results</span>
+            <span className="sm:hidden">{results.length}</span>
+          </Button>
+        </motion.div>
+      )}
     </main>
   );
 }

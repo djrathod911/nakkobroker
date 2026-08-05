@@ -7,6 +7,7 @@ import {
   AlertTriangle,
   TrainFront,
   Building2,
+  ChevronRight,
 } from "lucide-react";
 import { formatRent, type Listing } from "@/data/listings";
 import { Badge } from "@/components/ui/badge";
@@ -23,6 +24,13 @@ interface ListingCardProps {
 }
 
 export function ListingCard({ listing, active, onHover, onSelect, voted, onVote }: ListingCardProps) {
+  function handleKeyDown(e: React.KeyboardEvent<HTMLElement>) {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      onSelect(listing.id);
+    }
+  }
+
   return (
     <motion.article
       layout
@@ -32,17 +40,18 @@ export function ListingCard({ listing, active, onHover, onSelect, voted, onVote 
       onMouseEnter={() => onHover(listing.id)}
       onFocus={() => onHover(listing.id)}
       onClick={() => onSelect(listing.id)}
+      onKeyDown={handleKeyDown}
       tabIndex={0}
       role="button"
-      aria-label={`${listing.bhk} BHK in ${listing.area}, ${formatRent(listing.rent)} per month`}
+      aria-label={`${listing.bhk} BHK in ${listing.area}, ${formatRent(listing.rent)} per month. Press Enter to open.`}
       className={cn(
         "glass group cursor-pointer rounded-2xl p-4 outline-none transition-all duration-300",
-        "hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-ring",
+        "hover:-translate-y-0.5 hover:shadow-lg focus-visible:ring-2 focus-visible:ring-ring",
         active && "glow-ring",
       )}
     >
       <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-1.5">
             <Badge className="rounded-full bg-accent text-accent-foreground">{listing.bhk} BHK</Badge>
             <Badge variant="outline" className="rounded-full border-border text-muted-foreground">
@@ -57,11 +66,16 @@ export function ListingCard({ listing, active, onHover, onSelect, voted, onVote 
             {listing.area} · {listing.sqft} sqft · {listing.tenant}
           </p>
         </div>
-        <div className="shrink-0 text-right">
-          <p className="text-lg font-bold tracking-tight">{formatRent(listing.rent)}</p>
-          <p className="text-xs text-muted-foreground">
-            {listing.negotiable ? "Negotiable" : "Fixed"} · {formatRent(listing.deposit)} dep
-          </p>
+        <div className="flex shrink-0 flex-col items-end gap-1">
+          <div className="text-right">
+            <p className="text-lg font-bold tracking-tight">{formatRent(listing.rent)}</p>
+            <p className="text-xs text-muted-foreground">
+              {listing.negotiable ? "Negotiable" : "Fixed"} · {formatRent(listing.deposit)} dep
+            </p>
+          </div>
+          <span className="inline-flex items-center gap-1 text-xs text-muted-foreground transition-colors group-hover:text-foreground">
+            Open <ChevronRight className="size-4 shrink-0" aria-hidden />
+          </span>
         </div>
       </div>
 
