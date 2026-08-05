@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as AuthenticatedListYourFlatRouteImport } from './routes/_authenticated/list-your-flat'
+import { Route as AuthenticatedSpotABoardRouteImport } from './routes/_authenticated/spot-a-board'
 import { Route as ListingIdRouteImport } from './routes/listing.$id'
 
 const IndexRoute = IndexRouteImport.update({
@@ -41,6 +42,11 @@ const AuthenticatedListYourFlatRoute =
     path: '/list-your-flat',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedSpotABoardRoute = AuthenticatedSpotABoardRouteImport.update({
+  id: '/spot-a-board',
+  path: '/spot-a-board',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const ListingIdRoute = ListingIdRouteImport.update({
   id: '/listing/$id',
   path: '/listing/$id',
@@ -52,6 +58,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/list-your-flat': typeof AuthenticatedListYourFlatRoute
+  '/spot-a-board': typeof AuthenticatedSpotABoardRoute
   '/listing/$id': typeof ListingIdRoute
 }
 export interface FileRoutesByTo {
@@ -59,6 +66,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/list-your-flat': typeof AuthenticatedListYourFlatRoute
+  '/spot-a-board': typeof AuthenticatedSpotABoardRoute
   '/listing/$id': typeof ListingIdRoute
 }
 export interface FileRoutesById {
@@ -68,13 +76,26 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/_authenticated/list-your-flat': typeof AuthenticatedListYourFlatRoute
+  '/_authenticated/spot-a-board': typeof AuthenticatedSpotABoardRoute
   '/listing/$id': typeof ListingIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/sitemap.xml' | '/list-your-flat' | '/listing/$id'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/sitemap.xml'
+    | '/list-your-flat'
+    | '/spot-a-board'
+    | '/listing/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/sitemap.xml' | '/list-your-flat' | '/listing/$id'
+  to:
+    | '/'
+    | '/auth'
+    | '/sitemap.xml'
+    | '/list-your-flat'
+    | '/spot-a-board'
+    | '/listing/$id'
   id:
     | '__root__'
     | '/'
@@ -82,6 +103,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/sitemap.xml'
     | '/_authenticated/list-your-flat'
+    | '/_authenticated/spot-a-board'
     | '/listing/$id'
   fileRoutesById: FileRoutesById
 }
@@ -130,6 +152,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedListYourFlatRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/spot-a-board': {
+      id: '/_authenticated/spot-a-board'
+      path: '/spot-a-board'
+      fullPath: '/spot-a-board'
+      preLoaderRoute: typeof AuthenticatedSpotABoardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/listing/$id': {
       id: '/listing/$id'
       path: '/listing/$id'
@@ -142,10 +171,12 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedListYourFlatRoute: typeof AuthenticatedListYourFlatRoute
+  AuthenticatedSpotABoardRoute: typeof AuthenticatedSpotABoardRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedListYourFlatRoute: AuthenticatedListYourFlatRoute,
+  AuthenticatedSpotABoardRoute: AuthenticatedSpotABoardRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -161,13 +192,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

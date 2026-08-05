@@ -229,7 +229,12 @@ function Discover() {
             active={showTrending}
             onClick={() => setShowTrending((v) => !v)}
           />
-          <LayerButton icon={Camera} label="Spot a To-Let board" active={false} onClick={() => {}} />
+          <LayerButton
+            icon={Camera}
+            label="Spot a To-Let board"
+            active={false}
+            onClick={() => navigate({ to: user ? "/spot-a-board" : "/auth" })}
+          />
         </div>
       </div>
 
