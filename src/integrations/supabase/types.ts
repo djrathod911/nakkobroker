@@ -187,6 +187,39 @@ export type Database = {
           },
         ]
       }
+      phone_otps: {
+        Row: {
+          attempts: number
+          code_hash: string
+          consumed_at: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          phone: string
+          user_id: string
+        }
+        Insert: {
+          attempts?: number
+          code_hash: string
+          consumed_at?: string | null
+          created_at?: string
+          expires_at: string
+          id?: string
+          phone: string
+          user_id: string
+        }
+        Update: {
+          attempts?: number
+          code_hash?: string
+          consumed_at?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          phone?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -256,11 +289,36 @@ export type Database = {
         }
         Relationships: []
       }
+      verified_phones: {
+        Row: {
+          created_at: string
+          id: string
+          phone: string
+          user_id: string
+          verified_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          phone: string
+          user_id: string
+          verified_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          phone?: string
+          user_id?: string
+          verified_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      normalize_in_phone: { Args: { _phone: string }; Returns: string }
       send_daily_alert_digests: { Args: never; Returns: undefined }
     }
     Enums: {
