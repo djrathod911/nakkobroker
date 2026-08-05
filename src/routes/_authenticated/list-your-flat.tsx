@@ -674,7 +674,7 @@ function Summary({ label, value }: { label: string; value: string }) {
   );
 }
 
-function FieldError({ message }: { message?: string }) {
+function FieldError({ message }: { message?: string | undefined }) {
   if (!message) return null;
   return <p className="text-[11px] text-destructive">{message}</p>;
 }
@@ -687,7 +687,7 @@ function Field({
 }: {
   label: string;
   id: string;
-  error?: string;
+  error?: string | undefined;
   children: React.ReactNode;
 }) {
   return (
