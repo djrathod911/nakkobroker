@@ -198,15 +198,18 @@ function Discover() {
               </Link>
             </Button>
             {user ? (
-              <Button
-                variant="secondary"
-                size="icon"
-                className="glass rounded-2xl border-0"
-                aria-label="Sign out"
-                onClick={onSignOut}
-              >
-                <LogOut className="size-4" />
-              </Button>
+              <>
+                <NotificationBell userId={user.id} />
+                <Button
+                  variant="secondary"
+                  size="icon"
+                  className="glass rounded-2xl border-0"
+                  aria-label="Sign out"
+                  onClick={onSignOut}
+                >
+                  <LogOut className="size-4" />
+                </Button>
+              </>
             ) : (
               <Button asChild variant="secondary" className="glass rounded-2xl border-0">
                 <Link to="/auth">Sign in</Link>
