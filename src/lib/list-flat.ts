@@ -50,8 +50,8 @@ export interface FlatDraft {
 export const emptyDraft: FlatDraft = {
   title: "",
   area: "Madhapur",
-  lng: AREAS.Madhapur![0],
-  lat: AREAS.Madhapur![1],
+  lng: AREAS["Madhapur"]![0],
+  lat: AREAS["Madhapur"]![1],
   bhk: 2,
   sqft: 1000,
   furnishing: "Semi Furnished",
