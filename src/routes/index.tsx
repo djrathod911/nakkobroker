@@ -182,6 +182,7 @@ function Discover() {
                 </SheetHeader>
                 <div className="overflow-y-auto px-4 pb-8">
                   <FilterPanel filters={filters} onChange={setFilters} />
+                  <SaveAlertPanel filters={filters} userId={user?.id} />
                   <Button variant="ghost" className="mt-5 w-full" onClick={() => setFilters(defaultFilters)}>
                     Reset all
                   </Button>
