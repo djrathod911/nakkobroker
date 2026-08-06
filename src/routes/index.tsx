@@ -202,6 +202,11 @@ function Discover() {
             {user ? (
               <>
                 <NotificationBell userId={user.id} />
+                <Button asChild variant="secondary" size="icon" className="glass rounded-2xl border-0">
+                  <Link to="/profile" aria-label="Your profile">
+                    <UserRound className="size-4" />
+                  </Link>
+                </Button>
                 <Button
                   variant="secondary"
                   size="icon"
@@ -212,6 +217,7 @@ function Discover() {
                   <LogOut className="size-4" />
                 </Button>
               </>
+
             ) : (
               <Button asChild variant="secondary" className="glass rounded-2xl border-0">
                 <Link to="/auth">Sign in</Link>
