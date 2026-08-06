@@ -1,0 +1,1 @@
+REVOKE ALL ON FUNCTION public.set_listing_phone_norm() FROM PUBLIC, anon, authenticated;

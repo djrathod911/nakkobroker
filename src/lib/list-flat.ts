@@ -26,13 +26,26 @@ export const AMENITIES = [
   "Pet Friendly",
 ];
 export const AVAILABILITY = ["Immediate", "Within 15 days", "Next month", "After 2 months"];
+export const CITIES = ["Hyderabad"];
+export const HOUSE_TYPES = ["Flat", "Villa"] as const;
+export const PARKING = ["None", "Bike", "Car", "Bike + Car"];
+export const FACING = ["East", "West", "North", "South", "North-East", "South-East"];
 
 export interface FlatDraft {
   title: string;
+  description: string;
+  city: string;
+  house_type: string;
   area: string;
   lng: number;
   lat: number;
   bhk: number;
+  bathrooms: number;
+  balconies: number;
+  floor: number;
+  total_floors: number;
+  parking: string;
+  facing: string;
   sqft: number;
   furnishing: string;
   tenant: string;
@@ -49,10 +62,19 @@ export interface FlatDraft {
 
 export const emptyDraft: FlatDraft = {
   title: "",
+  description: "",
+  city: "Hyderabad",
+  house_type: "Flat",
   area: "Madhapur",
   lng: AREAS["Madhapur"]![0],
   lat: AREAS["Madhapur"]![1],
   bhk: 2,
+  bathrooms: 2,
+  balconies: 1,
+  floor: 2,
+  total_floors: 5,
+  parking: "Bike + Car",
+  facing: "East",
   sqft: 1000,
   furnishing: "Semi Furnished",
   tenant: "Anyone",
