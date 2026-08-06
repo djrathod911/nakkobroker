@@ -21,7 +21,12 @@ import {
   AMENITIES,
   AREAS,
   AVAILABILITY,
+  CITIES,
+  FACING,
   FURNISHING,
+  HOUSE_TYPES,
+  PARKING,
+
   STEPS,
   TENANTS,
   clearDraft,
