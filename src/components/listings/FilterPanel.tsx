@@ -75,6 +75,34 @@ export function FilterPanel({
   return (
     <div className="space-y-5">
       <div className="space-y-2">
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">City</p>
+        <div className="flex flex-wrap gap-2">
+          {CITIES.map((c) => (
+            <Chip
+              key={c}
+              label={c}
+              selected={filters.city === c}
+              onClick={() => onChange({ ...filters, city: c })}
+            />
+          ))}
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Home type</p>
+        <div className="flex flex-wrap gap-2">
+          {["Any", ...HOUSE_TYPES].map((t) => (
+            <Chip
+              key={t}
+              label={t}
+              selected={filters.houseType === t}
+              onClick={() => onChange({ ...filters, houseType: t })}
+            />
+          ))}
+        </div>
+      </div>
+
+      <div className="space-y-2">
         <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Configuration</p>
         <div className="flex flex-wrap gap-2">
           {[1, 2, 3, 4].map((n) => (
@@ -96,17 +124,26 @@ export function FilterPanel({
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Budget</p>
-          <span className="text-xs text-foreground">up to {formatRent(filters.maxRent)}</span>
+          <span className="text-xs text-foreground">
+            {formatRent(filters.minRent)} – {formatRent(filters.maxRent)}
+          </span>
         </div>
         <Slider
-          value={[filters.maxRent]}
-          min={8000}
-          max={130000}
+          value={[filters.minRent, filters.maxRent]}
+          min={RENT_MIN}
+          max={RENT_MAX}
           step={1000}
-          onValueChange={([v]) => onChange({ ...filters, maxRent: v ?? filters.maxRent })}
-          aria-label="Maximum rent"
+          onValueChange={([lo, hi]) =>
+            onChange({
+              ...filters,
+              minRent: Math.min(lo ?? RENT_MIN, hi ?? RENT_MAX),
+              maxRent: Math.max(lo ?? RENT_MIN, hi ?? RENT_MAX),
+            })
+          }
+          aria-label="Monthly rent range"
         />
       </div>
+
 
       <div className="space-y-2">
         <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Furnishing</p>
