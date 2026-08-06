@@ -486,3 +486,29 @@ function LayerButton({
     </button>
   );
 }
+
+function QuickChip({
+  label,
+  active,
+  onClick,
+}: {
+  label: string;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={cn(
+        "rounded-full border px-2.5 py-1 text-[11px] font-medium transition-all duration-200",
+        active
+          ? "border-transparent bg-brand text-brand-foreground"
+          : "border-border bg-secondary/60 text-muted-foreground hover:text-foreground",
+      )}
+    >
+      {label}
+    </button>
+  );
+}
