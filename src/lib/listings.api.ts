@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { getListingContactPhone } from "./listing-contact.functions";
 import type { Furnishing, Listing, Tenant } from "@/data/listings";
 
 export interface DbListingRow {
@@ -99,7 +100,6 @@ export async function fetchListingById(id: string): Promise<ListingDetail | null
 // Signed-in users get it through an authenticated server function that checks
 // the session and listing visibility server-side.
 export async function fetchContactPhone(id: string): Promise<string | null> {
-  const { getListingContactPhone } = await import("./listing-contact.functions");
   const res = await getListingContactPhone({ data: { listingId: id } });
   return res.phone;
 }
