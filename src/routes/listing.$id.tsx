@@ -308,7 +308,10 @@ function ListingDetailPage() {
                   asChild
                   className="mt-3 rounded-2xl bg-brand text-brand-foreground hover:bg-brand/90"
                 >
-                  <Link to="/auth">Sign in to view contact</Link>
+                  <Link to="/auth" search={{ next: `/listing/${listing.id}` }}>
+                    Sign in to view contact
+                  </Link>
+
                 </Button>
               ) : contactPhone ? (
                 showPhone ? (
