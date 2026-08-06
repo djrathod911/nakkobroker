@@ -138,7 +138,7 @@ function Discover() {
       </div>
 
       {/* Top bar */}
-      <header className="pointer-events-none absolute inset-x-0 top-0 z-20 p-3 sm:p-5">
+      <header className="pointer-events-none absolute inset-x-0 top-0 z-30 p-3 sm:p-5">
         <div className="pointer-events-auto mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
           <div className="glass flex min-w-0 items-center gap-2 rounded-2xl px-3 py-2">
             <span className="hidden shrink-0 items-center gap-2 pr-2 sm:flex">
@@ -196,10 +196,17 @@ function Discover() {
               </SheetContent>
             </Sheet>
             <Button asChild className="rounded-2xl bg-brand text-brand-foreground hover:bg-brand/90">
-              <Link to={user ? "/list-your-flat" : "/auth"} aria-label="List your flat">
-                <Plus className="size-4" />
-                <span className="hidden sm:inline">List your flat</span>
-              </Link>
+              {user ? (
+                <Link to="/list-your-flat" aria-label="List your flat">
+                  <Plus className="size-4" />
+                  <span className="hidden sm:inline">List your flat</span>
+                </Link>
+              ) : (
+                <Link to="/auth" search={{ next: "/list-your-flat" }} aria-label="List your flat">
+                  <Plus className="size-4" />
+                  <span className="hidden sm:inline">List your flat</span>
+                </Link>
+              )}
             </Button>
             {user ? (
               <>
@@ -219,12 +226,14 @@ function Discover() {
                   <LogOut className="size-4" />
                 </Button>
               </>
-
             ) : (
               <Button asChild variant="secondary" className="glass rounded-2xl border-0">
-                <Link to="/auth">Sign in</Link>
+                <Link to="/auth" search={{ next: "/profile" }}>
+                  Sign in
+                </Link>
               </Button>
             )}
+
           </div>
         </div>
       </header>
@@ -300,9 +309,10 @@ function Discover() {
             exit={{ opacity: 0, x: 24 }}
             transition={{ duration: 0.25, ease: "easeOut" }}
             aria-label="Search results"
-            className="absolute inset-x-0 bottom-0 z-20 max-h-[52dvh] sm:inset-y-0 sm:left-auto sm:right-0 sm:max-h-none sm:w-[400px] sm:p-5 sm:pt-24"
+            className="pointer-events-none absolute inset-x-0 bottom-0 z-20 max-h-[52dvh] sm:inset-y-0 sm:left-auto sm:right-0 sm:max-h-none sm:w-[400px] sm:p-5 sm:pt-24"
           >
-            <div className="glass flex h-full flex-col rounded-t-3xl sm:rounded-3xl">
+            <div className="glass pointer-events-auto flex h-full flex-col rounded-t-3xl sm:rounded-3xl">
+
               <div className="flex shrink-0 items-start justify-between gap-2 border-b border-border/60 px-4 py-3">
                 <div>
                   <h1 className="text-sm font-semibold tracking-tight">
