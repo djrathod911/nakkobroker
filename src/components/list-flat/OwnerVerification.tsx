@@ -132,10 +132,28 @@ export function OwnerVerification({ phone, verified, onVerified }: Props) {
                 >
                   {busy && <Loader2 className="size-4 animate-spin" />} Verify
                 </Button>
-                <Button type="button" variant="ghost" className="rounded-xl text-xs" disabled={busy} onClick={request}>
-                  Resend
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="rounded-xl text-xs tabular-nums"
+                  disabled={busy || cooldown > 0}
+                  onClick={request}
+                  aria-live="polite"
+                >
+                  {cooldown > 0 ? (
+                    <>
+                      <Timer className="size-3.5" aria-hidden /> Resend in {cooldown}s
+                    </>
+                  ) : (
+                    "Resend code"
+                  )}
                 </Button>
               </div>
+              <p className="text-xs text-muted-foreground">
+                {cooldown > 0
+                  ? `You can request a new code in ${cooldown}s. Max 3 codes per 15 minutes.`
+                  : "Didn’t get it? You can request a new code now."}
+              </p>
               {demoCode && (
                 <p className="text-xs text-warning">
                   SMS delivery isn’t configured yet, so here is your code for testing: <strong>{demoCode}</strong>
