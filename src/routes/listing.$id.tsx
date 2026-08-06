@@ -40,8 +40,11 @@ export const Route = createFileRoute("/listing/$id")({
       };
     }
     const l = loaderData;
-    const title = `${l.bhk} BHK in ${l.area} — ₹${l.rent.toLocaleString("en-IN")}/mo`;
-    const description = `${l.title} in ${l.area}, Hyderabad. ${l.sqft} sqft, ${l.furnishing}, deposit ₹${l.deposit.toLocaleString("en-IN")}. Zero brokerage, listed directly by the owner.`;
+    const city = l.city ?? "Hyderabad";
+    const kind = l.houseType ?? "Flat";
+    const title = `${l.bhk} BHK ${kind} in ${l.area}, ${city} — ₹${l.rent.toLocaleString("en-IN")}/mo`;
+    const description = `${l.title} in ${l.area}, ${city}. ${l.sqft} sqft, ${l.furnishing}, deposit ₹${l.deposit.toLocaleString("en-IN")}. Zero brokerage, listed directly by the owner.`;
+
     return {
       meta: [
         { title },
