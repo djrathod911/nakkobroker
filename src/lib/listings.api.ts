@@ -138,8 +138,17 @@ export async function toggleVote(listingId: string, userId: string, voted: boole
 
 export interface NewListingInput {
   title: string;
+  description: string;
+  city: string;
+  house_type: string;
   area: string;
   bhk: number;
+  bathrooms: number;
+  balconies: number;
+  floor: number;
+  total_floors: number;
+  parking: string;
+  facing: string;
   rent: number;
   deposit: number;
   maintenance: number;
@@ -156,6 +165,10 @@ export interface NewListingInput {
   lat: number;
   source: string;
 }
+
+/** Message shown when the one-home-per-number rule blocks a publish. */
+export const QUOTA_MESSAGE =
+  "This mobile number already has a live listing of this type in this city. NakkoBroker allows one flat and one villa per number per city — remove the existing one from your profile to post a new home.";
 
 export async function createListing(
   input: NewListingInput,
@@ -179,7 +192,10 @@ export async function createListing(
     .insert({ ...input, owner_id: ownerId, photos })
     .select("id")
     .single();
-  if (error) throw error;
+  if (error) {
+    if (error.code === "23505") throw new Error(QUOTA_MESSAGE);
+    throw error;
+  }
   return data.id as string;
 }
 
@@ -196,3 +212,57 @@ export async function fetchVerifiedPhones(userId: string): Promise<string[]> {
   if (error) throw error;
   return (data ?? []).map((r) => r.phone as string);
 }
+
+export interface MyListingRow {
+  id: string;
+  title: string;
+  area: string;
+  city: string;
+  house_type: string;
+  bhk: number;
+  rent: number;
+  status: string;
+  votes: number;
+  owner_verified: boolean;
+  photos: string[];
+  created_at: string;
+}
+
+export async function fetchMyListings(userId: string): Promise<MyListingRow[]> {
+  const { data, error } = await supabase
+    .from("listings")
+    .select("id,title,area,city,house_type,bhk,rent,status,votes,owner_verified,photos,created_at")
+    .eq("owner_id", userId)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as MyListingRow[];
+}
+
+export async function deleteListing(id: string, userId: string) {
+  const { error } = await supabase.from("listings").delete().eq("id", id).eq("owner_id", userId);
+  if (error) throw error;
+}
+
+export interface OwnerProfile {
+  id: string;
+  display_name: string | null;
+  avatar_url: string | null;
+  points: number;
+  phone: string | null;
+}
+
+export async function fetchMyProfile(userId: string): Promise<OwnerProfile | null> {
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("id,display_name,avatar_url,points,phone")
+    .eq("id", userId)
+    .maybeSingle();
+  if (error) throw error;
+  return (data ?? null) as OwnerProfile | null;
+}
+
+export async function updateMyProfile(userId: string, patch: { display_name: string }) {
+  const { error } = await supabase.from("profiles").update(patch).eq("id", userId);
+  if (error) throw error;
+}
+
