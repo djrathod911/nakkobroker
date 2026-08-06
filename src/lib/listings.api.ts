@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { getListingContactPhone } from "./listing-contact.functions";
 import type { Furnishing, Listing, Tenant } from "@/data/listings";
 
 export interface DbListingRow {
@@ -96,13 +97,11 @@ export async function fetchListingById(id: string): Promise<ListingDetail | null
 }
 
 // contact_phone is not readable directly from the table by any client role.
-// Signed-in users get it through a security-definer function that checks auth server-side.
+// Signed-in users get it through an authenticated server function that checks
+// the session and listing visibility server-side.
 export async function fetchContactPhone(id: string): Promise<string | null> {
-  const { data, error } = await supabase.rpc("get_listing_contact_phone", {
-    _listing_id: id,
-  });
-  if (error) throw error;
-  return (data as string | null) ?? null;
+  const res = await getListingContactPhone({ data: { listingId: id } });
+  return res.phone;
 }
 
 
