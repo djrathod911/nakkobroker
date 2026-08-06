@@ -1,16 +1,17 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
+import { requestLoginOtp, verifyLoginOtp } from "@/lib/phone-auth.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2, ShieldCheck, Timer } from "lucide-react";
 
-const TITLE = "Sign in — NakkoBroker Hyderabad rentals";
+const TITLE = "Sign in with your mobile — NakkoBroker Hyderabad rentals";
 const DESCRIPTION =
-  "Sign in to NakkoBroker to list your flat directly, upvote community listings and save Hyderabad rentals.";
+  "One-tap mobile OTP sign in. No email, no passwords, no brokers — list your flat or contact owners directly on NakkoBroker.";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -26,54 +27,61 @@ export const Route = createFileRoute("/auth")({
   component: AuthPage,
 });
 
+const RESEND_SECONDS = 45;
+
 function AuthPage() {
   const navigate = useNavigate();
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
-  const [busy, setBusy] = useState(false);
+  const sendOtp = useServerFn(requestLoginOtp);
+  const checkOtp = useServerFn(verifyLoginOtp);
 
-  async function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  const [stage, setStage] = useState<"phone" | "code">("phone");
+  const [phone, setPhone] = useState("");
+  const [name, setName] = useState("");
+  const [code, setCode] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [demoCode, setDemoCode] = useState<string | null>(null);
+  const [cooldown, setCooldown] = useState(0);
+
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const t = setTimeout(() => setCooldown((s) => s - 1), 1000);
+    return () => clearTimeout(t);
+  }, [cooldown]);
+
+  async function send(e?: React.FormEvent) {
+    e?.preventDefault();
+    if (busy || cooldown > 0) return;
     setBusy(true);
     try {
-      if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: window.location.origin,
-            data: { full_name: name },
-          },
-        });
-        if (error) throw error;
-        toast.success("Check your email to confirm your account.");
-      } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-        toast.success("Welcome back");
-        navigate({ to: "/" });
-      }
+      const res = await sendOtp({ data: { phone } });
+      setStage("code");
+      setDemoCode(res.demoCode ?? null);
+      setCooldown(RESEND_SECONDS);
+      toast.success(res.sent ? "Code sent by SMS" : "Verification code generated");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Something went wrong");
+      toast.error(err instanceof Error ? err.message : "Could not send the code");
     } finally {
       setBusy(false);
     }
   }
 
-  async function onGoogle() {
+  async function verify(e: React.FormEvent) {
+    e.preventDefault();
     setBusy(true);
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
-    });
-    if (result.error) {
+    try {
+      const res = await checkOtp({ data: { phone, code, name: name.trim() || undefined } });
+      const { error } = await supabase.auth.setSession({
+        access_token: res.accessToken,
+        refresh_token: res.refreshToken,
+      });
+      if (error) throw error;
+      toast.success(res.isNewUser ? "Welcome to NakkoBroker" : "Welcome back");
+      navigate({ to: "/" });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not verify that code");
+    } finally {
       setBusy(false);
-      toast.error("Google sign-in failed. Please try again.");
-      return;
     }
-    if (result.redirected) return;
-    navigate({ to: "/" });
   }
 
   return (
@@ -85,77 +93,108 @@ function AuthPage() {
         >
           <ArrowLeft className="size-3.5" /> Back to map
         </Link>
+
         <div className="glass rounded-3xl p-6">
           <span className="grid size-9 place-items-center rounded-xl bg-brand text-sm font-black text-brand-foreground">
             N
           </span>
           <h1 className="mt-4 text-xl font-semibold tracking-tight">
-            {mode === "signin" ? "Sign in to NakkoBroker" : "Join NakkoBroker"}
+            {stage === "phone" ? "Sign in with your mobile" : "Enter the 6-digit code"}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Zero brokerage. List your flat, upvote and verify listings.
+            {stage === "phone"
+              ? "Your number is your account. No email, no password, no brokers."
+              : `We sent a code to +91 ${phone}.`}
           </p>
 
-          <Button
-            type="button"
-            variant="secondary"
-            className="mt-5 w-full rounded-xl"
-            onClick={onGoogle}
-            disabled={busy}
-          >
-            Continue with Google
-          </Button>
-
-          <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">
-            <span className="h-px flex-1 bg-border" /> or <span className="h-px flex-1 bg-border" />
-          </div>
-
-          <form onSubmit={onSubmit} className="space-y-3">
-            {mode === "signup" && (
+          {stage === "phone" ? (
+            <form onSubmit={send} className="mt-5 space-y-3">
               <div className="space-y-1.5">
-                <Label htmlFor="name">Name</Label>
-                <Input id="name" value={name} onChange={(e) => setName(e.target.value)} maxLength={80} />
+                <Label htmlFor="phone">Mobile number</Label>
+                <div className="flex items-center gap-2">
+                  <span className="rounded-xl border border-border bg-secondary/40 px-3 py-2 text-sm text-muted-foreground">
+                    +91
+                  </span>
+                  <Input
+                    id="phone"
+                    inputMode="numeric"
+                    autoComplete="tel"
+                    placeholder="98765 43210"
+                    required
+                    maxLength={13}
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value.replace(/[^\d\s]/g, ""))}
+                  />
+                </div>
               </div>
-            )}
-            <div className="space-y-1.5">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                maxLength={255}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                required
-                minLength={6}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
-            <Button
-              type="submit"
-              disabled={busy}
-              className="w-full rounded-xl bg-brand text-brand-foreground hover:bg-brand/90"
-            >
-              {busy && <Loader2 className="size-4 animate-spin" />}
-              {mode === "signin" ? "Sign in" : "Create account"}
-            </Button>
-          </form>
+              <div className="space-y-1.5">
+                <Label htmlFor="name">Your name (optional)</Label>
+                <Input id="name" value={name} onChange={(e) => setName(e.target.value)} maxLength={60} />
+              </div>
+              <Button
+                type="submit"
+                disabled={busy}
+                className="w-full rounded-xl bg-brand text-brand-foreground hover:bg-brand/90"
+              >
+                {busy && <Loader2 className="size-4 animate-spin" />}
+                Send OTP
+              </Button>
+            </form>
+          ) : (
+            <form onSubmit={verify} className="mt-5 space-y-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="otp">Verification code</Label>
+                <Input
+                  id="otp"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  placeholder="000000"
+                  required
+                  maxLength={6}
+                  value={code}
+                  onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+                  className="text-center text-lg tracking-[0.4em]"
+                />
+              </div>
 
-          <button
-            type="button"
-            className="mt-4 w-full text-xs text-muted-foreground hover:text-foreground"
-            onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
-          >
-            {mode === "signin" ? "New here? Create an account" : "Already have an account? Sign in"}
-          </button>
+              {demoCode && (
+                <p className="rounded-xl border border-warning/30 bg-warning/10 p-2.5 text-xs text-muted-foreground">
+                  Demo mode — no SMS provider connected yet. Your code is{" "}
+                  <span className="font-mono font-semibold text-foreground">{demoCode}</span>.
+                </p>
+              )}
+
+              <Button
+                type="submit"
+                disabled={busy || code.length !== 6}
+                className="w-full rounded-xl bg-brand text-brand-foreground hover:bg-brand/90"
+              >
+                {busy && <Loader2 className="size-4 animate-spin" />}
+                Verify and continue
+              </Button>
+
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <button type="button" className="hover:text-foreground" onClick={() => setStage("phone")}>
+                  Change number
+                </button>
+                {cooldown > 0 ? (
+                  <span className="inline-flex items-center gap-1">
+                    <Timer className="size-3.5" aria-hidden /> Resend in {cooldown}s
+                  </span>
+                ) : (
+                  <button type="button" className="hover:text-foreground" onClick={() => send()}>
+                    Resend code
+                  </button>
+                )}
+              </div>
+            </form>
+          )}
+
+          <p className="mt-5 flex items-start gap-2 text-[11px] leading-relaxed text-muted-foreground">
+            <ShieldCheck className="mt-0.5 size-3.5 shrink-0 text-brand" aria-hidden />
+            Verified numbers only. One number can list one flat and one villa per city — that is how we keep brokers
+            out.
+          </p>
         </div>
       </div>
     </main>
