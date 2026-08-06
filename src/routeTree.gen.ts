@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as AuthenticatedListYourFlatRouteImport } from './routes/_authenticated/list-your-flat'
+import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedSpotABoardRouteImport } from './routes/_authenticated/spot-a-board'
 import { Route as ListingIdRouteImport } from './routes/listing.$id'
 
@@ -42,6 +43,11 @@ const AuthenticatedListYourFlatRoute =
     path: '/list-your-flat',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedSpotABoardRoute = AuthenticatedSpotABoardRouteImport.update({
   id: '/spot-a-board',
   path: '/spot-a-board',
@@ -58,6 +64,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/list-your-flat': typeof AuthenticatedListYourFlatRoute
+  '/profile': typeof AuthenticatedProfileRoute
   '/spot-a-board': typeof AuthenticatedSpotABoardRoute
   '/listing/$id': typeof ListingIdRoute
 }
@@ -66,6 +73,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/list-your-flat': typeof AuthenticatedListYourFlatRoute
+  '/profile': typeof AuthenticatedProfileRoute
   '/spot-a-board': typeof AuthenticatedSpotABoardRoute
   '/listing/$id': typeof ListingIdRoute
 }
@@ -76,6 +84,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/_authenticated/list-your-flat': typeof AuthenticatedListYourFlatRoute
+  '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/spot-a-board': typeof AuthenticatedSpotABoardRoute
   '/listing/$id': typeof ListingIdRoute
 }
@@ -86,6 +95,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/sitemap.xml'
     | '/list-your-flat'
+    | '/profile'
     | '/spot-a-board'
     | '/listing/$id'
   fileRoutesByTo: FileRoutesByTo
@@ -94,6 +104,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/sitemap.xml'
     | '/list-your-flat'
+    | '/profile'
     | '/spot-a-board'
     | '/listing/$id'
   id:
@@ -103,6 +114,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/sitemap.xml'
     | '/_authenticated/list-your-flat'
+    | '/_authenticated/profile'
     | '/_authenticated/spot-a-board'
     | '/listing/$id'
   fileRoutesById: FileRoutesById
@@ -152,6 +164,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedListYourFlatRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/profile': {
+      id: '/_authenticated/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof AuthenticatedProfileRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/spot-a-board': {
       id: '/_authenticated/spot-a-board'
       path: '/spot-a-board'
@@ -171,11 +190,13 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedListYourFlatRoute: typeof AuthenticatedListYourFlatRoute
+  AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedSpotABoardRoute: typeof AuthenticatedSpotABoardRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedListYourFlatRoute: AuthenticatedListYourFlatRoute,
+  AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedSpotABoardRoute: AuthenticatedSpotABoardRoute,
 }
 
