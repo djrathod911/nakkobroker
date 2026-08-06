@@ -66,10 +66,16 @@ function Discover() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const { data: allListings = [] } = useQuery({
+  const {
+    data: allListings = [],
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery({
     queryKey: ["listings"],
     queryFn: fetchListings,
   });
+
 
   const { data: votedIds = [] } = useQuery({
     queryKey: ["my-votes", user?.id],
