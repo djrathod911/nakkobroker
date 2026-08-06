@@ -374,7 +374,22 @@ function ListYourFlat() {
 
             {step === 0 && (
               <>
+                <PillGroup label="City" options={CITIES} value={draft.city} onChange={(v) => set({ city: v })} />
                 <div className="space-y-2">
+                  <PillGroup
+                    label="Home type"
+                    options={[...HOUSE_TYPES]}
+                    value={draft.house_type}
+                    onChange={(v) => set({ house_type: v })}
+                  />
+                  <p className="text-[11px] text-muted-foreground">
+                    One mobile number can keep one flat and one villa live per city — that keeps brokers off
+                    NakkoBroker.
+                  </p>
+                  <FieldError message={errors["house_type"]} />
+                </div>
+                <div className="space-y-2">
+
                   <Label>Area</Label>
                   <div className="flex flex-wrap gap-2">
                     {Object.keys(AREAS).map((a) => (
