@@ -146,7 +146,17 @@ function SpotABoard() {
       const id = await createListing(
         {
           title: form.title.trim(),
+          description: "Spotted on a To-Let board by the NakkoBroker community.",
+          city: "Hyderabad",
+          house_type: "Flat",
+          bathrooms: 1,
+          balconies: 0,
+          floor: 0,
+          total_floors: 0,
+          parking: "None",
+          facing: "East",
           area: form.area,
+
           bhk: form.bhk,
           rent: form.rent,
           deposit: form.deposit,
