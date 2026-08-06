@@ -318,6 +318,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_listing_contact_phone: {
+        Args: { _listing_id: string }
+        Returns: string
+      }
       normalize_in_phone: { Args: { _phone: string }; Returns: string }
       send_daily_alert_digests: { Args: never; Returns: undefined }
     }
