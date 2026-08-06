@@ -309,9 +309,10 @@ function Discover() {
             exit={{ opacity: 0, x: 24 }}
             transition={{ duration: 0.25, ease: "easeOut" }}
             aria-label="Search results"
-            className="absolute inset-x-0 bottom-0 z-20 max-h-[52dvh] sm:inset-y-0 sm:left-auto sm:right-0 sm:max-h-none sm:w-[400px] sm:p-5 sm:pt-24"
+            className="pointer-events-none absolute inset-x-0 bottom-0 z-20 max-h-[52dvh] sm:inset-y-0 sm:left-auto sm:right-0 sm:max-h-none sm:w-[400px] sm:p-5 sm:pt-24"
           >
-            <div className="glass flex h-full flex-col rounded-t-3xl sm:rounded-3xl">
+            <div className="glass pointer-events-auto flex h-full flex-col rounded-t-3xl sm:rounded-3xl">
+
               <div className="flex shrink-0 items-start justify-between gap-2 border-b border-border/60 px-4 py-3">
                 <div>
                   <h1 className="text-sm font-semibold tracking-tight">
