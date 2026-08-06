@@ -85,7 +85,8 @@ function AuthPage() {
       });
       if (error) throw error;
       toast.success(res.isNewUser ? "Welcome to NakkoBroker" : "Welcome back");
-      navigate({ to: "/" });
+      navigate({ to: next, replace: true });
+
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not verify that code");
     } finally {
