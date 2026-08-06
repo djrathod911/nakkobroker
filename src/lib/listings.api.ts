@@ -6,6 +6,15 @@ export interface DbListingRow {
   id: string;
   owner_id: string | null;
   title: string;
+  city: string;
+  house_type: string;
+  description: string;
+  bathrooms: number;
+  balconies: number;
+  floor: number;
+  total_floors: number;
+  parking: string;
+  facing: string;
   area: string;
   bhk: number;
   rent: number;
@@ -32,7 +41,7 @@ export interface DbListingRow {
 
 // contact_phone is intentionally excluded: it is not readable by signed-out visitors.
 const PUBLIC_COLUMNS =
-  "id,owner_id,title,area,bhk,rent,deposit,maintenance,negotiable,furnishing,tenant,owner_verified,community_verified,suspicious_price,metro_km,it_corridor_km,sqft,available_from,amenities,photos,lng,lat,source,votes,created_at";
+  "id,owner_id,title,city,house_type,description,bathrooms,balconies,floor,total_floors,parking,facing,area,bhk,rent,deposit,maintenance,negotiable,furnishing,tenant,owner_verified,community_verified,suspicious_price,metro_km,it_corridor_km,sqft,available_from,amenities,photos,lng,lat,source,votes,created_at";
 
 const daysAgo = (iso: string) =>
   Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 86_400_000));
@@ -41,6 +50,15 @@ export function toListing(row: DbListingRow): Listing {
   return {
     id: row.id,
     title: row.title,
+    city: row.city ?? "Hyderabad",
+    houseType: row.house_type ?? "Flat",
+    description: row.description ?? "",
+    bathrooms: row.bathrooms ?? 1,
+    balconies: row.balconies ?? 0,
+    floor: row.floor ?? 0,
+    totalFloors: row.total_floors ?? 0,
+    parking: row.parking ?? "None",
+    facing: row.facing ?? "East",
     area: row.area,
     bhk: row.bhk,
     rent: row.rent,
@@ -64,6 +82,7 @@ export function toListing(row: DbListingRow): Listing {
     source: row.source === "Owner" ? "Owner" : "To-Let Board",
   };
 }
+
 
 export async function fetchListings(): Promise<Listing[]> {
   const { data, error } = await supabase

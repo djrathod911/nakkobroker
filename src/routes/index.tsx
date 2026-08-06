@@ -24,7 +24,16 @@ import { MapView } from "@/components/map/MapView";
 import { ListingCard } from "@/components/listings/ListingCard";
 import { NotificationBell } from "@/components/alerts/NotificationBell";
 import { SaveAlertPanel } from "@/components/alerts/SaveAlertPanel";
-import { FilterPanel, defaultFilters, type Filters } from "@/components/listings/FilterPanel";
+import {
+  FilterPanel,
+  defaultFilters,
+  CITIES,
+  HOUSE_TYPES,
+  RENT_MIN,
+  RENT_MAX,
+  type Filters,
+} from "@/components/listings/FilterPanel";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -46,10 +55,10 @@ export const Route = createFileRoute("/")({
       { property: "og:title", content: TITLE },
       { property: "og:description", content: DESCRIPTION },
       { property: "og:type", content: "website" },
-      { property: "og:url", content: "https://nakkobroker.lovable.app/" },
+      { property: "og:url", content: "https://nakkobroker.com/" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
-    links: [{ rel: "canonical", href: "https://nakkobroker.lovable.app/" }],
+    links: [{ rel: "canonical", href: "https://nakkobroker.com/" }],
   }),
   component: Discover,
 });
@@ -66,10 +75,16 @@ function Discover() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const { data: allListings = [] } = useQuery({
+  const {
+    data: allListings = [],
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery({
     queryKey: ["listings"],
     queryFn: fetchListings,
   });
+
 
   const { data: votedIds = [] } = useQuery({
     queryKey: ["my-votes", user?.id],
@@ -104,9 +119,11 @@ function Discover() {
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
     return allListings.filter((l) => {
+      if ((l.city ?? "Hyderabad") !== filters.city) return false;
+      if (filters.houseType !== "Any" && (l.houseType ?? "Flat") !== filters.houseType) return false;
       if (q && !`${l.area} ${l.title} ${l.bhk}bhk`.toLowerCase().includes(q)) return false;
       if (filters.bhk.length && !filters.bhk.includes(l.bhk)) return false;
-      if (l.rent > filters.maxRent) return false;
+      if (l.rent > filters.maxRent || l.rent < filters.minRent) return false;
       if (filters.ownerOnly && l.source !== "Owner") return false;
       if (filters.furnishing.length && !filters.furnishing.includes(l.furnishing)) return false;
       if (filters.amenities.length && !filters.amenities.every((a) => l.amenities.includes(a))) return false;
@@ -123,7 +140,9 @@ function Discover() {
     filters.furnishing.length +
     filters.amenities.length +
     (filters.ownerOnly ? 1 : 0) +
-    (filters.maxRent < 130000 ? 1 : 0);
+    (filters.houseType !== "Any" ? 1 : 0) +
+    (filters.maxRent < RENT_MAX || filters.minRent > RENT_MIN ? 1 : 0);
+
 
   return (
     <main className="relative h-dvh w-full overflow-hidden bg-background">
@@ -313,30 +332,84 @@ function Discover() {
           >
             <div className="glass pointer-events-auto flex h-full flex-col rounded-t-3xl sm:rounded-3xl">
 
-              <div className="flex shrink-0 items-start justify-between gap-2 border-b border-border/60 px-4 py-3">
-                <div>
-                  <h1 className="text-sm font-semibold tracking-tight">
-                    {results.length} zero-brokerage {results.length === 1 ? "home" : "homes"} in Hyderabad
-                  </h1>
-                  <p className="text-xs text-muted-foreground">
-                    {avgRent ? `Average ${formatRent(avgRent)}/month in this view` : "Adjust filters to see homes"}
-                  </p>
+              <div className="shrink-0 border-b border-border/60 px-4 py-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <h1 className="text-sm font-semibold tracking-tight">
+                      {isLoading
+                        ? `Finding homes in ${filters.city}…`
+                        : `${results.length} zero-brokerage ${results.length === 1 ? "home" : "homes"} in ${filters.city}`}
+                    </h1>
+                    <p className="text-xs text-muted-foreground">
+                      {avgRent ? `Average ${formatRent(avgRent)}/month in this view` : "Adjust filters to see homes"}
+                    </p>
+                  </div>
+                  <button
+                    aria-label="Hide results panel"
+                    className="inline-flex size-8 shrink-0 items-center justify-center rounded-full text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
+                    onClick={() => setResultsOpen(false)}
+                  >
+                    <X className="size-4" />
+                  </button>
                 </div>
-                <button
-                  aria-label="Hide results panel"
-                  className="inline-flex size-8 shrink-0 items-center justify-center rounded-full text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
-                  onClick={() => setResultsOpen(false)}
-                >
-                  <X className="size-4" />
-                </button>
+
+                {/* Quick filters */}
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  {CITIES.slice(0, 2).map((c) => (
+                    <QuickChip
+                      key={c}
+                      label={c}
+                      active={filters.city === c}
+                      onClick={() => setFilters((f) => ({ ...f, city: c }))}
+                    />
+                  ))}
+                  <span className="mx-1 w-px bg-border" aria-hidden />
+                  {["Any", ...HOUSE_TYPES].map((t) => (
+                    <QuickChip
+                      key={t}
+                      label={t}
+                      active={filters.houseType === t}
+                      onClick={() => setFilters((f) => ({ ...f, houseType: t }))}
+                    />
+                  ))}
+                  <span className="mx-1 w-px bg-border" aria-hidden />
+                  {[25000, 40000, 70000].map((cap) => (
+                    <QuickChip
+                      key={cap}
+                      label={`≤ ${formatRent(cap)}`}
+                      active={filters.maxRent === cap}
+                      onClick={() =>
+                        setFilters((f) => ({ ...f, maxRent: f.maxRent === cap ? RENT_MAX : cap }))
+                      }
+                    />
+                  ))}
+                </div>
               </div>
               <div className="flex-1 space-y-3 overflow-y-auto p-3">
-                {results.length === 0 ? (
+                {isLoading ? (
+                  <div className="space-y-3" aria-busy="true" aria-label="Loading listings">
+                    {[0, 1, 2, 3].map((i) => (
+                      <div key={i} className="h-32 animate-pulse rounded-2xl border border-border bg-secondary/40" />
+                    ))}
+                  </div>
+                ) : isError ? (
+                  <div className="grid h-full place-items-center px-6 text-center">
+                    <div>
+                      <p className="text-sm font-medium">We couldn't load listings</p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Check your connection and try again.
+                      </p>
+                      <Button variant="secondary" className="mt-4" onClick={() => refetch()}>
+                        Retry
+                      </Button>
+                    </div>
+                  </div>
+                ) : results.length === 0 ? (
                   <div className="grid h-full place-items-center px-6 text-center">
                     <div>
                       <p className="text-sm font-medium">No homes match yet</p>
                       <p className="mt-1 text-xs text-muted-foreground">
-                        Widen your budget or clear a few filters to see more of Hyderabad.
+                        Widen your budget or clear a few filters to see more of {filters.city}.
                       </p>
                       <Button variant="secondary" className="mt-4" onClick={() => setFilters(defaultFilters)}>
                         Reset filters
@@ -357,6 +430,7 @@ function Discover() {
                   ))
                 )}
               </div>
+
             </div>
           </motion.section>
         )}
@@ -409,6 +483,32 @@ function LayerButton({
       )}
     >
       <Icon className="size-4" />
+    </button>
+  );
+}
+
+function QuickChip({
+  label,
+  active,
+  onClick,
+}: {
+  label: string;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={cn(
+        "rounded-full border px-2.5 py-1 text-[11px] font-medium transition-all duration-200",
+        active
+          ? "border-transparent bg-brand text-brand-foreground"
+          : "border-border bg-secondary/60 text-muted-foreground hover:text-foreground",
+      )}
+    >
+      {label}
     </button>
   );
 }

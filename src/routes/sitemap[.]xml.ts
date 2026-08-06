@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import type {} from "@tanstack/react-start";
 import { fetchListings } from "@/lib/listings.api";
 
-const BASE_URL = "https://nakkobroker.lovable.app";
+const BASE_URL = "https://nakkobroker.com";
 
 interface SitemapEntry {
   path: string;

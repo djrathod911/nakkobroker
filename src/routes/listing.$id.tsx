@@ -30,7 +30,7 @@ import { useAuth } from "@/hooks/useAuth";
 export const Route = createFileRoute("/listing/$id")({
   loader: ({ params }) => fetchListingById(params.id),
   head: ({ params, loaderData }) => {
-    const url = `https://nakkobroker.lovable.app/listing/${params.id}`;
+    const url = `https://nakkobroker.com/listing/${params.id}`;
     if (!loaderData) {
       return {
         meta: [
@@ -40,8 +40,11 @@ export const Route = createFileRoute("/listing/$id")({
       };
     }
     const l = loaderData;
-    const title = `${l.bhk} BHK in ${l.area} — ₹${l.rent.toLocaleString("en-IN")}/mo`;
-    const description = `${l.title} in ${l.area}, Hyderabad. ${l.sqft} sqft, ${l.furnishing}, deposit ₹${l.deposit.toLocaleString("en-IN")}. Zero brokerage, listed directly by the owner.`;
+    const city = l.city ?? "Hyderabad";
+    const kind = l.houseType ?? "Flat";
+    const title = `${l.bhk} BHK ${kind} in ${l.area}, ${city} — ₹${l.rent.toLocaleString("en-IN")}/mo`;
+    const description = `${l.title} in ${l.area}, ${city}. ${l.sqft} sqft, ${l.furnishing}, deposit ₹${l.deposit.toLocaleString("en-IN")}. Zero brokerage, listed directly by the owner.`;
+
     return {
       meta: [
         { title },
@@ -63,12 +66,15 @@ export const Route = createFileRoute("/listing/$id")({
             description,
             url,
             datePosted: new Date(Date.now() - l.postedDaysAgo * 86_400_000).toISOString(),
+            numberOfRooms: l.bhk,
+            floorSize: { "@type": "QuantitativeValue", value: l.sqft, unitCode: "FTK" },
             address: {
               "@type": "PostalAddress",
               addressLocality: l.area,
-              addressRegion: "Telangana",
+              addressRegion: city,
               addressCountry: "IN",
             },
+
             offers: {
               "@type": "Offer",
               price: l.rent,
@@ -217,6 +223,9 @@ function ListingDetailPage() {
           <div className="flex flex-wrap items-center gap-1.5">
             <Badge className="rounded-full bg-accent text-accent-foreground">{listing.bhk} BHK</Badge>
             <Badge variant="outline" className="rounded-full border-border text-muted-foreground">
+              {listing.houseType ?? "Flat"}
+            </Badge>
+            <Badge variant="outline" className="rounded-full border-border text-muted-foreground">
               {listing.furnishing}
             </Badge>
             {listing.source === "To-Let Board" && (
@@ -235,7 +244,8 @@ function ListingDetailPage() {
           </div>
           <h1 className="mt-3 text-3xl font-bold tracking-tight">{listing.title}</h1>
           <p className="mt-1 text-muted-foreground">
-            {listing.area}, Hyderabad · {listing.sqft} sqft · posted {listing.postedDaysAgo}d ago
+            {listing.area}, {listing.city ?? "Hyderabad"} · {listing.sqft} sqft · posted{" "}
+            {listing.postedDaysAgo}d ago
           </p>
         </motion.header>
 
@@ -265,6 +275,32 @@ function ListingDetailPage() {
           <Stat label="Maintenance" value={listing.maintenance ? formatRent(listing.maintenance) : "None"} />
           <Stat label="Available" value={listing.availableFrom} />
         </section>
+
+        {listing.description ? (
+          <section className="mt-6">
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+              About this home
+            </h2>
+            <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-foreground/90">
+              {listing.description}
+            </p>
+          </section>
+        ) : null}
+
+        <section className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4" aria-label="Home details">
+          <Stat label="Bathrooms" value={String(listing.bathrooms ?? 1)} />
+          <Stat label="Balconies" value={String(listing.balconies ?? 0)} />
+          <Stat
+            label="Floor"
+            value={
+              listing.totalFloors
+                ? `${listing.floor ?? 0} of ${listing.totalFloors}`
+                : String(listing.floor ?? 0)
+            }
+          />
+          <Stat label="Parking" value={listing.parking ?? "None"} />
+        </section>
+
 
         <section className="mt-6 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
           <div className="space-y-5">
