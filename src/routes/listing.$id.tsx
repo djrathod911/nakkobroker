@@ -30,7 +30,7 @@ import { useAuth } from "@/hooks/useAuth";
 export const Route = createFileRoute("/listing/$id")({
   loader: ({ params }) => fetchListingById(params.id),
   head: ({ params, loaderData }) => {
-    const url = `https://nakkobroker.lovable.app/listing/${params.id}`;
+    const url = `https://nakkobroker.com/listing/${params.id}`;
     if (!loaderData) {
       return {
         meta: [
