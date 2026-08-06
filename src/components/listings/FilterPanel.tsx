@@ -5,16 +5,28 @@ import { formatRent } from "@/data/listings";
 import { cn } from "@/lib/utils";
 
 export interface Filters {
+  city: string;
+  houseType: string;
   bhk: number[];
   maxRent: number;
+  minRent: number;
   ownerOnly: boolean;
   furnishing: string[];
   amenities: string[];
 }
 
+export const RENT_MIN = 5000;
+export const RENT_MAX = 130000;
+
+export const CITIES = ["Hyderabad", "Bengaluru", "Chennai", "Pune"];
+export const HOUSE_TYPES = ["Flat", "Villa"];
+
 export const defaultFilters: Filters = {
+  city: "Hyderabad",
+  houseType: "Any",
   bhk: [],
-  maxRent: 130000,
+  maxRent: RENT_MAX,
+  minRent: RENT_MIN,
   ownerOnly: false,
   furnishing: [],
   amenities: [],
@@ -22,6 +34,7 @@ export const defaultFilters: Filters = {
 
 const FURNISHING = ["Unfurnished", "Semi Furnished", "Fully Furnished"];
 const AMENITIES = ["Lift", "Power Backup", "Parking", "Gym", "Swimming Pool"];
+
 
 function Chip({
   label,
