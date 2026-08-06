@@ -17,6 +17,8 @@ import {
   LogOut,
   X,
   PanelRight,
+  UserRound,
+
 } from "lucide-react";
 import { MapView } from "@/components/map/MapView";
 import { ListingCard } from "@/components/listings/ListingCard";
