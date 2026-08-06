@@ -196,10 +196,17 @@ function Discover() {
               </SheetContent>
             </Sheet>
             <Button asChild className="rounded-2xl bg-brand text-brand-foreground hover:bg-brand/90">
-              <Link to={user ? "/list-your-flat" : "/auth"} aria-label="List your flat">
-                <Plus className="size-4" />
-                <span className="hidden sm:inline">List your flat</span>
-              </Link>
+              {user ? (
+                <Link to="/list-your-flat" aria-label="List your flat">
+                  <Plus className="size-4" />
+                  <span className="hidden sm:inline">List your flat</span>
+                </Link>
+              ) : (
+                <Link to="/auth" search={{ next: "/list-your-flat" }} aria-label="List your flat">
+                  <Plus className="size-4" />
+                  <span className="hidden sm:inline">List your flat</span>
+                </Link>
+              )}
             </Button>
             {user ? (
               <>
@@ -219,12 +226,14 @@ function Discover() {
                   <LogOut className="size-4" />
                 </Button>
               </>
-
             ) : (
               <Button asChild variant="secondary" className="glass rounded-2xl border-0">
-                <Link to="/auth">Sign in</Link>
+                <Link to="/auth" search={{ next: "/profile" }}>
+                  Sign in
+                </Link>
               </Button>
             )}
+
           </div>
         </div>
       </header>
