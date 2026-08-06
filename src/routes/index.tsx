@@ -138,7 +138,7 @@ function Discover() {
       </div>
 
       {/* Top bar */}
-      <header className="pointer-events-none absolute inset-x-0 top-0 z-20 p-3 sm:p-5">
+      <header className="pointer-events-none absolute inset-x-0 top-0 z-30 p-3 sm:p-5">
         <div className="pointer-events-auto mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
           <div className="glass flex min-w-0 items-center gap-2 rounded-2xl px-3 py-2">
             <span className="hidden shrink-0 items-center gap-2 pr-2 sm:flex">
