@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { BadgeCheck, Loader2, ShieldCheck, Smartphone } from "lucide-react";
+import { BadgeCheck, Loader2, ShieldCheck, Smartphone, Timer } from "lucide-react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { requestPhoneOtp, verifyPhoneOtp } from "@/lib/phone-verify.functions";
