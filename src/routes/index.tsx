@@ -110,9 +110,11 @@ function Discover() {
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
     return allListings.filter((l) => {
+      if ((l.city ?? "Hyderabad") !== filters.city) return false;
+      if (filters.houseType !== "Any" && (l.houseType ?? "Flat") !== filters.houseType) return false;
       if (q && !`${l.area} ${l.title} ${l.bhk}bhk`.toLowerCase().includes(q)) return false;
       if (filters.bhk.length && !filters.bhk.includes(l.bhk)) return false;
-      if (l.rent > filters.maxRent) return false;
+      if (l.rent > filters.maxRent || l.rent < filters.minRent) return false;
       if (filters.ownerOnly && l.source !== "Owner") return false;
       if (filters.furnishing.length && !filters.furnishing.includes(l.furnishing)) return false;
       if (filters.amenities.length && !filters.amenities.every((a) => l.amenities.includes(a))) return false;
@@ -129,7 +131,9 @@ function Discover() {
     filters.furnishing.length +
     filters.amenities.length +
     (filters.ownerOnly ? 1 : 0) +
-    (filters.maxRent < 130000 ? 1 : 0);
+    (filters.houseType !== "Any" ? 1 : 0) +
+    (filters.maxRent < RENT_MAX || filters.minRent > RENT_MIN ? 1 : 0);
+
 
   return (
     <main className="relative h-dvh w-full overflow-hidden bg-background">
