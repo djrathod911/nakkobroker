@@ -216,8 +216,17 @@ function ListYourFlat() {
       const id = await createListing(
         {
           title: draft.title.trim(),
+          description: draft.description.trim(),
+          city: draft.city,
+          house_type: draft.house_type,
           area: draft.area,
           bhk: draft.bhk,
+          bathrooms: draft.bathrooms,
+          balconies: draft.balconies,
+          floor: draft.floor,
+          total_floors: draft.total_floors,
+          parking: draft.parking,
+          facing: draft.facing,
           rent: draft.rent,
           deposit: draft.deposit,
           maintenance: draft.maintenance,
@@ -234,6 +243,7 @@ function ListYourFlat() {
           lat: draft.lat,
           source: "Owner",
         },
+
         auth.user.id,
         photos.map((p) => p.file),
         (done, total) => setUploaded({ done, total }),
