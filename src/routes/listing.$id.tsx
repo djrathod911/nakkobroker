@@ -66,12 +66,15 @@ export const Route = createFileRoute("/listing/$id")({
             description,
             url,
             datePosted: new Date(Date.now() - l.postedDaysAgo * 86_400_000).toISOString(),
+            numberOfRooms: l.bhk,
+            floorSize: { "@type": "QuantitativeValue", value: l.sqft, unitCode: "FTK" },
             address: {
               "@type": "PostalAddress",
               addressLocality: l.area,
-              addressRegion: "Telangana",
+              addressRegion: city,
               addressCountry: "IN",
             },
+
             offers: {
               "@type": "Offer",
               price: l.rent,
