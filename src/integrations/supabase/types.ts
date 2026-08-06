@@ -48,12 +48,19 @@ export type Database = {
           amenities: string[]
           area: string
           available_from: string
+          balconies: number
+          bathrooms: number
           bhk: number
+          city: string
           community_verified: boolean
           contact_phone: string | null
           created_at: string
           deposit: number
+          description: string
+          facing: string
+          floor: number
           furnishing: string
+          house_type: string
           id: string
           it_corridor_km: number
           lat: number
@@ -62,7 +69,9 @@ export type Database = {
           metro_km: number
           negotiable: boolean
           owner_id: string | null
+          owner_phone_norm: string | null
           owner_verified: boolean
+          parking: string
           photos: string[]
           rent: number
           source: string
@@ -71,6 +80,7 @@ export type Database = {
           suspicious_price: boolean
           tenant: string
           title: string
+          total_floors: number
           updated_at: string
           votes: number
         }
@@ -78,12 +88,19 @@ export type Database = {
           amenities?: string[]
           area: string
           available_from?: string
+          balconies?: number
+          bathrooms?: number
           bhk?: number
+          city?: string
           community_verified?: boolean
           contact_phone?: string | null
           created_at?: string
           deposit?: number
+          description?: string
+          facing?: string
+          floor?: number
           furnishing?: string
+          house_type?: string
           id?: string
           it_corridor_km?: number
           lat: number
@@ -92,7 +109,9 @@ export type Database = {
           metro_km?: number
           negotiable?: boolean
           owner_id?: string | null
+          owner_phone_norm?: string | null
           owner_verified?: boolean
+          parking?: string
           photos?: string[]
           rent: number
           source?: string
@@ -101,6 +120,7 @@ export type Database = {
           suspicious_price?: boolean
           tenant?: string
           title: string
+          total_floors?: number
           updated_at?: string
           votes?: number
         }
@@ -108,12 +128,19 @@ export type Database = {
           amenities?: string[]
           area?: string
           available_from?: string
+          balconies?: number
+          bathrooms?: number
           bhk?: number
+          city?: string
           community_verified?: boolean
           contact_phone?: string | null
           created_at?: string
           deposit?: number
+          description?: string
+          facing?: string
+          floor?: number
           furnishing?: string
+          house_type?: string
           id?: string
           it_corridor_km?: number
           lat?: number
@@ -122,7 +149,9 @@ export type Database = {
           metro_km?: number
           negotiable?: boolean
           owner_id?: string | null
+          owner_phone_norm?: string | null
           owner_verified?: boolean
+          parking?: string
           photos?: string[]
           rent?: number
           source?: string
@@ -131,8 +160,39 @@ export type Database = {
           suspicious_price?: boolean
           tenant?: string
           title?: string
+          total_floors?: number
           updated_at?: string
           votes?: number
+        }
+        Relationships: []
+      }
+      login_otps: {
+        Row: {
+          attempts: number
+          code_hash: string
+          consumed_at: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          phone: string
+        }
+        Insert: {
+          attempts?: number
+          code_hash: string
+          consumed_at?: string | null
+          created_at?: string
+          expires_at: string
+          id?: string
+          phone: string
+        }
+        Update: {
+          attempts?: number
+          code_hash?: string
+          consumed_at?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          phone?: string
         }
         Relationships: []
       }
@@ -226,6 +286,7 @@ export type Database = {
           created_at: string
           display_name: string | null
           id: string
+          phone: string | null
           points: number
         }
         Insert: {
@@ -233,6 +294,7 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           id: string
+          phone?: string | null
           points?: number
         }
         Update: {
@@ -240,6 +302,7 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           id?: string
+          phone?: string | null
           points?: number
         }
         Relationships: []
