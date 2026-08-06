@@ -95,15 +95,14 @@ export async function fetchListingById(id: string): Promise<ListingDetail | null
   };
 }
 
-// Only signed-in users may read owner contact numbers (enforced by column-level grants).
+// contact_phone is not readable directly from the table by any client role.
+// Signed-in users get it through a security-definer function that checks auth server-side.
 export async function fetchContactPhone(id: string): Promise<string | null> {
-  const { data, error } = await supabase
-    .from("listings")
-    .select("contact_phone")
-    .eq("id", id)
-    .maybeSingle();
+  const { data, error } = await supabase.rpc("get_listing_contact_phone", {
+    _listing_id: id,
+  });
   if (error) throw error;
-  return (data?.contact_phone as string | null) ?? null;
+  return (data as string | null) ?? null;
 }
 
 
