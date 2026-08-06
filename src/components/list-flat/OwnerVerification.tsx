@@ -18,17 +18,28 @@ export function OwnerVerification({ phone, verified, onVerified }: Props) {
   const sendCode = useServerFn(requestPhoneOtp);
   const checkCode = useServerFn(verifyPhoneOtp);
 
+  const RESEND_SECONDS = 45;
+
   const [stage, setStage] = useState<"idle" | "code">("idle");
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [demoCode, setDemoCode] = useState<string | null>(null);
+  const [cooldown, setCooldown] = useState(0);
 
   // Changing the number invalidates an in-flight code.
   useEffect(() => {
     setStage("idle");
     setCode("");
     setDemoCode(null);
+    setCooldown(0);
   }, [phone]);
+
+  // Countdown for the resend cooldown.
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const t = setTimeout(() => setCooldown((s) => s - 1), 1000);
+    return () => clearTimeout(t);
+  }, [cooldown]);
 
   if (verified) {
     return (
