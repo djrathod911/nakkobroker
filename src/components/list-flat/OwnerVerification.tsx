@@ -60,11 +60,13 @@ export function OwnerVerification({ phone, verified, onVerified }: Props) {
   }
 
   async function request() {
+    if (cooldown > 0 || busy) return;
     setBusy(true);
     try {
       const res = await sendCode({ data: { phone } });
       setStage("code");
       setDemoCode(res.demoCode ?? null);
+      setCooldown(RESEND_SECONDS);
       toast.success(res.sent ? "Code sent by SMS" : "Verification code generated");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not send the code");
