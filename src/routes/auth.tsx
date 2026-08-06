@@ -13,7 +13,14 @@ const TITLE = "Sign in with your mobile — NakkoBroker Hyderabad rentals";
 const DESCRIPTION =
   "One-tap mobile OTP sign in. No email, no passwords, no brokers — list your flat or contact owners directly on NakkoBroker.";
 
+/** Only same-origin app paths may be used as a post-login destination. */
+function safeNext(value: unknown): string {
+  const raw = typeof value === "string" ? value : "";
+  return /^\/(?!\/)[\w\-/.$?=&]*$/.test(raw) ? raw : "/";
+}
+
 export const Route = createFileRoute("/auth")({
+  validateSearch: (search: Record<string, unknown>) => ({ next: safeNext(search["next"]) }),
   head: () => ({
     meta: [
       { title: TITLE },
@@ -31,8 +38,10 @@ const RESEND_SECONDS = 45;
 
 function AuthPage() {
   const navigate = useNavigate();
+  const { next } = Route.useSearch();
   const sendOtp = useServerFn(requestLoginOtp);
   const checkOtp = useServerFn(verifyLoginOtp);
+
 
   const [stage, setStage] = useState<"phone" | "code">("phone");
   const [phone, setPhone] = useState("");
