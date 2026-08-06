@@ -24,7 +24,16 @@ import { MapView } from "@/components/map/MapView";
 import { ListingCard } from "@/components/listings/ListingCard";
 import { NotificationBell } from "@/components/alerts/NotificationBell";
 import { SaveAlertPanel } from "@/components/alerts/SaveAlertPanel";
-import { FilterPanel, defaultFilters, type Filters } from "@/components/listings/FilterPanel";
+import {
+  FilterPanel,
+  defaultFilters,
+  CITIES,
+  HOUSE_TYPES,
+  RENT_MIN,
+  RENT_MAX,
+  type Filters,
+} from "@/components/listings/FilterPanel";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
