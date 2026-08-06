@@ -93,19 +93,31 @@ const phoneRegex = /^(\+91[\s-]?)?[6-9]\d{9}$/;
 
 export const stepSchemas = [
   z.object({
+    city: z.string().refine((v) => CITIES.includes(v), "Pick a city"),
+    house_type: z.string().refine((v) => (HOUSE_TYPES as readonly string[]).includes(v), "Pick Flat or Villa"),
     area: z.string().refine((v) => v in AREAS, "Pick an area in Hyderabad"),
     lng: z.number().min(78).max(79),
     lat: z.number().min(17).max(18),
   }),
   z.object({
     title: z.string().trim().min(6, "Add a short descriptive title").max(120),
+    description: z.string().trim().min(30, "Describe the home in at least 30 characters").max(2000),
     bhk: z.number().int().min(1, "BHK must be at least 1").max(6, "Max 6 BHK"),
+    bathrooms: z.number().int().min(1, "At least 1 bathroom").max(10),
+    balconies: z.number().int().min(0).max(10),
+    floor: z.number().int().min(0, "Floor cannot be negative").max(100),
+    total_floors: z.number().int().min(0).max(100),
+    parking: z.string().min(1, "Select parking"),
+    facing: z.string().min(1, "Select facing"),
     sqft: z.number().int().min(100, "Enter a realistic carpet area").max(20_000),
     furnishing: z.string().min(1),
     tenant: z.string().min(1),
     available_from: z.string().trim().min(1, "Pick availability").max(40),
     metro_km: z.number().min(0).max(60, "Distance looks too far"),
     it_corridor_km: z.number().min(0).max(60, "Distance looks too far"),
+  }).refine((v) => v.total_floors === 0 || v.floor <= v.total_floors, {
+    message: "Floor cannot be above the building's total floors",
+    path: ["floor"],
   }),
   z.object({
     rent: z.number().int().min(1000, "Rent must be at least ₹1,000").max(1_000_000),
@@ -120,6 +132,7 @@ export const stepSchemas = [
       .refine((v) => phoneRegex.test(v.replace(/\s|-/g, "")), "Enter a valid 10-digit Indian mobile number"),
   }),
 ];
+
 
 export const STEPS = [
   { key: "location", label: "Location", hint: "Where is the flat?" },
