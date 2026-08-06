@@ -436,9 +436,43 @@ function ListYourFlat() {
                   </div>
                 </div>
 
+                <div className="space-y-1.5">
+                  <Label htmlFor="description">About this home</Label>
+                  <Textarea
+                    id="description"
+                    rows={4}
+                    maxLength={2000}
+                    placeholder="Layout, natural light, water supply, nearby markets and schools, house rules…"
+                    value={draft.description}
+                    onChange={(e) => set({ description: e.target.value })}
+                  />
+                  <div className="flex justify-between text-[11px] text-muted-foreground">
+                    <FieldError message={errors["description"]} />
+                    <span>{draft.description.length}/2000</span>
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
                   <Field label="BHK" id="bhk" error={errors["bhk"]}>
                     <Input id="bhk" type="number" min={1} max={6} value={draft.bhk} onChange={num("bhk")} />
+                  </Field>
+                  <Field label="Bathrooms" id="bathrooms" error={errors["bathrooms"]}>
+                    <Input id="bathrooms" type="number" min={1} max={10} value={draft.bathrooms} onChange={num("bathrooms")} />
+                  </Field>
+                  <Field label="Balconies" id="balconies" error={errors["balconies"]}>
+                    <Input id="balconies" type="number" min={0} max={10} value={draft.balconies} onChange={num("balconies")} />
+                  </Field>
+                  <Field label="Floor" id="floor" error={errors["floor"]}>
+                    <Input id="floor" type="number" min={0} value={draft.floor} onChange={num("floor")} />
+                  </Field>
+                  <Field label="Total floors" id="total_floors" error={errors["total_floors"]}>
+                    <Input
+                      id="total_floors"
+                      type="number"
+                      min={0}
+                      value={draft.total_floors}
+                      onChange={num("total_floors")}
+                    />
                   </Field>
                   <Field label="Carpet area (sqft)" id="sqft" error={errors["sqft"]}>
                     <Input id="sqft" type="number" min={100} value={draft.sqft} onChange={num("sqft")} />
@@ -457,6 +491,10 @@ function ListYourFlat() {
                     />
                   </Field>
                 </div>
+
+                <PillGroup label="Parking" options={PARKING} value={draft.parking} onChange={(v) => set({ parking: v })} />
+                <PillGroup label="Facing" options={FACING} value={draft.facing} onChange={(v) => set({ facing: v })} />
+
 
                 <PillGroup
                   label="Furnishing"
