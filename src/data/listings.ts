@@ -4,10 +4,21 @@ export type Tenant = "Family" | "Bachelor" | "Anyone";
 export interface Listing {
   id: string;
   title: string;
+  /** Optional on demo data; always present on database-backed listings. */
+  city?: string;
+  houseType?: string;
+  description?: string;
+  bathrooms?: number;
+  balconies?: number;
+  floor?: number;
+  totalFloors?: number;
+  parking?: string;
+  facing?: string;
   area: string;
   bhk: number;
   rent: number;
   deposit: number;
+
   maintenance: number;
   negotiable: boolean;
   furnishing: Furnishing;
