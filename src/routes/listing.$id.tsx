@@ -26,6 +26,7 @@ import {
   toggleVote,
 } from "@/lib/listings.api";
 import { useAuth } from "@/hooks/useAuth";
+import { RequestViewingButton } from "@/components/listings/RequestViewingButton";
 
 export const Route = createFileRoute("/listing/$id")({
   loader: ({ params }) => fetchListingById(params.id),
@@ -371,6 +372,19 @@ function ListingDetailPage() {
                   No phone shared. Upvote so the community can request contact details.
                 </p>
               )}
+
+              <div className="mt-4 border-t border-border pt-4">
+                <h3 className="text-sm font-semibold">Want to see it in person?</h3>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Send a viewing request and we&apos;ll open a chat thread with the owner.
+                </p>
+                <RequestViewingButton
+                  listingId={listing.id}
+                  ownerId={listing.ownerId}
+                  userId={user?.id ?? null}
+                  listingTitle={listing.title}
+                />
+              </div>
             </div>
           </div>
 
