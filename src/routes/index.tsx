@@ -95,7 +95,7 @@ function Discover() {
   async function onVote(listingId: string) {
     if (!user) {
       toast("Sign in to upvote listings");
-      navigate({ to: "/auth" });
+      navigate({ to: "/auth", search: { next: "/" } });
       return;
     }
     try {
