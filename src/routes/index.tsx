@@ -18,6 +18,7 @@ import {
   X,
   PanelRight,
   UserRound,
+  MessagesSquare,
 
 } from "lucide-react";
 import { MapView } from "@/components/map/MapView";
@@ -95,7 +96,7 @@ function Discover() {
   async function onVote(listingId: string) {
     if (!user) {
       toast("Sign in to upvote listings");
-      navigate({ to: "/auth" });
+      navigate({ to: "/auth", search: { next: "/" } });
       return;
     }
     try {
@@ -230,6 +231,11 @@ function Discover() {
             {user ? (
               <>
                 <NotificationBell userId={user.id} />
+                <Button asChild variant="secondary" size="icon" className="glass rounded-2xl border-0">
+                  <Link to="/messages" aria-label="Your chats">
+                    <MessagesSquare className="size-4" />
+                  </Link>
+                </Button>
                 <Button asChild variant="secondary" size="icon" className="glass rounded-2xl border-0">
                   <Link to="/profile" aria-label="Your profile">
                     <UserRound className="size-4" />
