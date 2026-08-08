@@ -98,7 +98,7 @@ export async function fetchConversations(userId: string): Promise<ConversationSu
 
   const [listings, profiles, messages] = await Promise.all([
     supabase.from("listings").select("id,title,area,city").in("id", listingIds),
-    supabase.from("profiles").select("id,display_name").in("id", peopleIds),
+    supabase.rpc("get_profile_display_names", { _ids: peopleIds }),
     supabase
       .from("messages")
       .select("conversation_id,body,read,sender_id,created_at")
@@ -150,14 +150,15 @@ export async function fetchConversation(id: string, userId: string): Promise<Con
   const other = row.tenant_id === userId ? row.owner_id : row.tenant_id;
   const [listing, profile] = await Promise.all([
     supabase.from("listings").select("title,area,city").eq("id", row.listing_id).maybeSingle(),
-    supabase.from("profiles").select("display_name").eq("id", other).maybeSingle(),
+    supabase.rpc("get_profile_display_names", { _ids: [other] }),
   ]);
+  const peer = (profile.data ?? [])[0] as { display_name: string | null } | undefined;
   return {
     conversation: row,
     listingTitle: (listing.data?.title as string) ?? "Listing removed",
     listingArea: (listing.data?.area as string) ?? "",
     listingCity: (listing.data?.city as string) ?? "",
-    counterpartName: (profile.data?.display_name as string | null) ?? "NakkoBroker user",
+    counterpartName: peer?.display_name ?? "NakkoBroker user",
   };
 }
 
