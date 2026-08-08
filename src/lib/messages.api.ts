@@ -152,9 +152,9 @@ export async function fetchConversation(id: string, userId: string): Promise<Con
   const other = row.tenant_id === userId ? row.owner_id : row.tenant_id;
   const [listing, profile] = await Promise.all([
     supabase.from("listings").select("title,area,city").eq("id", row.listing_id).maybeSingle(),
-    supabase.rpc("get_profile_display_names", { _ids: [other] }),
+    getProfileDisplayNames({ data: { ids: [other] } }),
   ]);
-  const peer = (profile.data ?? [])[0] as { display_name: string | null } | undefined;
+  const peer = (profile ?? [])[0];
   return {
     conversation: row,
     listingTitle: (listing.data?.title as string) ?? "Listing removed",
