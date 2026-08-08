@@ -1,4 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
+import { getProfileDisplayNames } from "@/lib/profiles.functions";
+
 
 export interface ConversationRow {
   id: string;
@@ -98,7 +100,7 @@ export async function fetchConversations(userId: string): Promise<ConversationSu
 
   const [listings, profiles, messages] = await Promise.all([
     supabase.from("listings").select("id,title,area,city").in("id", listingIds),
-    supabase.rpc("get_profile_display_names", { _ids: peopleIds }),
+    getProfileDisplayNames({ data: { ids: peopleIds } }),
     supabase
       .from("messages")
       .select("conversation_id,body,read,sender_id,created_at")
@@ -111,7 +113,7 @@ export async function fetchConversations(userId: string): Promise<ConversationSu
 
   const listingMap = new Map((listings.data ?? []).map((l) => [l.id as string, l]));
   const nameMap = new Map(
-    (profiles.data ?? []).map((p) => [p.id as string, (p.display_name as string | null) ?? "NakkoBroker user"]),
+    (profiles ?? []).map((p) => [p.id, p.display_name ?? "NakkoBroker user"]),
   );
 
   return rows.map((r) => {
@@ -150,9 +152,9 @@ export async function fetchConversation(id: string, userId: string): Promise<Con
   const other = row.tenant_id === userId ? row.owner_id : row.tenant_id;
   const [listing, profile] = await Promise.all([
     supabase.from("listings").select("title,area,city").eq("id", row.listing_id).maybeSingle(),
-    supabase.rpc("get_profile_display_names", { _ids: [other] }),
+    getProfileDisplayNames({ data: { ids: [other] } }),
   ]);
-  const peer = (profile.data ?? [])[0] as { display_name: string | null } | undefined;
+  const peer = (profile ?? [])[0];
   return {
     conversation: row,
     listingTitle: (listing.data?.title as string) ?? "Listing removed",
