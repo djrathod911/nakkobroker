@@ -1,0 +1,205 @@
+{
+  "version": 1,
+  "sdk_version": "0.26.1",
+  "path": "/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://hbvuzvbolptuhiyesgvk.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "nakkobroker",
+      "version": "0.1.0",
+      "title": "NakkoBroker"
+    },
+    "tools": [
+      {
+        "name": "search_listings",
+        "title": "Search rental listings",
+        "description": "Search published owner-listed rental homes on NakkoBroker by city, area, home type, BHK and maximum rent.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "city": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "description": "City name, e.g. Hyderabad."
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "area": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "description": "Locality / area name to match, e.g. Gachibowli."
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "house_type": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "Flat",
+                    "Villa"
+                  ],
+                  "description": "Type of home."
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "bhk": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991,
+                  "description": "Exact number of bedrooms."
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "max_rent": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991,
+                  "description": "Maximum monthly rent in rupees."
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "owner_only": {
+              "anyOf": [
+                {
+                  "type": "boolean",
+                  "description": "Only homes posted by owners (exclude spotted To-Let boards)."
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "limit": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991,
+                  "description": "Maximum rows to return, default 20, max 50."
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "city",
+            "area",
+            "house_type",
+            "bhk",
+            "max_rent",
+            "owner_only",
+            "limit"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_listing",
+        "title": "Get listing details",
+        "description": "Fetch full details of one published NakkoBroker rental listing by its id.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "Listing id (uuid)."
+            }
+          },
+          "required": [
+            "id"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "my_listings",
+        "title": "My listings",
+        "description": "List the homes the signed-in user has posted on NakkoBroker, with status and upvotes.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "my_conversations",
+        "title": "My chats",
+        "description": "List the signed-in user's owner–tenant viewing conversations on NakkoBroker, optionally with the latest messages of one conversation.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "conversation_id": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "description": "Optional conversation id — when set, returns the recent messages of that thread."
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "conversation_id"
+          ]
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
