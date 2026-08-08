@@ -98,7 +98,7 @@ export async function fetchConversations(userId: string): Promise<ConversationSu
 
   const [listings, profiles, messages] = await Promise.all([
     supabase.from("listings").select("id,title,area,city").in("id", listingIds),
-    supabase.from("profiles").select("id,display_name").in("id", peopleIds),
+    supabase.rpc("get_profile_display_names", { _ids: peopleIds }),
     supabase
       .from("messages")
       .select("conversation_id,body,read,sender_id,created_at")
