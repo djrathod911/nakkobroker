@@ -1,4 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
+import { getProfileDisplayNames } from "@/lib/profiles.functions";
+
 
 export interface ConversationRow {
   id: string;
