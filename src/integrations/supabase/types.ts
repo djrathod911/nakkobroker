@@ -457,6 +457,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_profile_display_names: {
+        Args: { _ids: string[] }
+        Returns: {
+          avatar_url: string
+          display_name: string
+          id: string
+        }[]
+      }
       normalize_in_phone: { Args: { _phone: string }; Returns: string }
       send_daily_alert_digests: { Args: never; Returns: undefined }
     }
