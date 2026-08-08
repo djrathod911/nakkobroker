@@ -1,4 +1,4 @@
-import { auth, defineMcp, type AnyToolDefinition } from "@lovable.dev/mcp-js";
+import { auth, defineMcp } from "@lovable.dev/mcp-js";
 import searchListings from "./tools/search-listings";
 import getListing from "./tools/get-listing";
 import myListings from "./tools/my-listings";
@@ -17,5 +17,5 @@ export default defineMcp({
     issuer: `https://${projectRef}.supabase.co/auth/v1`,
     acceptedAudiences: "authenticated",
   }),
-  tools: [searchListings, getListing, myListings, myConversations],
+  tools: [searchListings, getListing, myListings, myConversations] as unknown as Parameters<typeof defineMcp>[0]["tools"],
 });
