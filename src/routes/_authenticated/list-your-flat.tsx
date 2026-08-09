@@ -84,7 +84,8 @@ function ListYourFlat() {
   const [step, setStep] = useState(0);
   const [draft, setDraft] = useState<FlatDraft>(emptyDraft);
   const [photos, setPhotos] = useState<Photo[]>([]);
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const [showAllErrors, setShowAllErrors] = useState(false);
   const [busy, setBusy] = useState(false);
   const [uploaded, setUploaded] = useState({ done: 0, total: 0 });
   const [publishedId, setPublishedId] = useState<string | null>(null);
