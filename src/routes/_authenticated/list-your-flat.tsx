@@ -140,6 +140,8 @@ function ListYourFlat() {
     return !!n && verifiedPhones.includes(n);
   }, [draft.contact_phone, verifiedPhones]);
 
+  const errorList = useMemo(() => Object.values(errors).filter(Boolean), [errors]);
+
   const progress = useMemo(() => completeness(draft, photos.length), [draft, photos.length]);
   const hint = useMemo(() => priceHint(draft), [draft]);
 
@@ -158,6 +160,7 @@ function ListYourFlat() {
     }
     setErrors(next);
     toast.error(Object.values(next)[0] ?? "Check the highlighted fields");
+    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
     return false;
   }
 
@@ -373,10 +376,32 @@ function ListYourFlat() {
             transition={{ duration: 0.22, ease: "easeOut" }}
             className="glass mt-5 space-y-6 rounded-3xl p-5"
           >
-            <header>
-              <h2 className="text-base font-semibold tracking-tight">{current.label}</h2>
-              <p className="text-xs text-muted-foreground">{current.hint}</p>
+            <header className="flex flex-wrap items-start justify-between gap-2">
+              <div>
+                <h2 className="text-base font-semibold tracking-tight">{current.label}</h2>
+                <p className="text-xs text-muted-foreground">{current.hint}</p>
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                <span className="font-semibold text-destructive">*</span> Required field
+              </p>
             </header>
+
+            {errorList.length > 0 && (
+              <div
+                role="alert"
+                className="rounded-2xl border border-destructive/40 bg-destructive/10 px-3.5 py-3 text-xs text-destructive"
+              >
+                <p className="flex items-center gap-1.5 font-semibold">
+                  <AlertCircle className="size-3.5" />
+                  {errorList.length === 1 ? "1 field needs your attention" : `${errorList.length} fields need your attention`}
+                </p>
+                <ul className="mt-1.5 list-disc space-y-0.5 pl-4">
+                  {errorList.map((m) => (
+                    <li key={m}>{m}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
             {step === 0 && (
               <>
