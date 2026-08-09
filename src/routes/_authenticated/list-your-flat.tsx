@@ -380,23 +380,25 @@ function ListYourFlat() {
 
             {step === 0 && (
               <>
-                <PillGroup label="City" options={CITIES} value={draft.city} onChange={(v) => set({ city: v })} />
+                <PillGroup
+                  label="City"
+                  required
+                  options={CITIES}
+                  value={draft.city}
+                  onChange={(v) => set({ city: v })}
+                  error={errors["city"]}
+                />
+                <PillGroup
+                  label="Home type"
+                  required
+                  options={[...HOUSE_TYPES]}
+                  value={draft.house_type}
+                  onChange={(v) => set({ house_type: v })}
+                  hint="One mobile number can keep one flat and one villa live per city — that keeps brokers off NakkoBroker."
+                  error={errors["house_type"]}
+                />
                 <div className="space-y-2">
-                  <PillGroup
-                    label="Home type"
-                    options={[...HOUSE_TYPES]}
-                    value={draft.house_type}
-                    onChange={(v) => set({ house_type: v })}
-                  />
-                  <p className="text-[11px] text-muted-foreground">
-                    One mobile number can keep one flat and one villa live per city — that keeps brokers off
-                    NakkoBroker.
-                  </p>
-                  <FieldError message={errors["house_type"]} />
-                </div>
-                <div className="space-y-2">
-
-                  <Label>Area</Label>
+                  <FieldLabel required>Area</FieldLabel>
                   <div className="flex flex-wrap gap-2">
                     {Object.keys(AREAS).map((a) => (
                       <Pill
@@ -421,8 +423,15 @@ function ListYourFlat() {
 
             {step === 1 && (
               <>
-                <div className="space-y-1.5">
-                  <Label htmlFor="title">Listing title</Label>
+                <div
+                  className={cn(
+                    "space-y-1.5",
+                    errors["title"] && "[&_textarea]:border-destructive [&_textarea]:ring-1 [&_textarea]:ring-destructive/40",
+                  )}
+                >
+                  <FieldLabel htmlFor="title" required>
+                    Listing title
+                  </FieldLabel>
                   <Textarea
                     id="title"
                     rows={2}
@@ -437,8 +446,16 @@ function ListYourFlat() {
                   </div>
                 </div>
 
-                <div className="space-y-1.5">
-                  <Label htmlFor="description">About this home</Label>
+                <div
+                  className={cn(
+                    "space-y-1.5",
+                    errors["description"] &&
+                      "[&_textarea]:border-destructive [&_textarea]:ring-1 [&_textarea]:ring-destructive/40",
+                  )}
+                >
+                  <FieldLabel htmlFor="description" required>
+                    About this home
+                  </FieldLabel>
                   <Textarea
                     id="description"
                     rows={4}
@@ -454,16 +471,16 @@ function ListYourFlat() {
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-                  <Field label="BHK" id="bhk" error={errors["bhk"]}>
+                  <Field label="BHK" id="bhk" required error={errors["bhk"]}>
                     <Input id="bhk" type="number" min={1} max={6} value={draft.bhk} onChange={num("bhk")} />
                   </Field>
-                  <Field label="Bathrooms" id="bathrooms" error={errors["bathrooms"]}>
+                  <Field label="Bathrooms" id="bathrooms" required error={errors["bathrooms"]}>
                     <Input id="bathrooms" type="number" min={1} max={10} value={draft.bathrooms} onChange={num("bathrooms")} />
                   </Field>
                   <Field label="Balconies" id="balconies" error={errors["balconies"]}>
                     <Input id="balconies" type="number" min={0} max={10} value={draft.balconies} onChange={num("balconies")} />
                   </Field>
-                  <Field label="Floor" id="floor" error={errors["floor"]}>
+                  <Field label="Floor" id="floor" required error={errors["floor"]}>
                     <Input id="floor" type="number" min={0} value={draft.floor} onChange={num("floor")} />
                   </Field>
                   <Field label="Total floors" id="total_floors" error={errors["total_floors"]}>
@@ -475,7 +492,7 @@ function ListYourFlat() {
                       onChange={num("total_floors")}
                     />
                   </Field>
-                  <Field label="Carpet area (sqft)" id="sqft" error={errors["sqft"]}>
+                  <Field label="Carpet area (sqft)" id="sqft" required error={errors["sqft"]}>
                     <Input id="sqft" type="number" min={100} value={draft.sqft} onChange={num("sqft")} />
                   </Field>
                   <Field label="Metro (km)" id="metro" error={errors["metro_km"]}>
@@ -493,26 +510,51 @@ function ListYourFlat() {
                   </Field>
                 </div>
 
-                <PillGroup label="Parking" options={PARKING} value={draft.parking} onChange={(v) => set({ parking: v })} />
-                <PillGroup label="Facing" options={FACING} value={draft.facing} onChange={(v) => set({ facing: v })} />
-
-
-                <PillGroup
-                  label="Furnishing"
-                  options={FURNISHING}
-                  value={draft.furnishing}
-                  onChange={(v) => set({ furnishing: v })}
-                />
-                <PillGroup label="Preferred tenant" options={TENANTS} value={draft.tenant} onChange={(v) => set({ tenant: v })} />
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <PillGroup
+                    label="Parking"
+                    required
+                    options={PARKING}
+                    value={draft.parking}
+                    onChange={(v) => set({ parking: v })}
+                    error={errors["parking"]}
+                  />
+                  <PillGroup
+                    label="Facing"
+                    required
+                    options={FACING}
+                    value={draft.facing}
+                    onChange={(v) => set({ facing: v })}
+                    error={errors["facing"]}
+                  />
+                  <PillGroup
+                    label="Furnishing"
+                    required
+                    options={FURNISHING}
+                    value={draft.furnishing}
+                    onChange={(v) => set({ furnishing: v })}
+                    error={errors["furnishing"]}
+                  />
+                  <PillGroup
+                    label="Preferred tenant"
+                    required
+                    options={TENANTS}
+                    value={draft.tenant}
+                    onChange={(v) => set({ tenant: v })}
+                    error={errors["tenant"]}
+                  />
+                </div>
                 <PillGroup
                   label="Available from"
+                  required
                   options={AVAILABILITY}
                   value={draft.available_from}
                   onChange={(v) => set({ available_from: v })}
+                  error={errors["available_from"]}
                 />
 
                 <div className="space-y-2">
-                  <Label>Amenities</Label>
+                  <FieldLabel>Amenities</FieldLabel>
                   <div className="flex flex-wrap gap-2">
                     {AMENITIES.map((a) => (
                       <Pill
@@ -536,10 +578,10 @@ function ListYourFlat() {
             {step === 2 && (
               <>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                  <Field label="Monthly rent (₹)" id="rent" error={errors["rent"]}>
+                  <Field label="Monthly rent (₹)" id="rent" required error={errors["rent"]}>
                     <Input id="rent" type="number" min={1000} value={draft.rent} onChange={num("rent")} />
                   </Field>
-                  <Field label="Deposit (₹)" id="deposit" error={errors["deposit"]}>
+                  <Field label="Deposit (₹)" id="deposit" required error={errors["deposit"]}>
                     <Input id="deposit" type="number" min={0} value={draft.deposit} onChange={num("deposit")} />
                   </Field>
                   <Field label="Maintenance (₹/mo)" id="maintenance" error={errors["maintenance"]}>
@@ -671,7 +713,12 @@ function ListYourFlat() {
 
             {step === 4 && (
               <>
-                <Field label="Contact number tenants will call" id="phone" error={errors["contact_phone"]}>
+                <Field
+                  label="Contact number tenants will call"
+                  id="phone"
+                  required
+                  error={errors["contact_phone"]}
+                >
                   <Input
                     id="phone"
                     inputMode="tel"
