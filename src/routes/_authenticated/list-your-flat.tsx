@@ -418,7 +418,7 @@ function ListYourFlat() {
               </p>
             </header>
 
-            {errorList.length > 0 && (
+            {showAllErrors && errorList.length > 0 && (
               <div
                 role="alert"
                 className="rounded-2xl border border-destructive/40 bg-destructive/10 px-3.5 py-3 text-xs text-destructive"
