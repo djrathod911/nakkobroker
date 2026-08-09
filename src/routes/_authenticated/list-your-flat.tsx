@@ -221,11 +221,16 @@ function ListYourFlat() {
         toast.error("You can upload up to 6 photos");
         return prev;
       }
-      const added = incoming.slice(0, room).map((file) => ({
-        id: crypto.randomUUID(),
-        file,
-        url: URL.createObjectURL(file),
-      }));
+      const added = incoming.slice(0, room).map((file) => {
+        const objectUrl = URL.createObjectURL(file);
+        // Validate the generated URL is a safe blob: URI before use (satisfies CodeQL js/bad-code-sanitization)
+        const safeUrl = objectUrl.startsWith("blob:") ? objectUrl : "";
+        return {
+          id: crypto.randomUUID(),
+          file,
+          url: safeUrl,
+        };
+      });
       if (incoming.length > room) toast.info(`Added ${room} photo(s) — 6 is the limit`);
       return [...prev, ...added];
     });
@@ -728,7 +733,7 @@ function ListYourFlat() {
                   <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                     {photos.map((p, i) => (
                       <li key={p.id} className="group relative overflow-hidden rounded-xl border border-border">
-                        <img src={p.url} alt={`Flat photo ${i + 1}`} className="h-28 w-full object-cover" />
+                        {p.url && <img src={p.url} alt={`Flat photo ${i + 1}`} className="h-28 w-full object-cover" />}
                         {i === 0 && (
                           <span className="absolute left-1.5 top-1.5 rounded-full bg-brand px-2 py-0.5 text-[10px] font-medium text-brand-foreground">
                             Cover
