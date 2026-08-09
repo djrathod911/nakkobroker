@@ -84,7 +84,8 @@ function ListYourFlat() {
   const [step, setStep] = useState(0);
   const [draft, setDraft] = useState<FlatDraft>(emptyDraft);
   const [photos, setPhotos] = useState<Photo[]>([]);
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const [showAllErrors, setShowAllErrors] = useState(false);
   const [busy, setBusy] = useState(false);
   const [uploaded, setUploaded] = useState({ done: 0, total: 0 });
   const [publishedId, setPublishedId] = useState<string | null>(null);
@@ -129,6 +130,11 @@ function ListYourFlat() {
 
   const set = useCallback((patch: Partial<FlatDraft>) => {
     setDirty(true);
+    setTouched((t) => {
+      const next = { ...t };
+      for (const k of Object.keys(patch)) next[k] = true;
+      return next;
+    });
     setDraft((d) => ({ ...d, ...patch }));
   }, []);
 
@@ -140,6 +146,30 @@ function ListYourFlat() {
     return !!n && verifiedPhones.includes(n);
   }, [draft.contact_phone, verifiedPhones]);
 
+  // Validate continuously against a slightly debounced draft so messages appear
+  // as you type without flashing on every keystroke.
+  const liveDraft = useDebounced(draft, 350);
+
+  const allErrors = useMemo(() => {
+    const schema = stepSchemas[step];
+    if (!schema) return {} as Record<string, string>;
+    const parsed = schema.safeParse(liveDraft);
+    if (parsed.success) return {} as Record<string, string>;
+    const next: Record<string, string> = {};
+    for (const issue of parsed.error.issues) {
+      const key = String(issue.path[0] ?? "form");
+      next[key] ??= issue.message;
+    }
+    return next;
+  }, [liveDraft, step]);
+
+  const errors = useMemo(() => {
+    if (showAllErrors) return allErrors;
+    const visible: Record<string, string> = {};
+    for (const [k, v] of Object.entries(allErrors)) if (touched[k]) visible[k] = v;
+    return visible;
+  }, [allErrors, touched, showAllErrors]);
+
   const errorList = useMemo(() => Object.values(errors).filter(Boolean), [errors]);
 
   const progress = useMemo(() => completeness(draft, photos.length), [draft, photos.length]);
@@ -150,7 +180,7 @@ function ListYourFlat() {
     if (!schema) return true;
     const parsed = schema.safeParse(draft);
     if (parsed.success) {
-      setErrors({});
+      if (index === step) setShowAllErrors(false);
       return true;
     }
     const next: Record<string, string> = {};
@@ -158,7 +188,7 @@ function ListYourFlat() {
       const key = String(issue.path[0] ?? "form");
       next[key] ??= issue.message;
     }
-    setErrors(next);
+    setShowAllErrors(true);
     toast.error(Object.values(next)[0] ?? "Check the highlighted fields");
     if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
     return false;
@@ -166,16 +196,18 @@ function ListYourFlat() {
 
   function goNext() {
     if (!validate(step)) return;
+    setShowAllErrors(false);
     setStep((s) => Math.min(s + 1, STEPS.length - 1));
   }
 
   function goTo(index: number) {
     if (index <= step) {
-      setErrors({});
+      setShowAllErrors(false);
       setStep(index);
       return;
     }
     for (let i = step; i < index; i++) if (!validate(i)) return;
+    setShowAllErrors(false);
     setStep(index);
   }
 
@@ -386,7 +418,7 @@ function ListYourFlat() {
               </p>
             </header>
 
-            {errorList.length > 0 && (
+            {showAllErrors && errorList.length > 0 && (
               <div
                 role="alert"
                 className="rounded-2xl border border-destructive/40 bg-destructive/10 px-3.5 py-3 text-xs text-destructive"
@@ -967,3 +999,12 @@ function Pill({ label, active, onClick }: { label: string; active: boolean; onCl
   );
 }
 
+
+function useDebounced<T>(value: T, delay: number): T {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const t = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(t);
+  }, [value, delay]);
+  return debounced;
+}
