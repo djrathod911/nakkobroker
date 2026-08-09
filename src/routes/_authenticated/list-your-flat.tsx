@@ -4,6 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import {
+  AlertCircle,
   ArrowLeft,
   ArrowRight,
   Check,
@@ -798,10 +799,10 @@ function FieldLabel({
   required,
   className,
 }: {
-  htmlFor?: string;
+  htmlFor?: string | undefined;
   children: React.ReactNode;
-  required?: boolean;
-  className?: string;
+  required?: boolean | undefined;
+  className?: string | undefined;
 }) {
   return (
     <Label htmlFor={htmlFor} className={cn("text-xs text-muted-foreground", className)}>
@@ -822,8 +823,8 @@ function Field({
   label: string;
   id: string;
   error?: string | undefined;
-  required?: boolean;
-  hint?: string;
+  required?: boolean | undefined;
+  hint?: string | undefined;
   children: React.ReactNode;
 }) {
   return (
@@ -858,9 +859,9 @@ function PillGroup({
   options: string[];
   value: string;
   onChange: (v: string) => void;
-  required?: boolean;
+  required?: boolean | undefined;
   error?: string | undefined;
-  hint?: string;
+  hint?: string | undefined;
 }) {
   return (
     <div className="space-y-2">
