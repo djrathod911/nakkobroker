@@ -770,28 +770,76 @@ function Summary({ label, value }: { label: string; value: string }) {
   );
 }
 
+/** Red asterisk used to flag every mandatory field. */
+function Req() {
+  return (
+    <span className="ml-0.5 font-semibold text-destructive" aria-hidden>
+      *
+    </span>
+  );
+}
+
+function OptionalTag() {
+  return <span className="ml-1.5 text-[10px] font-normal text-muted-foreground">optional</span>;
+}
+
 function FieldError({ message }: { message?: string | undefined }) {
   if (!message) return null;
-  return <p className="text-[11px] text-destructive">{message}</p>;
+  return (
+    <p role="alert" className="flex items-center gap-1 text-[11px] font-medium text-destructive">
+      <AlertCircle className="size-3 shrink-0" /> {message}
+    </p>
+  );
+}
+
+function FieldLabel({
+  htmlFor,
+  children,
+  required,
+  className,
+}: {
+  htmlFor?: string;
+  children: React.ReactNode;
+  required?: boolean;
+  className?: string;
+}) {
+  return (
+    <Label htmlFor={htmlFor} className={cn("text-xs text-muted-foreground", className)}>
+      <span className="text-foreground">{children}</span>
+      {required ? <Req /> : <OptionalTag />}
+    </Label>
+  );
 }
 
 function Field({
   label,
   id,
   error,
+  required,
+  hint,
   children,
 }: {
   label: string;
   id: string;
   error?: string | undefined;
+  required?: boolean;
+  hint?: string;
   children: React.ReactNode;
 }) {
   return (
-    <div className="space-y-1.5">
-      <Label htmlFor={id} className="text-xs text-muted-foreground">
+    <div
+      data-invalid={error ? "true" : undefined}
+      className={cn(
+        "space-y-1.5",
+        error &&
+          "[&_input]:border-destructive [&_input]:ring-1 [&_input]:ring-destructive/40 [&_textarea]:border-destructive",
+      )}
+    >
+      <FieldLabel htmlFor={id} required={required}>
         {label}
-      </Label>
+      </FieldLabel>
       {children}
+      {hint && !error && <p className="text-[11px] text-muted-foreground">{hint}</p>}
       <FieldError message={error} />
     </div>
   );
@@ -802,20 +850,28 @@ function PillGroup({
   options,
   value,
   onChange,
+  required,
+  error,
+  hint,
 }: {
   label: string;
   options: string[];
   value: string;
   onChange: (v: string) => void;
+  required?: boolean;
+  error?: string | undefined;
+  hint?: string;
 }) {
   return (
     <div className="space-y-2">
-      <Label>{label}</Label>
+      <FieldLabel required={required}>{label}</FieldLabel>
       <div className="flex flex-wrap gap-2">
         {options.map((o) => (
           <Pill key={o} label={o} active={value === o} onClick={() => onChange(o)} />
         ))}
       </div>
+      {hint && !error && <p className="text-[11px] text-muted-foreground">{hint}</p>}
+      <FieldError message={error} />
     </div>
   );
 }
@@ -830,10 +886,11 @@ function Pill({ label, active, onClick }: { label: string; active: boolean; onCl
         "rounded-full border px-3 py-1.5 text-xs font-medium transition-all duration-200",
         active
           ? "border-transparent bg-brand text-brand-foreground glow-ring"
-          : "border-border bg-secondary/60 text-muted-foreground hover:text-foreground",
+          : "border-border bg-secondary/60 text-muted-foreground hover:border-brand/50 hover:text-foreground",
       )}
     >
       {label}
     </button>
   );
 }
+
