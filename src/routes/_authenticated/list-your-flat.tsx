@@ -4,6 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import {
+  AlertCircle,
   ArrowLeft,
   ArrowRight,
   Check,
@@ -83,7 +84,8 @@ function ListYourFlat() {
   const [step, setStep] = useState(0);
   const [draft, setDraft] = useState<FlatDraft>(emptyDraft);
   const [photos, setPhotos] = useState<Photo[]>([]);
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const [showAllErrors, setShowAllErrors] = useState(false);
   const [busy, setBusy] = useState(false);
   const [uploaded, setUploaded] = useState({ done: 0, total: 0 });
   const [publishedId, setPublishedId] = useState<string | null>(null);
@@ -128,6 +130,11 @@ function ListYourFlat() {
 
   const set = useCallback((patch: Partial<FlatDraft>) => {
     setDirty(true);
+    setTouched((t) => {
+      const next = { ...t };
+      for (const k of Object.keys(patch)) next[k] = true;
+      return next;
+    });
     setDraft((d) => ({ ...d, ...patch }));
   }, []);
 
@@ -139,6 +146,32 @@ function ListYourFlat() {
     return !!n && verifiedPhones.includes(n);
   }, [draft.contact_phone, verifiedPhones]);
 
+  // Validate continuously against a slightly debounced draft so messages appear
+  // as you type without flashing on every keystroke.
+  const liveDraft = useDebounced(draft, 350);
+
+  const allErrors = useMemo(() => {
+    const schema = stepSchemas[step];
+    if (!schema) return {} as Record<string, string>;
+    const parsed = schema.safeParse(liveDraft);
+    if (parsed.success) return {} as Record<string, string>;
+    const next: Record<string, string> = {};
+    for (const issue of parsed.error.issues) {
+      const key = String(issue.path[0] ?? "form");
+      next[key] ??= issue.message;
+    }
+    return next;
+  }, [liveDraft, step]);
+
+  const errors = useMemo(() => {
+    if (showAllErrors) return allErrors;
+    const visible: Record<string, string> = {};
+    for (const [k, v] of Object.entries(allErrors)) if (touched[k]) visible[k] = v;
+    return visible;
+  }, [allErrors, touched, showAllErrors]);
+
+  const errorList = useMemo(() => Object.values(errors).filter(Boolean), [errors]);
+
   const progress = useMemo(() => completeness(draft, photos.length), [draft, photos.length]);
   const hint = useMemo(() => priceHint(draft), [draft]);
 
@@ -147,7 +180,7 @@ function ListYourFlat() {
     if (!schema) return true;
     const parsed = schema.safeParse(draft);
     if (parsed.success) {
-      setErrors({});
+      if (index === step) setShowAllErrors(false);
       return true;
     }
     const next: Record<string, string> = {};
@@ -155,23 +188,26 @@ function ListYourFlat() {
       const key = String(issue.path[0] ?? "form");
       next[key] ??= issue.message;
     }
-    setErrors(next);
+    setShowAllErrors(true);
     toast.error(Object.values(next)[0] ?? "Check the highlighted fields");
+    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
     return false;
   }
 
   function goNext() {
     if (!validate(step)) return;
+    setShowAllErrors(false);
     setStep((s) => Math.min(s + 1, STEPS.length - 1));
   }
 
   function goTo(index: number) {
     if (index <= step) {
-      setErrors({});
+      setShowAllErrors(false);
       setStep(index);
       return;
     }
     for (let i = step; i < index; i++) if (!validate(i)) return;
+    setShowAllErrors(false);
     setStep(index);
   }
 
@@ -372,30 +408,54 @@ function ListYourFlat() {
             transition={{ duration: 0.22, ease: "easeOut" }}
             className="glass mt-5 space-y-6 rounded-3xl p-5"
           >
-            <header>
-              <h2 className="text-base font-semibold tracking-tight">{current.label}</h2>
-              <p className="text-xs text-muted-foreground">{current.hint}</p>
+            <header className="flex flex-wrap items-start justify-between gap-2">
+              <div>
+                <h2 className="text-base font-semibold tracking-tight">{current.label}</h2>
+                <p className="text-xs text-muted-foreground">{current.hint}</p>
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                <span className="font-semibold text-destructive">*</span> Required field
+              </p>
             </header>
+
+            {showAllErrors && errorList.length > 0 && (
+              <div
+                role="alert"
+                className="rounded-2xl border border-destructive/40 bg-destructive/10 px-3.5 py-3 text-xs text-destructive"
+              >
+                <p className="flex items-center gap-1.5 font-semibold">
+                  <AlertCircle className="size-3.5" />
+                  {errorList.length === 1 ? "1 field needs your attention" : `${errorList.length} fields need your attention`}
+                </p>
+                <ul className="mt-1.5 list-disc space-y-0.5 pl-4">
+                  {errorList.map((m) => (
+                    <li key={m}>{m}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
             {step === 0 && (
               <>
-                <PillGroup label="City" options={CITIES} value={draft.city} onChange={(v) => set({ city: v })} />
+                <PillGroup
+                  label="City"
+                  required
+                  options={CITIES}
+                  value={draft.city}
+                  onChange={(v) => set({ city: v })}
+                  error={errors["city"]}
+                />
+                <PillGroup
+                  label="Home type"
+                  required
+                  options={[...HOUSE_TYPES]}
+                  value={draft.house_type}
+                  onChange={(v) => set({ house_type: v })}
+                  hint="One mobile number can keep one flat and one villa live per city — that keeps brokers off NakkoBroker."
+                  error={errors["house_type"]}
+                />
                 <div className="space-y-2">
-                  <PillGroup
-                    label="Home type"
-                    options={[...HOUSE_TYPES]}
-                    value={draft.house_type}
-                    onChange={(v) => set({ house_type: v })}
-                  />
-                  <p className="text-[11px] text-muted-foreground">
-                    One mobile number can keep one flat and one villa live per city — that keeps brokers off
-                    NakkoBroker.
-                  </p>
-                  <FieldError message={errors["house_type"]} />
-                </div>
-                <div className="space-y-2">
-
-                  <Label>Area</Label>
+                  <FieldLabel required>Area</FieldLabel>
                   <div className="flex flex-wrap gap-2">
                     {Object.keys(AREAS).map((a) => (
                       <Pill
@@ -420,8 +480,15 @@ function ListYourFlat() {
 
             {step === 1 && (
               <>
-                <div className="space-y-1.5">
-                  <Label htmlFor="title">Listing title</Label>
+                <div
+                  className={cn(
+                    "space-y-1.5",
+                    errors["title"] && "[&_textarea]:border-destructive [&_textarea]:ring-1 [&_textarea]:ring-destructive/40",
+                  )}
+                >
+                  <FieldLabel htmlFor="title" required>
+                    Listing title
+                  </FieldLabel>
                   <Textarea
                     id="title"
                     rows={2}
@@ -436,8 +503,16 @@ function ListYourFlat() {
                   </div>
                 </div>
 
-                <div className="space-y-1.5">
-                  <Label htmlFor="description">About this home</Label>
+                <div
+                  className={cn(
+                    "space-y-1.5",
+                    errors["description"] &&
+                      "[&_textarea]:border-destructive [&_textarea]:ring-1 [&_textarea]:ring-destructive/40",
+                  )}
+                >
+                  <FieldLabel htmlFor="description" required>
+                    About this home
+                  </FieldLabel>
                   <Textarea
                     id="description"
                     rows={4}
@@ -453,16 +528,16 @@ function ListYourFlat() {
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-                  <Field label="BHK" id="bhk" error={errors["bhk"]}>
+                  <Field label="BHK" id="bhk" required error={errors["bhk"]}>
                     <Input id="bhk" type="number" min={1} max={6} value={draft.bhk} onChange={num("bhk")} />
                   </Field>
-                  <Field label="Bathrooms" id="bathrooms" error={errors["bathrooms"]}>
+                  <Field label="Bathrooms" id="bathrooms" required error={errors["bathrooms"]}>
                     <Input id="bathrooms" type="number" min={1} max={10} value={draft.bathrooms} onChange={num("bathrooms")} />
                   </Field>
                   <Field label="Balconies" id="balconies" error={errors["balconies"]}>
                     <Input id="balconies" type="number" min={0} max={10} value={draft.balconies} onChange={num("balconies")} />
                   </Field>
-                  <Field label="Floor" id="floor" error={errors["floor"]}>
+                  <Field label="Floor" id="floor" required error={errors["floor"]}>
                     <Input id="floor" type="number" min={0} value={draft.floor} onChange={num("floor")} />
                   </Field>
                   <Field label="Total floors" id="total_floors" error={errors["total_floors"]}>
@@ -474,7 +549,7 @@ function ListYourFlat() {
                       onChange={num("total_floors")}
                     />
                   </Field>
-                  <Field label="Carpet area (sqft)" id="sqft" error={errors["sqft"]}>
+                  <Field label="Carpet area (sqft)" id="sqft" required error={errors["sqft"]}>
                     <Input id="sqft" type="number" min={100} value={draft.sqft} onChange={num("sqft")} />
                   </Field>
                   <Field label="Metro (km)" id="metro" error={errors["metro_km"]}>
@@ -492,26 +567,51 @@ function ListYourFlat() {
                   </Field>
                 </div>
 
-                <PillGroup label="Parking" options={PARKING} value={draft.parking} onChange={(v) => set({ parking: v })} />
-                <PillGroup label="Facing" options={FACING} value={draft.facing} onChange={(v) => set({ facing: v })} />
-
-
-                <PillGroup
-                  label="Furnishing"
-                  options={FURNISHING}
-                  value={draft.furnishing}
-                  onChange={(v) => set({ furnishing: v })}
-                />
-                <PillGroup label="Preferred tenant" options={TENANTS} value={draft.tenant} onChange={(v) => set({ tenant: v })} />
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <PillGroup
+                    label="Parking"
+                    required
+                    options={PARKING}
+                    value={draft.parking}
+                    onChange={(v) => set({ parking: v })}
+                    error={errors["parking"]}
+                  />
+                  <PillGroup
+                    label="Facing"
+                    required
+                    options={FACING}
+                    value={draft.facing}
+                    onChange={(v) => set({ facing: v })}
+                    error={errors["facing"]}
+                  />
+                  <PillGroup
+                    label="Furnishing"
+                    required
+                    options={FURNISHING}
+                    value={draft.furnishing}
+                    onChange={(v) => set({ furnishing: v })}
+                    error={errors["furnishing"]}
+                  />
+                  <PillGroup
+                    label="Preferred tenant"
+                    required
+                    options={TENANTS}
+                    value={draft.tenant}
+                    onChange={(v) => set({ tenant: v })}
+                    error={errors["tenant"]}
+                  />
+                </div>
                 <PillGroup
                   label="Available from"
+                  required
                   options={AVAILABILITY}
                   value={draft.available_from}
                   onChange={(v) => set({ available_from: v })}
+                  error={errors["available_from"]}
                 />
 
                 <div className="space-y-2">
-                  <Label>Amenities</Label>
+                  <FieldLabel>Amenities</FieldLabel>
                   <div className="flex flex-wrap gap-2">
                     {AMENITIES.map((a) => (
                       <Pill
@@ -535,10 +635,10 @@ function ListYourFlat() {
             {step === 2 && (
               <>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                  <Field label="Monthly rent (₹)" id="rent" error={errors["rent"]}>
+                  <Field label="Monthly rent (₹)" id="rent" required error={errors["rent"]}>
                     <Input id="rent" type="number" min={1000} value={draft.rent} onChange={num("rent")} />
                   </Field>
-                  <Field label="Deposit (₹)" id="deposit" error={errors["deposit"]}>
+                  <Field label="Deposit (₹)" id="deposit" required error={errors["deposit"]}>
                     <Input id="deposit" type="number" min={0} value={draft.deposit} onChange={num("deposit")} />
                   </Field>
                   <Field label="Maintenance (₹/mo)" id="maintenance" error={errors["maintenance"]}>
@@ -670,7 +770,12 @@ function ListYourFlat() {
 
             {step === 4 && (
               <>
-                <Field label="Contact number tenants will call" id="phone" error={errors["contact_phone"]}>
+                <Field
+                  label="Contact number tenants will call"
+                  id="phone"
+                  required
+                  error={errors["contact_phone"]}
+                >
                   <Input
                     id="phone"
                     inputMode="tel"
@@ -770,28 +875,76 @@ function Summary({ label, value }: { label: string; value: string }) {
   );
 }
 
+/** Red asterisk used to flag every mandatory field. */
+function Req() {
+  return (
+    <span className="ml-0.5 font-semibold text-destructive" aria-hidden>
+      *
+    </span>
+  );
+}
+
+function OptionalTag() {
+  return <span className="ml-1.5 text-[10px] font-normal text-muted-foreground">optional</span>;
+}
+
 function FieldError({ message }: { message?: string | undefined }) {
   if (!message) return null;
-  return <p className="text-[11px] text-destructive">{message}</p>;
+  return (
+    <p role="alert" className="flex items-center gap-1 text-[11px] font-medium text-destructive">
+      <AlertCircle className="size-3 shrink-0" /> {message}
+    </p>
+  );
+}
+
+function FieldLabel({
+  htmlFor,
+  children,
+  required,
+  className,
+}: {
+  htmlFor?: string | undefined;
+  children: React.ReactNode;
+  required?: boolean | undefined;
+  className?: string | undefined;
+}) {
+  return (
+    <Label htmlFor={htmlFor} className={cn("text-xs text-muted-foreground", className)}>
+      <span className="text-foreground">{children}</span>
+      {required ? <Req /> : <OptionalTag />}
+    </Label>
+  );
 }
 
 function Field({
   label,
   id,
   error,
+  required,
+  hint,
   children,
 }: {
   label: string;
   id: string;
   error?: string | undefined;
+  required?: boolean | undefined;
+  hint?: string | undefined;
   children: React.ReactNode;
 }) {
   return (
-    <div className="space-y-1.5">
-      <Label htmlFor={id} className="text-xs text-muted-foreground">
+    <div
+      data-invalid={error ? "true" : undefined}
+      className={cn(
+        "space-y-1.5",
+        error &&
+          "[&_input]:border-destructive [&_input]:ring-1 [&_input]:ring-destructive/40 [&_textarea]:border-destructive",
+      )}
+    >
+      <FieldLabel htmlFor={id} required={required}>
         {label}
-      </Label>
+      </FieldLabel>
       {children}
+      {hint && !error && <p className="text-[11px] text-muted-foreground">{hint}</p>}
       <FieldError message={error} />
     </div>
   );
@@ -802,20 +955,28 @@ function PillGroup({
   options,
   value,
   onChange,
+  required,
+  error,
+  hint,
 }: {
   label: string;
   options: string[];
   value: string;
   onChange: (v: string) => void;
+  required?: boolean | undefined;
+  error?: string | undefined;
+  hint?: string | undefined;
 }) {
   return (
     <div className="space-y-2">
-      <Label>{label}</Label>
+      <FieldLabel required={required}>{label}</FieldLabel>
       <div className="flex flex-wrap gap-2">
         {options.map((o) => (
           <Pill key={o} label={o} active={value === o} onClick={() => onChange(o)} />
         ))}
       </div>
+      {hint && !error && <p className="text-[11px] text-muted-foreground">{hint}</p>}
+      <FieldError message={error} />
     </div>
   );
 }
@@ -830,10 +991,20 @@ function Pill({ label, active, onClick }: { label: string; active: boolean; onCl
         "rounded-full border px-3 py-1.5 text-xs font-medium transition-all duration-200",
         active
           ? "border-transparent bg-brand text-brand-foreground glow-ring"
-          : "border-border bg-secondary/60 text-muted-foreground hover:text-foreground",
+          : "border-border bg-secondary/60 text-muted-foreground hover:border-brand/50 hover:text-foreground",
       )}
     >
       {label}
     </button>
   );
+}
+
+
+function useDebounced<T>(value: T, delay: number): T {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const t = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(t);
+  }, [value, delay]);
+  return debounced;
 }
