@@ -5,17 +5,22 @@ import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import {
   AlertCircle,
+  AlertTriangle,
   ArrowLeft,
   ArrowRight,
   Check,
   CheckCircle2,
+  Circle,
   ImagePlus,
+  Info,
   Loader2,
   MapPin,
   PartyPopper,
   Star,
   Trash2,
   TriangleAlert,
+
+
 } from "lucide-react";
 import { createListing, fetchVerifiedPhones } from "@/lib/listings.api";
 import {
@@ -172,7 +177,41 @@ function ListYourFlat() {
 
   const errorList = useMemo(() => Object.values(errors).filter(Boolean), [errors]);
 
+  // Per-step completion status so users see what's already valid before hitting Continue.
+  const stepStatuses = useMemo(() => {
+    return STEPS.map((s, i) => {
+      if (s.key === "photos") {
+        const hasPhotos = photos.length > 0;
+        return {
+          complete: hasPhotos,
+          touched: true,
+          errors: hasPhotos ? 0 : 1,
+          optional: true,
+          label: s.label,
+        };
+      }
+      const schema = stepSchemas[i];
+      if (!schema) return { complete: true, touched: true, errors: 0, optional: false, label: s.label };
+      const parsed = schema.safeParse(liveDraft);
+      const stepFields = new Set(
+        parsed.success
+          ? []
+          : parsed.error.issues.map((issue) => String(issue.path[0] ?? "form")),
+      );
+      const anyTouched = Array.from(stepFields).some((k) => touched[k]);
+      return {
+        complete: parsed.success,
+        touched: anyTouched,
+        errors: parsed.success ? 0 : stepFields.size,
+        optional: false,
+        label: s.label,
+      };
+    });
+  }, [liveDraft, touched, photos.length]);
+
   const progress = useMemo(() => completeness(draft, photos.length), [draft, photos.length]);
+
+
   const hint = useMemo(() => priceHint(draft), [draft]);
 
   function validate(index: number) {
@@ -377,34 +416,150 @@ function ListYourFlat() {
           </div>
         </div>
 
-        {/* Stepper */}
-        <ol className="mt-6 flex items-center gap-1.5 overflow-x-auto pb-1">
-          {STEPS.map((s, i) => (
-            <li key={s.key} className="flex min-w-fit items-center gap-1.5">
-              <button
-                type="button"
-                onClick={() => goTo(i)}
-                aria-current={i === step ? "step" : undefined}
-                className={cn(
-                  "flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition-all",
-                  i === step
-                    ? "border-transparent bg-brand text-brand-foreground glow-ring"
-                    : i < step
-                      ? "border-border bg-secondary/60 text-foreground"
-                      : "border-border/60 bg-transparent text-muted-foreground hover:text-foreground",
-                )}
-              >
-                <span className="grid size-4 place-items-center rounded-full bg-background/25 text-[10px]">
-                  {i < step ? <Check className="size-3" /> : i + 1}
+        {/* Stepper with per-step completion status */}
+        <div className="mt-6 space-y-3">
+          <ol className="flex items-center gap-2 overflow-x-auto pb-1">
+            {STEPS.map((s, i) => {
+              const status = stepStatuses[i]!;
+              const isCurrent = i === step;
+              const isPast = i < step;
+              const isFuture = i > step;
+              const clickable = isPast || isCurrent || status.complete;
+
+              let statusIcon: React.ReactNode;
+              let statusClass = "";
+              if (status.complete || (isPast && !status.errors)) {
+                statusIcon = <Check className="size-3.5" />;
+                statusClass = "border-emerald-500/60 bg-emerald-500/15 text-emerald-400";
+              } else if (status.optional && !status.complete) {
+                statusIcon = <Info className="size-3.5" />;
+                statusClass = "border-blue-500/40 bg-blue-500/10 text-blue-400";
+              } else if (status.errors > 0 && (isCurrent || isPast || status.touched)) {
+                statusIcon = <AlertTriangle className="size-3.5" />;
+                statusClass = "border-amber-500/60 bg-amber-500/15 text-amber-400";
+              } else if (isCurrent) {
+                statusIcon = <span className="text-[10px]">{i + 1}</span>;
+                statusClass = "border-transparent bg-brand text-brand-foreground glow-ring";
+              } else {
+                statusIcon = <span className="text-[10px]">{i + 1}</span>;
+                statusClass = "border-border/70 bg-secondary/40 text-muted-foreground";
+              }
+
+
+              return (
+                <li key={s.key} className="flex min-w-fit items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => clickable && goTo(i)}
+                    disabled={!clickable}
+                    aria-current={isCurrent ? "step" : undefined}
+                    aria-label={`${s.label} ${status.complete ? "complete" : status.optional ? "optional" : status.errors > 0 ? "has errors" : isCurrent ? "current" : "not started"}`}
+                    className={cn(
+                      "flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition-all",
+                      isCurrent ? "bg-secondary/80" : "hover:bg-secondary/50",
+                      !clickable && "opacity-60 cursor-not-allowed",
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "grid size-5 place-items-center rounded-full border transition-colors",
+                        statusClass,
+                      )}
+                    >
+                      {statusIcon}
+                    </span>
+                    <span className={cn(isCurrent && "text-foreground")}>{s.label}</span>
+                    {status.errors > 0 && !status.optional && (isCurrent || isPast || status.touched) && (
+                      <span className="rounded-full bg-destructive/15 px-1.5 py-0.5 text-[10px] font-semibold text-destructive">
+                        {status.errors}
+                      </span>
+                    )}
+
+                  </button>
+                  {i < STEPS.length - 1 && (
+                    <span
+                      className={cn(
+                        "h-px w-4 transition-colors",
+                        (stepStatuses[i]!.complete || i < step) && stepStatuses[i + 1]!.complete
+                          ? "bg-emerald-500/40"
+                          : "bg-border",
+                      )}
+                      aria-hidden
+                    />
+                  )}
+                </li>
+              );
+            })}
+          </ol>
+
+          {/* Step status summary */}
+          <div className="rounded-2xl border border-border/60 bg-secondary/30 px-3.5 py-2.5">
+            <div className="flex flex-wrap items-center gap-2 text-xs">
+              {stepStatuses.map((status, i) => {
+                const isCurrent = i === step;
+                return (
+                  <span
+                    key={i}
+                    className={cn(
+                      "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-medium transition-colors",
+                      status.complete
+                        ? "bg-emerald-500/10 text-emerald-400"
+                        : status.optional
+                          ? "bg-blue-500/10 text-blue-400"
+                          : status.errors > 0 && (isCurrent || status.touched)
+                            ? "bg-amber-500/10 text-amber-400"
+                            : "bg-muted text-muted-foreground",
+                      isCurrent && "ring-1 ring-brand/40",
+                    )}
+
+                  >
+                    {status.complete ? (
+                      <CheckCircle2 className="size-3.5" />
+                    ) : status.optional ? (
+                      <Info className="size-3.5" />
+                    ) : status.errors > 0 && (isCurrent || status.touched) ? (
+                      <AlertTriangle className="size-3.5" />
+                    ) : (
+                      <Circle className="size-3.5" />
+                    )}
+                    {status.label}
+                    {status.optional && !status.complete && (
+                      <span className="text-[10px] opacity-80">(recommended)</span>
+                    )}
+                    {status.errors > 0 && !status.optional && (isCurrent || status.touched) && (
+                      <span className="text-[10px] opacity-80">({status.errors} pending)</span>
+                    )}
+
+                  </span>
+                );
+              })}
+            </div>
+            <p className="mt-1.5 text-[11px] text-muted-foreground">
+              {stepStatuses[step]!.complete ? (
+                <span className="inline-flex items-center gap-1 text-emerald-400">
+                  <CheckCircle2 className="size-3.5" /> This step is complete — you can continue.
                 </span>
-                {s.label}
-              </button>
-              {i < STEPS.length - 1 && <span className="h-px w-4 bg-border" aria-hidden />}
-            </li>
-          ))}
-        </ol>
+              ) : stepStatuses[step]!.optional ? (
+                <span className="inline-flex items-center gap-1 text-blue-400">
+                  <Info className="size-3.5" />
+                  This step is optional, but completing it helps tenants trust the listing.
+                </span>
+              ) : stepStatuses[step]!.errors > 0 ? (
+                <span className="inline-flex items-center gap-1 text-amber-400">
+                  <AlertTriangle className="size-3.5" />
+                  {stepStatuses[step]!.errors} field{stepStatuses[step]!.errors > 1 ? "s" : ""} still need attention on this
+                  step.
+                </span>
+              ) : (
+                <span>Fill in the required fields to mark this step complete.</span>
+              )}
+            </p>
+
+          </div>
+        </div>
 
         <AnimatePresence mode="wait">
+
           <motion.section
             key={current.key}
             initial={{ opacity: 0, x: 18 }}
