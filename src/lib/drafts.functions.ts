@@ -1,14 +1,15 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import type { FlatDraft } from "@/lib/list-flat";
 
 const draftInput = z.object({
-  draft: z.record(z.string(), z.unknown()),
+  draft: z.record(z.string(), z.any()),
   step: z.number().int().min(0).max(20),
 });
 
 export interface CloudDraft {
-  draft: Record<string, unknown>;
+  draft: Partial<FlatDraft>;
   step: number;
   savedAt: number;
 }
@@ -25,7 +26,7 @@ export const getCloudDraft = createServerFn({ method: "GET" })
     if (error) throw new Error(error.message);
     if (!data) return null;
     return {
-      draft: (data.draft ?? {}) as Record<string, unknown>,
+      draft: (data.draft ?? {}) as Partial<FlatDraft>,
       step: data.step ?? 0,
       savedAt: new Date(data.updated_at).getTime(),
     };
