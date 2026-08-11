@@ -45,6 +45,7 @@ import {
   stepSchemas,
   type FlatDraft,
 } from "@/lib/list-flat";
+import { getCloudDraft, saveCloudDraft, deleteCloudDraft } from "@/lib/drafts.functions";
 import { PinPicker } from "@/components/list-flat/PinPicker";
 import { OwnerVerification } from "@/components/list-flat/OwnerVerification";
 import { Button } from "@/components/ui/button";
@@ -101,6 +102,7 @@ function ListYourFlat() {
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
   const [restored, setRestored] = useState(false);
+  const [syncError, setSyncError] = useState(false);
   const draftRef = useRef(draft);
   const stepRef = useRef(step);
   const dirtyRef = useRef(dirty);
@@ -422,6 +424,7 @@ function ListYourFlat() {
       );
       await queryClient.invalidateQueries({ queryKey: ["listings"] });
       clearDraft();
+      void deleteCloudDraft().catch(() => undefined);
       setDirty(false);
       setPublishedId(id);
       toast.success("Your flat is live — zero brokerage!");
@@ -505,15 +508,17 @@ function ListYourFlat() {
                 <span
                   className={cn(
                     "size-1.5 rounded-full",
-                    saving ? "bg-amber-400" : savedAt ? "bg-emerald-400" : "bg-muted-foreground/50",
+                    saving ? "bg-amber-400" : syncError ? "bg-destructive" : savedAt ? "bg-emerald-400" : "bg-muted-foreground/50",
                   )}
                   aria-hidden
                 />
                 {saving
                   ? "Saving draft…"
-                  : savedAt
-                    ? `Draft saved ${new Date(savedAt).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}`
-                    : "Autosave on"}
+                  : syncError
+                    ? "Saved on this device only"
+                    : savedAt
+                      ? `Draft synced ${new Date(savedAt).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}`
+                      : "Autosave on — syncs across devices"}
               </span>
               {(savedAt || restored) && (
                 <button
@@ -521,6 +526,7 @@ function ListYourFlat() {
                   className="text-muted-foreground underline-offset-2 hover:text-destructive hover:underline"
                   onClick={() => {
                     clearDraft();
+                    void deleteCloudDraft().catch(() => undefined);
                     setDraft(emptyDraft);
                     setPhotos([]);
                     setTouched({});
