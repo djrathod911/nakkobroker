@@ -115,16 +115,42 @@ function ListYourFlat() {
 
   // Restore an in-progress draft so a refresh never loses the owner's work.
   useEffect(() => {
-    const saved = loadDraft();
+    const saved = loadDraftState();
     if (saved) {
-      setDraft(saved);
-      toast.info("Restored your saved draft");
+      setDraft(saved.draft);
+      setStep(Math.min(Math.max(saved.step, 0), STEPS.length - 1));
+      setSavedAt(saved.savedAt);
+      setRestored(true);
+      toast.info("Restored your saved draft", {
+        description: `Autosaved ${new Date(saved.savedAt).toLocaleString("en-IN")}`,
+      });
     }
   }, []);
 
+  // Debounced autosave: every edit is persisted locally ~700ms after you stop typing.
+  const autosaveDraft = useDebounced(draft, 700);
+  const autosaveStep = useDebounced(step, 700);
   useEffect(() => {
-    if (dirty && !publishedId) saveDraft(draft);
-  }, [draft, dirty, publishedId]);
+    if (!dirty || publishedId) return;
+    setSaving(true);
+    const at = saveDraft(autosaveDraft, autosaveStep);
+    setSaving(false);
+    if (at) setSavedAt(at);
+  }, [autosaveDraft, autosaveStep, dirty, publishedId]);
+
+  // Flush the latest draft if the tab is closed or hidden mid-edit.
+  useEffect(() => {
+    const flush = () => {
+      if (dirtyRef.current && !publishedId) saveDraft(draftRef.current, stepRef.current);
+    };
+    window.addEventListener("pagehide", flush);
+    document.addEventListener("visibilitychange", flush);
+    return () => {
+      window.removeEventListener("pagehide", flush);
+      document.removeEventListener("visibilitychange", flush);
+    };
+  }, [publishedId]);
+
 
   useEffect(() => () => photos.forEach((p) => URL.revokeObjectURL(p.url)), [photos]);
 
