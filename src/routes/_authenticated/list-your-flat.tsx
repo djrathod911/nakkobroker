@@ -449,8 +449,45 @@ function ListYourFlat() {
               <span className="font-medium text-foreground">{progress}%</span>
             </div>
             <Progress value={progress} className="mt-1.5 h-1.5" />
+            <div className="mt-2 flex items-center justify-between gap-2 text-[11px]">
+              <span className="inline-flex items-center gap-1.5 text-muted-foreground" aria-live="polite">
+                <span
+                  className={cn(
+                    "size-1.5 rounded-full",
+                    saving ? "bg-amber-400" : savedAt ? "bg-emerald-400" : "bg-muted-foreground/50",
+                  )}
+                  aria-hidden
+                />
+                {saving
+                  ? "Saving draft…"
+                  : savedAt
+                    ? `Draft saved ${new Date(savedAt).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}`
+                    : "Autosave on"}
+              </span>
+              {(savedAt || restored) && (
+                <button
+                  type="button"
+                  className="text-muted-foreground underline-offset-2 hover:text-destructive hover:underline"
+                  onClick={() => {
+                    clearDraft();
+                    setDraft(emptyDraft);
+                    setPhotos([]);
+                    setTouched({});
+                    setShowAllErrors(false);
+                    setStep(0);
+                    setDirty(false);
+                    setSavedAt(null);
+                    setRestored(false);
+                    toast.success("Draft discarded");
+                  }}
+                >
+                  Discard draft
+                </button>
+              )}
+            </div>
           </div>
         </div>
+
 
         {/* Stepper with per-step completion status */}
         <div className="mt-6 space-y-3">
