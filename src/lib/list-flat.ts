@@ -144,23 +144,47 @@ export const STEPS = [
 
 const DRAFT_KEY = "nakko:list-flat-draft";
 
-export function loadDraft(): FlatDraft | null {
+export interface DraftState {
+  draft: FlatDraft;
+  step: number;
+  savedAt: number;
+}
+
+/** Reads the autosaved draft plus its metadata (step + last saved time). */
+export function loadDraftState(): DraftState | null {
   if (typeof window === "undefined") return null;
   try {
     const raw = window.localStorage.getItem(DRAFT_KEY);
     if (!raw) return null;
-    return { ...emptyDraft, ...(JSON.parse(raw) as Partial<FlatDraft>) };
+    const parsed = JSON.parse(raw) as Partial<DraftState> & Partial<FlatDraft>;
+    // Support the older shape where the draft itself was stored at the root.
+    if (parsed && typeof parsed === "object" && "draft" in parsed && parsed.draft) {
+      return {
+        draft: { ...emptyDraft, ...parsed.draft },
+        step: typeof parsed.step === "number" ? parsed.step : 0,
+        savedAt: typeof parsed.savedAt === "number" ? parsed.savedAt : Date.now(),
+      };
+    }
+    return { draft: { ...emptyDraft, ...(parsed as Partial<FlatDraft>) }, step: 0, savedAt: Date.now() };
   } catch {
     return null;
   }
 }
 
-export function saveDraft(draft: FlatDraft) {
-  if (typeof window === "undefined") return;
+export function loadDraft(): FlatDraft | null {
+  return loadDraftState()?.draft ?? null;
+}
+
+/** Autosaves the draft locally. Returns the timestamp written, or null if blocked. */
+export function saveDraft(draft: FlatDraft, step = 0): number | null {
+  if (typeof window === "undefined") return null;
   try {
-    window.localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+    const savedAt = Date.now();
+    window.localStorage.setItem(DRAFT_KEY, JSON.stringify({ draft, step, savedAt } satisfies DraftState));
+    return savedAt;
   } catch {
     /* storage full or blocked — drafts are best-effort */
+    return null;
   }
 }
 
@@ -172,6 +196,7 @@ export function clearDraft() {
     /* ignore */
   }
 }
+
 
 /** Rough market bands (₹/sqft/month) used to warn about outlier pricing. */
 const AREA_RATE: Record<string, number> = {
