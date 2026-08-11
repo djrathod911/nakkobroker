@@ -38,7 +38,7 @@ import {
   clearDraft,
   completeness,
   emptyDraft,
-  loadDraft,
+  loadDraftState,
   priceHint,
   normalizeIndianPhone,
   saveDraft,
@@ -98,6 +98,16 @@ function ListYourFlat() {
   const dropRef = useRef<HTMLLabelElement>(null);
   const [dragOver, setDragOver] = useState(false);
   const [verifiedPhones, setVerifiedPhones] = useState<string[]>([]);
+  const [savedAt, setSavedAt] = useState<number | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [restored, setRestored] = useState(false);
+  const draftRef = useRef(draft);
+  const stepRef = useRef(step);
+  const dirtyRef = useRef(dirty);
+  draftRef.current = draft;
+  stepRef.current = step;
+  dirtyRef.current = dirty;
+
 
   // Owner verification is optional: we only surface which numbers are already confirmed.
   useEffect(() => {
@@ -115,16 +125,42 @@ function ListYourFlat() {
 
   // Restore an in-progress draft so a refresh never loses the owner's work.
   useEffect(() => {
-    const saved = loadDraft();
+    const saved = loadDraftState();
     if (saved) {
-      setDraft(saved);
-      toast.info("Restored your saved draft");
+      setDraft(saved.draft);
+      setStep(Math.min(Math.max(saved.step, 0), STEPS.length - 1));
+      setSavedAt(saved.savedAt);
+      setRestored(true);
+      toast.info("Restored your saved draft", {
+        description: `Autosaved ${new Date(saved.savedAt).toLocaleString("en-IN")}`,
+      });
     }
   }, []);
 
+  // Debounced autosave: every edit is persisted locally ~700ms after you stop typing.
+  const autosaveDraft = useDebounced(draft, 700);
+  const autosaveStep = useDebounced(step, 700);
   useEffect(() => {
-    if (dirty && !publishedId) saveDraft(draft);
-  }, [draft, dirty, publishedId]);
+    if (!dirty || publishedId) return;
+    setSaving(true);
+    const at = saveDraft(autosaveDraft, autosaveStep);
+    setSaving(false);
+    if (at) setSavedAt(at);
+  }, [autosaveDraft, autosaveStep, dirty, publishedId]);
+
+  // Flush the latest draft if the tab is closed or hidden mid-edit.
+  useEffect(() => {
+    const flush = () => {
+      if (dirtyRef.current && !publishedId) saveDraft(draftRef.current, stepRef.current);
+    };
+    window.addEventListener("pagehide", flush);
+    document.addEventListener("visibilitychange", flush);
+    return () => {
+      window.removeEventListener("pagehide", flush);
+      document.removeEventListener("visibilitychange", flush);
+    };
+  }, [publishedId]);
+
 
   useEffect(() => () => photos.forEach((p) => URL.revokeObjectURL(p.url)), [photos]);
 
@@ -413,8 +449,45 @@ function ListYourFlat() {
               <span className="font-medium text-foreground">{progress}%</span>
             </div>
             <Progress value={progress} className="mt-1.5 h-1.5" />
+            <div className="mt-2 flex items-center justify-between gap-2 text-[11px]">
+              <span className="inline-flex items-center gap-1.5 text-muted-foreground" aria-live="polite">
+                <span
+                  className={cn(
+                    "size-1.5 rounded-full",
+                    saving ? "bg-amber-400" : savedAt ? "bg-emerald-400" : "bg-muted-foreground/50",
+                  )}
+                  aria-hidden
+                />
+                {saving
+                  ? "Saving draft…"
+                  : savedAt
+                    ? `Draft saved ${new Date(savedAt).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}`
+                    : "Autosave on"}
+              </span>
+              {(savedAt || restored) && (
+                <button
+                  type="button"
+                  className="text-muted-foreground underline-offset-2 hover:text-destructive hover:underline"
+                  onClick={() => {
+                    clearDraft();
+                    setDraft(emptyDraft);
+                    setPhotos([]);
+                    setTouched({});
+                    setShowAllErrors(false);
+                    setStep(0);
+                    setDirty(false);
+                    setSavedAt(null);
+                    setRestored(false);
+                    toast.success("Draft discarded");
+                  }}
+                >
+                  Discard draft
+                </button>
+              )}
+            </div>
           </div>
         </div>
+
 
         {/* Stepper with per-step completion status */}
         <div className="mt-6 space-y-3">
