@@ -98,6 +98,16 @@ function ListYourFlat() {
   const dropRef = useRef<HTMLLabelElement>(null);
   const [dragOver, setDragOver] = useState(false);
   const [verifiedPhones, setVerifiedPhones] = useState<string[]>([]);
+  const [savedAt, setSavedAt] = useState<number | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [restored, setRestored] = useState(false);
+  const draftRef = useRef(draft);
+  const stepRef = useRef(step);
+  const dirtyRef = useRef(dirty);
+  draftRef.current = draft;
+  stepRef.current = step;
+  dirtyRef.current = dirty;
+
 
   // Owner verification is optional: we only surface which numbers are already confirmed.
   useEffect(() => {
