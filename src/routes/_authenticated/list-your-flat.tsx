@@ -123,35 +123,85 @@ function ListYourFlat() {
     };
   }, []);
 
-  // Restore an in-progress draft so a refresh never loses the owner's work.
+  // Restore an in-progress draft: local first, then whichever copy (local or
+  // cloud) was saved most recently, so the wizard follows you across devices.
   useEffect(() => {
-    const saved = loadDraftState();
-    if (saved) {
-      setDraft(saved.draft);
-      setStep(Math.min(Math.max(saved.step, 0), STEPS.length - 1));
-      setSavedAt(saved.savedAt);
+    let alive = true;
+    const local = loadDraftState();
+    if (local) {
+      setDraft(local.draft);
+      setStep(Math.min(Math.max(local.step, 0), STEPS.length - 1));
+      setSavedAt(local.savedAt);
       setRestored(true);
-      toast.info("Restored your saved draft", {
-        description: `Autosaved ${new Date(saved.savedAt).toLocaleString("en-IN")}`,
-      });
     }
+    getCloudDraft()
+      .then((cloud) => {
+        if (!alive || !cloud) {
+          if (alive && local) {
+            toast.info("Restored your saved draft", {
+              description: `Autosaved ${new Date(local.savedAt).toLocaleString("en-IN")}`,
+            });
+          }
+          return;
+        }
+        const useCloud = !local || cloud.savedAt > local.savedAt;
+        if (useCloud) {
+          setDraft({ ...emptyDraft, ...cloud.draft });
+          setStep(Math.min(Math.max(cloud.step, 0), STEPS.length - 1));
+          setSavedAt(cloud.savedAt);
+          setRestored(true);
+          saveDraft({ ...emptyDraft, ...cloud.draft } as FlatDraft, cloud.step);
+          toast.info("Restored your draft from the cloud", {
+            description: `Synced ${new Date(cloud.savedAt).toLocaleString("en-IN")}`,
+          });
+        } else if (local) {
+          toast.info("Restored your saved draft", {
+            description: `Autosaved ${new Date(local.savedAt).toLocaleString("en-IN")}`,
+          });
+        }
+      })
+      .catch(() => {
+        if (alive && local) {
+          toast.info("Restored your saved draft", {
+            description: `Autosaved ${new Date(local.savedAt).toLocaleString("en-IN")}`,
+          });
+        }
+      });
+    return () => {
+      alive = false;
+    };
   }, []);
 
-  // Debounced autosave: every edit is persisted locally ~700ms after you stop typing.
+  // Debounced autosave: every edit is persisted locally ~700ms after you stop
+  // typing, then mirrored to the cloud so other devices pick it up.
   const autosaveDraft = useDebounced(draft, 700);
   const autosaveStep = useDebounced(step, 700);
   useEffect(() => {
     if (!dirty || publishedId) return;
+    let alive = true;
     setSaving(true);
     const at = saveDraft(autosaveDraft, autosaveStep);
-    setSaving(false);
     if (at) setSavedAt(at);
+    saveCloudDraft({ data: { draft: autosaveDraft, step: autosaveStep } })
+      .then((res) => {
+        if (!alive) return;
+        setSavedAt(res.savedAt);
+        setSyncError(false);
+      })
+      .catch(() => alive && setSyncError(true))
+      .finally(() => alive && setSaving(false));
+    return () => {
+      alive = false;
+    };
   }, [autosaveDraft, autosaveStep, dirty, publishedId]);
 
   // Flush the latest draft if the tab is closed or hidden mid-edit.
   useEffect(() => {
     const flush = () => {
-      if (dirtyRef.current && !publishedId) saveDraft(draftRef.current, stepRef.current);
+      if (dirtyRef.current && !publishedId) {
+        saveDraft(draftRef.current, stepRef.current);
+        void saveCloudDraft({ data: { draft: draftRef.current, step: stepRef.current } }).catch(() => undefined);
+      }
     };
     window.addEventListener("pagehide", flush);
     document.addEventListener("visibilitychange", flush);
@@ -160,6 +210,7 @@ function ListYourFlat() {
       document.removeEventListener("visibilitychange", flush);
     };
   }, [publishedId]);
+
 
 
   useEffect(() => () => photos.forEach((p) => URL.revokeObjectURL(p.url)), [photos]);
