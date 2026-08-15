@@ -10,8 +10,6 @@ const VerifyInput = z.object({
 
 export interface OtpRequestResult {
   sent: boolean;
-  /** Only present when no SMS provider is configured (demo mode). */
-  demoCode?: string;
   expiresInMinutes: number;
 }
 
@@ -51,9 +49,11 @@ export const requestPhoneOtp = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
 
     const sent = await sendOtpSms(phone, code);
-    return sent
-      ? { sent: true, expiresInMinutes: OTP_TTL_MINUTES }
-      : { sent: false, demoCode: code, expiresInMinutes: OTP_TTL_MINUTES };
+    if (!sent) {
+      console.error("[phone-verify] SMS provider not configured; refusing to disclose OTP");
+      throw new Error("SMS verification is temporarily unavailable. Please try again later.");
+    }
+    return { sent: true, expiresInMinutes: OTP_TTL_MINUTES };
   });
 
 export const verifyPhoneOtp = createServerFn({ method: "POST" })
