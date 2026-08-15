@@ -49,9 +49,12 @@ export const requestLoginOtp = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
 
     const sent = await sendOtpSms(phone, code);
-    return sent
-      ? { sent: true, expiresInMinutes: OTP_TTL_MINUTES }
-      : { sent: false, demoCode: code, expiresInMinutes: OTP_TTL_MINUTES };
+    if (!sent) {
+      console.error("[phone-auth] SMS provider not configured; refusing to disclose OTP");
+      throw new Error("SMS sign-in is temporarily unavailable. Please try again later.");
+    }
+    return { sent: true, expiresInMinutes: OTP_TTL_MINUTES };
+
   });
 
 export const verifyLoginOtp = createServerFn({ method: "POST" })
