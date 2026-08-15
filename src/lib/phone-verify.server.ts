@@ -25,8 +25,8 @@ export function hashesMatch(a: string, b: string): boolean {
 
 /**
  * Sends the code over SMS when a Twilio connection is configured.
- * Returns false when no SMS provider is available, so the caller can
- * fall back to showing the code in-app (demo mode).
+ * Returns false when no SMS provider is available; callers MUST fail the
+ * request in that case and never return the code to the client.
  */
 export async function sendOtpSms(phone: string, code: string): Promise<boolean> {
   const lovableKey = process.env["LOVABLE_API_KEY"];

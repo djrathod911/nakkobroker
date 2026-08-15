@@ -48,7 +48,6 @@ function AuthPage() {
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
-  const [demoCode, setDemoCode] = useState<string | null>(null);
   const [cooldown, setCooldown] = useState(0);
 
   useEffect(() => {
@@ -64,7 +63,6 @@ function AuthPage() {
     try {
       const res = await sendOtp({ data: { phone } });
       setStage("code");
-      setDemoCode(res.demoCode ?? null);
       setCooldown(RESEND_SECONDS);
       toast.success(res.sent ? "Code sent by SMS" : "Verification code generated");
     } catch (err) {
@@ -167,12 +165,6 @@ function AuthPage() {
                 />
               </div>
 
-              {demoCode && (
-                <p className="rounded-xl border border-warning/30 bg-warning/10 p-2.5 text-xs text-muted-foreground">
-                  Demo mode — no SMS provider connected yet. Your code is{" "}
-                  <span className="font-mono font-semibold text-foreground">{demoCode}</span>.
-                </p>
-              )}
 
               <Button
                 type="submit"
