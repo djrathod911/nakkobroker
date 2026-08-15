@@ -40,6 +40,20 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   const router = useRouter();
   useEffect(() => {
     reportLovableError(error, { boundary: "tanstack_root_error_component" });
+
+    // A dev-server restart or dependency re-optimization can leave an open tab
+    // pointing at a route chunk that no longer exists. Reload once so the
+    // browser receives the current module graph instead of showing a blank page.
+    if (
+      error.message.includes("Failed to fetch dynamically imported module") &&
+      sessionStorage.getItem("nakkobroker:route-chunk-reload") !== "pending"
+    ) {
+      sessionStorage.setItem("nakkobroker:route-chunk-reload", "pending");
+      window.location.reload();
+      return;
+    }
+
+    sessionStorage.removeItem("nakkobroker:route-chunk-reload");
   }, [error]);
 
   return (
