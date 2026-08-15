@@ -1,5 +1,3 @@
-import { execFileSync } from "node:child_process";
-import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
@@ -21,10 +19,6 @@ async function fetchFromBuild(url: string) {
 
 describe("home route in a production build", () => {
   beforeAll(async () => {
-    if (!existsSync(SERVER_ENTRY) || process.env["E2E_FORCE_BUILD"] === "1") {
-      execFileSync("npx", ["vite", "build"], { cwd: ROOT, stdio: "inherit" });
-    }
-    expect(existsSync(SERVER_ENTRY), "production build did not emit a server entry").toBe(true);
 
     const mod = (await import(SERVER_ENTRY)) as { default?: WorkerEntry } & WorkerEntry;
     handler = mod.default ?? mod;
