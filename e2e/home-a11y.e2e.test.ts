@@ -1,5 +1,4 @@
-import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { JSDOM } from "jsdom";
@@ -28,9 +27,6 @@ function describeViolations(list: AxeViolation[]) {
 
 describe("home route accessibility", () => {
   beforeAll(async () => {
-    if (!existsSync(SERVER_ENTRY) || process.env["E2E_FORCE_BUILD"] === "1") {
-      execFileSync("npx", ["vite", "build"], { cwd: ROOT, stdio: "inherit" });
-    }
     const mod = (await import(SERVER_ENTRY)) as { default?: WorkerEntry } & WorkerEntry;
     const handler = mod.default ?? mod;
     const response = await handler.fetch(new Request("http://localhost/"), {}, {
