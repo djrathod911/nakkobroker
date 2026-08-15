@@ -23,14 +23,12 @@ export function OwnerVerification({ phone, verified, onVerified }: Props) {
   const [stage, setStage] = useState<"idle" | "code">("idle");
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
-  const [demoCode, setDemoCode] = useState<string | null>(null);
   const [cooldown, setCooldown] = useState(0);
 
   // Changing the number invalidates an in-flight code.
   useEffect(() => {
     setStage("idle");
     setCode("");
-    setDemoCode(null);
     setCooldown(0);
   }, [phone]);
 
@@ -65,7 +63,6 @@ export function OwnerVerification({ phone, verified, onVerified }: Props) {
     try {
       const res = await sendCode({ data: { phone } });
       setStage("code");
-      setDemoCode(res.demoCode ?? null);
       setCooldown(RESEND_SECONDS);
       toast.success(res.sent ? "Code sent by SMS" : "Verification code generated");
     } catch (err) {
@@ -154,11 +151,6 @@ export function OwnerVerification({ phone, verified, onVerified }: Props) {
                   ? `You can request a new code in ${cooldown}s. Max 3 codes per 15 minutes.`
                   : "Didn’t get it? You can request a new code now."}
               </p>
-              {demoCode && (
-                <p className="text-xs text-warning">
-                  SMS delivery isn’t configured yet, so here is your code for testing: <strong>{demoCode}</strong>
-                </p>
-              )}
             </div>
           )}
         </div>
