@@ -3,28 +3,23 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ShieldCheck } from "lucide-react";
-
-type OAuthNamespace = {
-  getAuthorizationDetails: (
-    id: string,
-  ) => Promise<{ data: AuthorizationDetails | null; error: { message: string } | null }>;
-  approveAuthorization: (
-    id: string,
-  ) => Promise<{ data: { redirect_url?: string; redirect_to?: string } | null; error: { message: string } | null }>;
-  denyAuthorization: (
-    id: string,
-  ) => Promise<{ data: { redirect_url?: string; redirect_to?: string } | null; error: { message: string } | null }>;
-};
-
-interface AuthorizationDetails {
-  client?: { name?: string | null } | null;
-  redirect_url?: string;
-  redirect_to?: string;
-}
-
-const oauth = () => (supabase.auth as unknown as { oauth: OAuthNamespace }).oauth;
+import { getOAuthNamespace } from "@/lib/oauth-consent";
 
 export const Route = createFileRoute("/.lovable/oauth/consent")({
+  head: () => ({
+    meta: [
+      { title: "Authorize App — NakkoBroker" },
+      { name: "description", content: "Review and approve app access to your NakkoBroker account." },
+      { property: "og:title", content: "Authorize App — NakkoBroker" },
+      {
+        property: "og:description",
+        content: "Review and approve app access to your NakkoBroker account.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+      { name: "robots", content: "noindex, nofollow" },
+    ],
+  }),
   // Browser-only: the Supabase session lives in localStorage, absent during SSR.
   ssr: false,
   validateSearch: (s: Record<string, unknown>) => ({
@@ -38,8 +33,9 @@ export const Route = createFileRoute("/.lovable/oauth/consent")({
     }
   },
   loader: async ({ location }) => {
-    const authorizationId = new URLSearchParams(location.search).get("authorization_id")!;
-    const { data, error } = await oauth().getAuthorizationDetails(authorizationId);
+    const authorizationId = new URLSearchParams(location.search).get("authorization_id");
+    if (!authorizationId) throw new Error("Missing authorization_id");
+    const { data, error } = await getOAuthNamespace().getAuthorizationDetails(authorizationId);
     if (error) throw new Error(error.message);
     const immediate = data?.redirect_url ?? data?.redirect_to;
     if (immediate && !data?.client) throw redirect({ href: immediate });
@@ -64,8 +60,8 @@ function Consent() {
     setBusy(true);
     setError(null);
     const { data, error: err } = approve
-      ? await oauth().approveAuthorization(authorization_id)
-      : await oauth().denyAuthorization(authorization_id);
+      ? await getOAuthNamespace().approveAuthorization(authorization_id)
+      : await getOAuthNamespace().denyAuthorization(authorization_id);
     if (err) {
       setBusy(false);
       setError(err.message);
