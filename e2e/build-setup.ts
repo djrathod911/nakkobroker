@@ -9,7 +9,11 @@ export const SERVER_ENTRY = path.join(ROOT, "dist/server/index.mjs");
 /** Builds once for the whole e2e run so parallel suites never clobber dist/. */
 export default function setup() {
   if (!existsSync(SERVER_ENTRY) || process.env["E2E_FORCE_BUILD"] === "1") {
-    execFileSync("npx", ["vite", "build"], { cwd: ROOT, stdio: "inherit" });
+    execFileSync("npx", ["vite", "build"], {
+      cwd: ROOT,
+      stdio: "inherit",
+      env: { ...process.env, NODE_ENV: "production", VITEST: undefined },
+    });
   }
   if (!existsSync(SERVER_ENTRY)) {
     throw new Error("production build did not emit a server entry");
