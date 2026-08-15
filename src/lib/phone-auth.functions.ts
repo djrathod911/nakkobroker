@@ -10,10 +10,9 @@ const VerifyInput = z.object({
 
 export interface LoginOtpResult {
   sent: boolean;
-  /** Present only while no SMS provider is connected (demo mode). */
-  demoCode?: string;
   expiresInMinutes: number;
 }
+
 
 export interface LoginSession {
   accessToken: string;
