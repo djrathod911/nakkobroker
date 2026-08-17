@@ -45,7 +45,19 @@ describe("home route in a production build", () => {
     const body = html.slice(html.indexOf("<body"), html.indexOf("</body>"));
     expect(body).toContain("<main");
     expect(body).toContain("NakkoBroker");
-    const textOnly = body.replace(/<script[\s\S]*?<\/script>/g, "").replace(/<[^>]+>/g, " ");
+    // Strip script blocks case-insensitively, then strip all tags using a
+    // DOMParser-safe approach: collapse every "<...>" sequence including those
+    // with ">" inside attribute values by repeatedly removing the innermost
+    // angle-bracket pair until none remain.
+    let stripped = body;
+    // Remove script elements (case-insensitive flag prevents bypass via </Script>)
+    stripped = stripped.replace(/<script\b[^]*?<\/script>/gi, "");
+    // Remove remaining tags: replace the shortest run from "<" to ">" iteratively
+    // to handle ">" inside attribute values correctly.
+    while (/<[^<>]*>/.test(stripped)) {
+      stripped = stripped.replace(/<[^<>]*>/g, " ");
+    }
+    const textOnly = stripped;
     expect(textOnly.replace(/\s+/g, " ").trim().length).toBeGreaterThan(50);
   });
 
