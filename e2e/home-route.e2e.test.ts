@@ -50,8 +50,13 @@ describe("home route in a production build", () => {
     // with ">" inside attribute values by repeatedly removing the innermost
     // angle-bracket pair until none remain.
     let stripped = body;
-    // Remove script elements (case-insensitive flag prevents bypass via </Script>)
-    stripped = stripped.replace(/<script\b[^]*?<\/script>/gi, "");
+    // Remove script elements (case-insensitive flag prevents bypass via </Script>).
+    // Apply repeatedly until stable to avoid incomplete multi-character sanitization.
+    let previous: string;
+    do {
+      previous = stripped;
+      stripped = stripped.replace(/<script\b[^]*?<\/script>/gi, "");
+    } while (stripped !== previous);
     // Remove remaining tags: replace the shortest run from "<" to ">" iteratively
     // to handle ">" inside attribute values correctly.
     while (/<[^<>]*>/.test(stripped)) {
