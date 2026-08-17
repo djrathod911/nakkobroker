@@ -217,12 +217,27 @@ function Discover() {
             </Sheet>
             <Button asChild className="rounded-2xl bg-brand text-brand-foreground hover:bg-brand/90">
               {user ? (
-                <Link to="/list-your-flat" aria-label="List your flat">
+                <Link
+                  to="/list-your-flat"
+                  aria-label="List your flat"
+                  data-analytics-event="cta_click"
+                  data-analytics-cta="list_your_flat"
+                  data-analytics-location="home_header"
+                  data-analytics-auth-state="signed_in"
+                >
                   <Plus className="size-4" />
                   <span className="hidden sm:inline">List your flat</span>
                 </Link>
               ) : (
-                <Link to="/auth" search={{ next: "/list-your-flat" }} aria-label="List your flat">
+                <Link
+                  to="/auth"
+                  search={{ next: "/list-your-flat" }}
+                  aria-label="List your flat"
+                  data-analytics-event="cta_click"
+                  data-analytics-cta="list_your_flat"
+                  data-analytics-location="home_header"
+                  data-analytics-auth-state="signed_out"
+                >
                   <Plus className="size-4" />
                   <span className="hidden sm:inline">List your flat</span>
                 </Link>
