@@ -1,20 +1,28 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { BellPlus, Loader2, Trash2 } from "lucide-react";
+import { BellPlus, Loader2, MessageCircle, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { createSavedAlert, deleteSavedAlert, fetchSavedAlerts } from "@/lib/alerts.api";
+import { fetchMyProfile } from "@/lib/listings.api";
 import { formatRent } from "@/data/listings";
 import type { Filters } from "@/components/listings/FilterPanel";
 
-export function SaveAlertPanel({ filters, userId }: { filters: Filters; userId: string | undefined }) {
+export function SaveAlertPanel({
+  filters,
+  userId,
+}: {
+  filters: Filters;
+  userId: string | undefined;
+}) {
   const queryClient = useQueryClient();
   const [name, setName] = useState("");
   const [instant, setInstant] = useState(true);
   const [digest, setDigest] = useState(true);
+  const [whatsapp, setWhatsapp] = useState(false);
 
   const { data: alerts = [] } = useQuery({
     queryKey: ["saved-alerts", userId],
@@ -22,10 +30,22 @@ export function SaveAlertPanel({ filters, userId }: { filters: Filters; userId: 
     enabled: !!userId,
   });
 
+  const { data: profile } = useQuery({
+    queryKey: ["my-profile", userId],
+    queryFn: () => fetchMyProfile(userId!),
+    enabled: !!userId,
+  });
+  const hasVerifiedPhone = !!profile?.phone;
+
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ["saved-alerts", userId] });
 
   const save = useMutation({
-    mutationFn: () => createSavedAlert(userId!, name, filters, { instant, dailyDigest: digest }),
+    mutationFn: () =>
+      createSavedAlert(userId!, name, filters, {
+        instant,
+        dailyDigest: digest,
+        whatsappOptIn: whatsapp && hasVerifiedPhone,
+      }),
     onSuccess: () => {
       setName("");
       toast.success("Alert saved — we'll notify you on new matches");
@@ -91,13 +111,36 @@ export function SaveAlertPanel({ filters, userId }: { filters: Filters; userId: 
         </Label>
         <Switch id="alert-digest" checked={digest} onCheckedChange={setDigest} />
       </div>
+      <div className="flex items-center justify-between">
+        <Label
+          htmlFor="alert-whatsapp"
+          className="flex items-center gap-1.5 text-xs font-normal text-muted-foreground"
+        >
+          <MessageCircle className="size-3.5" aria-hidden /> Also send to WhatsApp
+        </Label>
+        <Switch
+          id="alert-whatsapp"
+          checked={whatsapp && hasVerifiedPhone}
+          disabled={!hasVerifiedPhone}
+          onCheckedChange={setWhatsapp}
+        />
+      </div>
+      {!hasVerifiedPhone && (
+        <p className="text-[11px] text-muted-foreground">
+          Verify your mobile number in your profile to get alerts on WhatsApp.
+        </p>
+      )}
 
       <Button
         className="w-full rounded-2xl bg-brand text-brand-foreground hover:bg-brand/90"
         disabled={save.isPending || (!instant && !digest)}
         onClick={() => save.mutate()}
       >
-        {save.isPending ? <Loader2 className="size-4 animate-spin" /> : <BellPlus className="size-4" />}
+        {save.isPending ? (
+          <Loader2 className="size-4 animate-spin" />
+        ) : (
+          <BellPlus className="size-4" />
+        )}
         Save this search as an alert
       </Button>
 
@@ -111,9 +154,11 @@ export function SaveAlertPanel({ filters, userId }: { filters: Filters; userId: 
               <div className="min-w-0 flex-1">
                 <p className="truncate text-xs font-medium">{a.name}</p>
                 <p className="truncate text-[11px] text-muted-foreground">
-                  {a.bhk.length ? `${a.bhk.join("/")} BHK` : "Any BHK"} · under {formatRent(a.maxRent)}
+                  {a.bhk.length ? `${a.bhk.join("/")} BHK` : "Any BHK"} · under{" "}
+                  {formatRent(a.maxRent)}
                   {a.instant ? " · instant" : ""}
                   {a.dailyDigest ? " · digest" : ""}
+                  {a.whatsappOptIn ? " · WhatsApp" : ""}
                 </p>
               </div>
               <Button

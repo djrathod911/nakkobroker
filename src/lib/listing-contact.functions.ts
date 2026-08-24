@@ -30,5 +30,13 @@ export const getListingContactPhone = createServerFn({ method: "POST" })
     if (row.status !== "published" && row.owner_id !== context.userId) {
       return { phone: null };
     }
+    if (row.contact_phone && row.owner_id !== context.userId) {
+      const { error: logError } = await supabaseAdmin.from("listing_events").insert({
+        listing_id: data.listingId,
+        kind: "contact_reveal",
+        viewer_id: context.userId,
+      });
+      if (logError) console.error("[listing-contact] could not log reveal", logError);
+    }
     return { phone: row.contact_phone ?? null };
   });

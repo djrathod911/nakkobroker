@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
@@ -7,6 +7,7 @@ import {
   ArrowLeft,
   ArrowBigUp,
   BadgeCheck,
+  Bookmark,
   Building2,
   TrainFront,
   Share2,
@@ -25,8 +26,13 @@ import {
   signedPhotoUrls,
   toggleVote,
 } from "@/lib/listings.api";
+import { fetchMySavedIds, toggleSaved } from "@/lib/saved-listings.api";
+import { logListingView } from "@/lib/listing-analytics.api";
+import { shouldLogView } from "@/lib/listing-analytics.shared";
+import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { RequestViewingButton } from "@/components/listings/RequestViewingButton";
+import { ReportListingButton } from "@/components/listings/ReportListingButton";
 
 export const Route = createFileRoute("/listing/$id")({
   loader: ({ params }) => fetchListingById(params.id),
@@ -111,6 +117,14 @@ function ListingDetailPage() {
     queryFn: () => fetchListingById(id),
   });
 
+  const loggedViewFor = useRef<string | null>(null);
+  useEffect(() => {
+    if (!listing || loggedViewFor.current === listing.id) return;
+    if (!shouldLogView({ viewerId: user?.id ?? null, ownerId: listing.ownerId })) return;
+    loggedViewFor.current = listing.id;
+    void logListingView(listing.id, user?.id ?? null);
+  }, [listing, user?.id]);
+
   const { data: photos = [] } = useQuery({
     queryKey: ["listing-photos", id, listing?.photoPaths],
     queryFn: () => signedPhotoUrls(listing?.photoPaths ?? []),
@@ -123,6 +137,12 @@ function ListingDetailPage() {
     enabled: !!user,
   });
 
+  const { data: savedIds = [] } = useQuery({
+    queryKey: ["my-saved-ids", user?.id],
+    queryFn: () => fetchMySavedIds(user!.id),
+    enabled: !!user,
+  });
+
   const { data: contactPhone = null } = useQuery({
     queryKey: ["listing-phone", id, user?.id],
     queryFn: () => fetchContactPhone(id),
@@ -131,6 +151,7 @@ function ListingDetailPage() {
 
 
   const voted = votedIds.includes(id);
+  const saved = savedIds.includes(id);
 
   async function onVote() {
     if (!user) {
@@ -147,6 +168,21 @@ function ListingDetailPage() {
       ]);
     } catch {
       toast.error("Could not register your vote");
+    }
+  }
+
+  async function onSave() {
+    if (!user) {
+      toast("Sign in to save homes for later");
+      navigate({ to: "/auth", search: { next: `/listing/${id}` } });
+      return;
+    }
+    try {
+      await toggleSaved(id, user.id, saved);
+      toast.success(saved ? "Removed from saved homes" : "Saved — find it under Saved homes");
+      await queryClient.invalidateQueries({ queryKey: ["my-saved-ids", user.id] });
+    } catch {
+      toast.error("Could not save this listing");
     }
   }
 
@@ -202,6 +238,16 @@ function ListingDetailPage() {
               aria-pressed={voted}
             >
               <ArrowBigUp className="size-4" /> {listing.votes}
+            </Button>
+            <Button
+              variant="secondary"
+              size="icon"
+              className={cn("glass rounded-2xl border-0", saved && "bg-teal/15 text-teal")}
+              aria-label={saved ? "Remove from saved homes" : "Save for later"}
+              aria-pressed={saved}
+              onClick={onSave}
+            >
+              <Bookmark className={cn("size-4", saved && "fill-current")} />
             </Button>
             <Button
               variant="secondary"
@@ -383,6 +429,14 @@ function ListingDetailPage() {
                   ownerId={listing.ownerId}
                   userId={user?.id ?? null}
                   listingTitle={listing.title}
+                />
+              </div>
+
+              <div className="mt-2 flex justify-end">
+                <ReportListingButton
+                  listingId={listing.id}
+                  userId={user?.id ?? null}
+                  isOwnListing={!!user && user.id === listing.ownerId}
                 />
               </div>
             </div>

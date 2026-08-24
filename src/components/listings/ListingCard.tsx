@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import {
   BadgeCheck,
   ArrowBigUp,
+  Bookmark,
   Users,
   AlertTriangle,
   TrainFront,
@@ -21,9 +22,20 @@ interface ListingCardProps {
   onSelect: (id: string) => void;
   voted?: boolean;
   onVote?: (id: string) => void;
+  saved?: boolean;
+  onSave?: (id: string) => void;
 }
 
-export function ListingCard({ listing, active, onHover, onSelect, voted, onVote }: ListingCardProps) {
+export function ListingCard({
+  listing,
+  active,
+  onHover,
+  onSelect,
+  voted,
+  onVote,
+  saved,
+  onSave,
+}: ListingCardProps) {
   function handleKeyDown(e: React.KeyboardEvent<HTMLElement>) {
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
@@ -122,6 +134,19 @@ export function ListingCard({ listing, active, onHover, onSelect, voted, onVote 
             }}
           >
             <ArrowBigUp className="size-4" />
+          </Button>
+          <Button
+            size="icon"
+            variant="ghost"
+            className={cn("size-8 rounded-full", saved && "bg-teal/15 text-teal")}
+            aria-label={saved ? "Remove from saved homes" : "Save for later"}
+            aria-pressed={!!saved}
+            onClick={(e) => {
+              e.stopPropagation();
+              onSave?.(listing.id);
+            }}
+          >
+            <Bookmark className={cn("size-4", saved && "fill-current")} />
           </Button>
           <Button
             asChild

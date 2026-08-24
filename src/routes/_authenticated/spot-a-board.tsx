@@ -7,6 +7,7 @@ import { ArrowLeft, Camera, Loader2, ScanText, Sparkles } from "lucide-react";
 import { z } from "zod";
 import { scanToLetBoard, type BoardScanResult } from "@/lib/tolet-ocr.functions";
 import { createListing } from "@/lib/listings.api";
+import { SPOTTER_POINTS_PER_BOARD } from "@/lib/gamification";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -178,7 +179,7 @@ function SpotABoard() {
         file ? [file] : [],
       );
       await queryClient.invalidateQueries({ queryKey: ["listings"] });
-      toast.success("Thanks! Your spot is live for the community");
+      toast.success(`Thanks! Your spot is live — +${SPOTTER_POINTS_PER_BOARD} community points`);
       navigate({ to: "/listing/$id", params: { id } });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not publish this spot");

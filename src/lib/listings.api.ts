@@ -40,7 +40,7 @@ export interface DbListingRow {
 }
 
 // contact_phone is intentionally excluded: it is not readable by signed-out visitors.
-const PUBLIC_COLUMNS =
+export const PUBLIC_COLUMNS =
   "id,owner_id,title,city,house_type,description,bathrooms,balconies,floor,total_floors,parking,facing,area,bhk,rent,deposit,maintenance,negotiable,furnishing,tenant,owner_verified,community_verified,suspicious_price,metro_km,it_corridor_km,sqft,available_from,amenities,photos,lng,lat,source,votes,created_at";
 
 const daysAgo = (iso: string) =>

@@ -19,7 +19,7 @@ import {
   PanelRight,
   UserRound,
   MessagesSquare,
-
+  Bookmark,
 } from "lucide-react";
 import { MapView } from "@/components/map/MapView";
 import { ListingCard } from "@/components/listings/ListingCard";
@@ -40,6 +40,7 @@ import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { trendingAreas, formatRent } from "@/data/listings";
 import { fetchListings, fetchMyVotedIds, toggleVote } from "@/lib/listings.api";
+import { fetchMySavedIds, toggleSaved } from "@/lib/saved-listings.api";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
@@ -107,6 +108,28 @@ function Discover() {
       ]);
     } catch {
       toast.error("Could not register your vote");
+    }
+  }
+
+  const { data: savedIds = [] } = useQuery({
+    queryKey: ["my-saved-ids", user?.id],
+    queryFn: () => fetchMySavedIds(user!.id),
+    enabled: !!user,
+  });
+
+  async function onSave(listingId: string) {
+    if (!user) {
+      toast("Sign in to save homes for later");
+      navigate({ to: "/auth", search: { next: "/" } });
+      return;
+    }
+    try {
+      const wasSaved = savedIds.includes(listingId);
+      await toggleSaved(listingId, user.id, wasSaved);
+      toast.success(wasSaved ? "Removed from saved homes" : "Saved — find it under Saved homes");
+      await queryClient.invalidateQueries({ queryKey: ["my-saved-ids", user.id] });
+    } catch {
+      toast.error("Could not save this listing");
     }
   }
 
@@ -231,6 +254,11 @@ function Discover() {
             {user ? (
               <>
                 <NotificationBell userId={user.id} />
+                <Button asChild variant="secondary" size="icon" className="glass rounded-2xl border-0">
+                  <Link to="/saved" aria-label="Your saved homes">
+                    <Bookmark className="size-4" />
+                  </Link>
+                </Button>
                 <Button asChild variant="secondary" size="icon" className="glass rounded-2xl border-0">
                   <Link to="/messages" aria-label="Your chats">
                     <MessagesSquare className="size-4" />
@@ -432,6 +460,8 @@ function Discover() {
                       onSelect={setActiveId}
                       voted={votedIds.includes(listing.id)}
                       onVote={onVote}
+                      saved={savedIds.includes(listing.id)}
+                      onSave={onSave}
                     />
                   ))
                 )}

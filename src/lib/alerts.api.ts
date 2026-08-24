@@ -11,6 +11,7 @@ export interface SavedAlert {
   ownerOnly: boolean;
   instant: boolean;
   dailyDigest: boolean;
+  whatsappOptIn: boolean;
   createdAt: string;
 }
 
@@ -41,6 +42,7 @@ export async function fetchSavedAlerts(): Promise<SavedAlert[]> {
     ownerOnly: r.owner_only,
     instant: r.instant,
     dailyDigest: r.daily_digest,
+    whatsappOptIn: r.whatsapp_opt_in,
     createdAt: r.created_at,
   }));
 }
@@ -49,7 +51,7 @@ export async function createSavedAlert(
   userId: string,
   name: string,
   filters: Filters,
-  opts: { instant: boolean; dailyDigest: boolean },
+  opts: { instant: boolean; dailyDigest: boolean; whatsappOptIn: boolean },
 ) {
   const { error } = await supabase.from("saved_alerts").insert({
     user_id: userId,
@@ -61,6 +63,7 @@ export async function createSavedAlert(
     owner_only: filters.ownerOnly,
     instant: opts.instant,
     daily_digest: opts.dailyDigest,
+    whatsapp_opt_in: opts.whatsappOptIn,
   });
   if (error) throw error;
 }

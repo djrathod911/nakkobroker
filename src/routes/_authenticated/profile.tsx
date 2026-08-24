@@ -2,7 +2,18 @@ import { useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ArrowLeft, BadgeCheck, Building2, Loader2, Phone, ShieldCheck, Trash2, Plus } from "lucide-react";
+import {
+  ArrowLeft,
+  BadgeCheck,
+  Building2,
+  Eye,
+  Loader2,
+  Phone,
+  ShieldCheck,
+  Trash2,
+  Plus,
+  Trophy,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import {
@@ -13,6 +24,8 @@ import {
   type MyListingRow,
 } from "@/lib/listings.api";
 import { HOUSE_TYPES } from "@/lib/list-flat";
+import { badgeForPoints } from "@/lib/gamification";
+import { fetchListingAnalytics } from "@/lib/listing-analytics.api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -54,6 +67,13 @@ function ProfilePage() {
     queryKey: ["my-listings", user?.id],
     queryFn: () => fetchMyListings(user!.id),
     enabled: !!user,
+  });
+
+  const listingIds = (listings.data ?? []).map((r) => r.id);
+  const analytics = useQuery({
+    queryKey: ["my-listing-analytics", listingIds],
+    queryFn: () => fetchListingAnalytics(listingIds),
+    enabled: listingIds.length > 0,
   });
 
   useEffect(() => {
@@ -118,10 +138,17 @@ function ProfilePage() {
                 {profile.data?.phone ? `+91 ${profile.data.phone}` : "Mobile pending"}
                 <BadgeCheck className="size-4 text-teal" aria-label="Verified number" />
               </p>
-              <p className="text-xs text-muted-foreground">
-                {profile.data?.points ?? 0} contribution points · verified mobile account
+              <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                {profile.data?.points ?? 0} contribution points ·{" "}
+                <span className="font-medium text-brand">{badgeForPoints(profile.data?.points ?? 0).tier}</span> ·
+                verified mobile account
               </p>
             </div>
+            <Button asChild size="sm" variant="secondary" className="ml-auto shrink-0 rounded-xl">
+              <Link to="/leaderboard">
+                <Trophy className="size-4" /> Leaderboard
+              </Link>
+            </Button>
           </div>
 
           <div className="grid gap-2 sm:max-w-sm">
@@ -197,6 +224,16 @@ function ProfilePage() {
                     <p className="text-xs text-muted-foreground">
                       {row.bhk} BHK {row.house_type} · {row.area}, {row.city} · {inr(row.rent)}/mo · {row.votes} upvotes
                       {row.owner_verified ? " · Owner verified" : ""}
+                    </p>
+                    <p className="mt-0.5 flex items-center gap-3 text-xs text-muted-foreground">
+                      <span className="inline-flex items-center gap-1">
+                        <Eye className="size-3.5" aria-hidden />{" "}
+                        {analytics.data?.[row.id]?.views ?? 0} views
+                      </span>
+                      <span className="inline-flex items-center gap-1">
+                        <Phone className="size-3.5" aria-hidden />{" "}
+                        {analytics.data?.[row.id]?.contactReveals ?? 0} contact reveals
+                      </span>
                     </p>
                   </div>
                   <div className="flex shrink-0 items-center gap-1.5">

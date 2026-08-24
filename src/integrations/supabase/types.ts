@@ -82,6 +82,38 @@ export type Database = {
         }
         Relationships: []
       }
+      listing_events: {
+        Row: {
+          created_at: string
+          id: string
+          kind: string
+          listing_id: string
+          viewer_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kind: string
+          listing_id: string
+          viewer_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kind?: string
+          listing_id?: string
+          viewer_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "listing_events_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       listing_votes: {
         Row: {
           created_at: string
@@ -310,6 +342,7 @@ export type Database = {
           read: boolean
           title: string
           user_id: string
+          whatsapp_status: string | null
         }
         Insert: {
           alert_id?: string | null
@@ -321,6 +354,7 @@ export type Database = {
           read?: boolean
           title: string
           user_id: string
+          whatsapp_status?: string | null
         }
         Update: {
           alert_id?: string | null
@@ -332,6 +366,7 @@ export type Database = {
           read?: boolean
           title?: string
           user_id?: string
+          whatsapp_status?: string | null
         }
         Relationships: [
           {
@@ -391,6 +426,7 @@ export type Database = {
           id: string
           phone: string | null
           points: number
+          role: string
         }
         Insert: {
           avatar_url?: string | null
@@ -399,6 +435,7 @@ export type Database = {
           id: string
           phone?: string | null
           points?: number
+          role?: string
         }
         Update: {
           avatar_url?: string | null
@@ -407,8 +444,53 @@ export type Database = {
           id?: string
           phone?: string | null
           points?: number
+          role?: string
         }
         Relationships: []
+      }
+      reports: {
+        Row: {
+          created_at: string
+          details: string
+          id: string
+          listing_id: string
+          reason: string
+          reporter_id: string
+          resolved_at: string | null
+          resolved_by: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          details?: string
+          id?: string
+          listing_id: string
+          reason: string
+          reporter_id: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          details?: string
+          id?: string
+          listing_id?: string
+          reason?: string
+          reporter_id?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reports_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       saved_alerts: {
         Row: {
@@ -424,6 +506,7 @@ export type Database = {
           owner_only: boolean
           updated_at: string
           user_id: string
+          whatsapp_opt_in: boolean
         }
         Insert: {
           amenities?: string[]
@@ -438,6 +521,7 @@ export type Database = {
           owner_only?: boolean
           updated_at?: string
           user_id: string
+          whatsapp_opt_in?: boolean
         }
         Update: {
           amenities?: string[]
@@ -452,8 +536,38 @@ export type Database = {
           owner_only?: boolean
           updated_at?: string
           user_id?: string
+          whatsapp_opt_in?: boolean
         }
         Relationships: []
+      }
+      saved_listings: {
+        Row: {
+          created_at: string
+          id: string
+          listing_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          listing_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          listing_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saved_listings_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       verified_phones: {
         Row: {
@@ -484,6 +598,24 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_lookup_profile: {
+        Args: { _id: string }
+        Returns: {
+          display_name: string
+          id: string
+          phone: string
+          role: string
+        }[]
+      }
+      get_leaderboard: {
+        Args: { _limit?: number }
+        Returns: {
+          avatar_url: string
+          display_name: string
+          id: string
+          points: number
+        }[]
+      }
       get_profile_display_names: {
         Args: { _ids: string[] }
         Returns: {
