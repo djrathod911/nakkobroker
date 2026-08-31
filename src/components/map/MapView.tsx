@@ -1,7 +1,41 @@
-import { useEffect, useRef } from "react";
-import * as maplibregl from "maplibre-gl";
-import type { Map as MapLibreMap, Marker, StyleSpecification } from "maplibre-gl";
+import { useCallback, useEffect, useRef } from "react";
+import {
+  APIProvider,
+  Map,
+  AdvancedMarker,
+  useMap,
+} from "@vis.gl/react-google-maps";
 import { HYDERABAD_CENTER, shortRent, type Listing } from "@/data/listings";
+import { cn } from "@/lib/utils";
+
+const GOOGLE_MAPS_API_KEY =
+  (typeof import.meta !== "undefined" && (import.meta.env as Record<string, string>)["VITE_GOOGLE_MAPS_API_KEY"]) ||
+  (typeof process !== "undefined" && process.env["VITE_GOOGLE_MAPS_API_KEY"]) ||
+  "";
+
+const MAP_CENTER = { lat: HYDERABAD_CENTER[1], lng: HYDERABAD_CENTER[0] };
+
+// Dark map style matching the app's dark theme
+const DARK_MAP_STYLE: google.maps.MapTypeStyle[] = [
+  { elementType: "geometry", stylers: [{ color: "#1a1a2e" }] },
+  { elementType: "labels.text.stroke", stylers: [{ color: "#1a1a2e" }] },
+  { elementType: "labels.text.fill", stylers: [{ color: "#746855" }] },
+  { featureType: "administrative.locality", elementType: "labels.text.fill", stylers: [{ color: "#d59563" }] },
+  { featureType: "poi", elementType: "labels.text.fill", stylers: [{ color: "#d59563" }] },
+  { featureType: "poi.park", elementType: "geometry", stylers: [{ color: "#16213e" }] },
+  { featureType: "poi.park", elementType: "labels.text.fill", stylers: [{ color: "#6b9a76" }] },
+  { featureType: "road", elementType: "geometry", stylers: [{ color: "#2c2c54" }] },
+  { featureType: "road", elementType: "geometry.stroke", stylers: [{ color: "#212a37" }] },
+  { featureType: "road", elementType: "labels.text.fill", stylers: [{ color: "#9ca5b3" }] },
+  { featureType: "road.highway", elementType: "geometry", stylers: [{ color: "#746855" }] },
+  { featureType: "road.highway", elementType: "geometry.stroke", stylers: [{ color: "#1f2835" }] },
+  { featureType: "road.highway", elementType: "labels.text.fill", stylers: [{ color: "#f3d19c" }] },
+  { featureType: "transit", elementType: "geometry", stylers: [{ color: "#2f3948" }] },
+  { featureType: "transit.station", elementType: "labels.text.fill", stylers: [{ color: "#d59563" }] },
+  { featureType: "water", elementType: "geometry", stylers: [{ color: "#0e1626" }] },
+  { featureType: "water", elementType: "labels.text.fill", stylers: [{ color: "#515c6d" }] },
+  { featureType: "water", elementType: "labels.text.stroke", stylers: [{ color: "#17263c" }] },
+];
 
 interface MapViewProps {
   listings: Listing[];
@@ -11,112 +45,85 @@ interface MapViewProps {
   satellite: boolean;
 }
 
-// Stadia Maps — free tier, no API key needed for ≤200k requests/month, no watermark.
-// Uses raster tiles so no external style JSON fetch is required — works in all envs.
-const TILE_URLS = {
-  // Stadia Alidade Smooth Dark — clean dark basemap
-  dark: "https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}@2x.png",
-  satellite: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-};
+function ListingMarkers({
+  listings,
+  activeId,
+  onSelect,
+}: Pick<MapViewProps, "listings" | "activeId" | "onSelect">) {
+  const map = useMap();
+  const prevActiveRef = useRef<string | null>(null);
 
-function buildStyle(satellite: boolean): StyleSpecification {
-  const tile = satellite ? TILE_URLS.satellite : TILE_URLS.dark;
-  const attribution = satellite
-    ? "© Esri, Maxar, Earthstar Geographics"
-    : "© Stadia Maps, © OpenMapTiles, © OpenStreetMap contributors";
-  return {
-    version: 8,
-    glyphs: "https://tiles.stadiamaps.com/fonts/{fontstack}/{range}.pbf",
-    sources: {
-      base: {
-        type: "raster",
-        tiles: [tile],
-        tileSize: 256,
-        attribution,
-      },
-    },
-    layers: [{ id: "base", type: "raster", source: "base" }],
-  };
+  // Fly to active listing
+  useEffect(() => {
+    if (!map || !activeId || activeId === prevActiveRef.current) return;
+    const listing = listings.find((l) => l.id === activeId);
+    if (listing) {
+      map.panTo({ lat: listing.lat, lng: listing.lng });
+      map.setZoom(14);
+    }
+    prevActiveRef.current = activeId;
+  }, [map, activeId, listings]);
+
+  return (
+    <>
+      {listings.map((listing) => (
+        <AdvancedMarker
+          key={listing.id}
+          position={{ lat: listing.lat, lng: listing.lng }}
+          onClick={() => onSelect(listing.id)}
+          zIndex={activeId === listing.id ? 10 : 1}
+        >
+          <button
+            type="button"
+            aria-label={`${listing.bhk} BHK in ${listing.area}, ₹${shortRent(listing.rent)}`}
+            className={cn(
+              "cursor-pointer rounded-full px-2.5 py-1 text-xs font-semibold tracking-tight transition-all duration-200 border-0 outline-none",
+              activeId === listing.id
+                ? "bg-brand text-brand-foreground scale-110 shadow-lg shadow-brand/40"
+                : "bg-background/80 backdrop-blur text-foreground hover:scale-105 hover:text-teal border border-border",
+            )}
+          >
+            ₹{shortRent(listing.rent)}
+          </button>
+        </AdvancedMarker>
+      ))}
+    </>
+  );
 }
 
 export function MapView({ listings, activeId, onSelect, showHeatmap, satellite }: MapViewProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<MapLibreMap | null>(null);
-  const markersRef = useRef<Map<string, Marker>>(new Map());
+  const mapId = "nakkobroker-map";
 
-  useEffect(() => {
-    if (!containerRef.current || mapRef.current) return;
-    const map = new maplibregl.Map({
-      container: containerRef.current,
-      style: buildStyle(false),
-      center: HYDERABAD_CENTER,
-      zoom: 11.2,
-      attributionControl: { compact: true },
-    });
-    map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "bottom-right");
-    mapRef.current = map;
-    return () => {
-      map.remove();
-      mapRef.current = null;
-    };
-  }, []);
-
-  useEffect(() => {
-    const map = mapRef.current;
-    if (!map) return;
-    // Re-add all markers after style change since setStyle clears the map
-    map.once("styledata", () => {
-      const markers = markersRef.current;
-      for (const [, marker] of markers) marker.addTo(map);
-    });
-    map.setStyle(buildStyle(satellite));
-  }, [satellite]);
-
-  useEffect(() => {
-    const map = mapRef.current;
-    if (!map) return;
-    const markers = markersRef.current;
-
-    for (const [id, marker] of markers) {
-      if (!listings.some((l) => l.id === id)) {
-        marker.remove();
-        markers.delete(id);
-      }
-    }
-
-    for (const listing of listings) {
-      let marker: Marker | undefined = markers.get(listing.id);
-      if (!marker) {
-        const el = document.createElement("button");
-        el.type = "button";
-        el.setAttribute("aria-label", `${listing.bhk} BHK in ${listing.area}`);
-        el.dataset["pin"] = listing.id;
-        el.addEventListener("click", () => onSelect(listing.id));
-        marker = new maplibregl.Marker({ element: el }).setLngLat([listing.lng, listing.lat]).addTo(map);
-        markers.set(listing.id, marker);
-      }
-      const el = marker!.getElement();
-      const active = activeId === listing.id;
-      el.className = [
-        "cursor-pointer rounded-full px-2.5 py-1 text-xs font-semibold tracking-tight transition-all duration-200",
-        active
-          ? "bg-brand text-brand-foreground scale-110 glow-ring"
-          : "glass text-foreground hover:scale-105 hover:text-teal",
-      ].join(" ");
-      el.textContent = `₹${shortRent(listing.rent)}`;
-    }
-  }, [listings, activeId, onSelect]);
-
-  useEffect(() => {
-    const map = mapRef.current;
-    if (!map || !activeId) return;
-    const listing = listings.find((l) => l.id === activeId);
-    if (listing) map.flyTo({ center: [listing.lng, listing.lat], zoom: 13.5, speed: 0.9 });
-  }, [activeId, listings]);
+  if (!GOOGLE_MAPS_API_KEY) {
+    return (
+      <div className="flex h-full w-full items-center justify-center bg-background text-center px-6">
+        <div>
+          <p className="text-sm font-medium text-muted-foreground">Map unavailable</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Add <code className="rounded bg-secondary px-1">VITE_GOOGLE_MAPS_API_KEY</code> to your environment variables.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative h-full w-full">
-      <div ref={containerRef} className="h-full w-full" />
+      <APIProvider apiKey={GOOGLE_MAPS_API_KEY}>
+        <Map
+          mapId={mapId}
+          defaultCenter={MAP_CENTER}
+          defaultZoom={11}
+          gestureHandling="greedy"
+          disableDefaultUI={false}
+          mapTypeId={satellite ? "satellite" : "roadmap"}
+          styles={satellite ? undefined : DARK_MAP_STYLE}
+          reuseMaps
+        >
+          <ListingMarkers listings={listings} activeId={activeId} onSelect={onSelect} />
+        </Map>
+      </APIProvider>
+
       {showHeatmap && (
         <div
           aria-hidden
