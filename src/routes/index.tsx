@@ -8,18 +8,14 @@ import {
   SlidersHorizontal,
   Flame,
   Satellite,
-  Layers,
   Camera,
   Plus,
-  Sparkles,
-  TrendingUp,
-  TrendingDown,
   LogOut,
   X,
   PanelRight,
   UserRound,
   MessagesSquare,
-
+  Home,
 } from "lucide-react";
 import { MapView } from "@/components/map/MapView";
 import { ListingCard } from "@/components/listings/ListingCard";
@@ -38,7 +34,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { trendingAreas, formatRent } from "@/data/listings";
+import { formatRent } from "@/data/listings";
 import { fetchListings, fetchMyVotedIds, toggleVote } from "@/lib/listings.api";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -70,7 +66,6 @@ function Discover() {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [heatmap, setHeatmap] = useState(false);
   const [satellite, setSatellite] = useState(false);
-  const [showTrending, setShowTrending] = useState(true);
   const [resultsOpen, setResultsOpen] = useState(true);
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -172,7 +167,7 @@ function Discover() {
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search Madhapur, Gachibowli, metro, society…"
+              placeholder="Search area, society or locality…"
               aria-label="Search areas and listings"
               className="min-w-0 border-0 bg-transparent px-0 shadow-none focus-visible:ring-0"
             />
@@ -289,12 +284,6 @@ function Discover() {
             onClick={() => setSatellite((v) => !v)}
           />
           <LayerButton
-            icon={Layers}
-            label="Trending areas"
-            active={showTrending}
-            onClick={() => setShowTrending((v) => !v)}
-          />
-          <LayerButton
             icon={Camera}
             label="Spot a To-Let board"
             active={false}
@@ -302,43 +291,6 @@ function Discover() {
           />
         </div>
       </div>
-
-      {/* Trending strip */}
-      <AnimatePresence>
-        {showTrending && (
-          <motion.aside
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            className="absolute left-1/2 top-24 z-10 hidden -translate-x-1/2 lg:block"
-          >
-            <div className="glass flex items-center gap-4 rounded-2xl px-4 py-2.5">
-              <span className="inline-flex shrink-0 items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                <Sparkles className="size-3.5 text-teal" aria-hidden /> Trending
-              </span>
-              {trendingAreas.map((a) => (
-                <span key={a.name} className="flex shrink-0 items-center gap-1.5 text-xs">
-                  <span className="font-medium">{a.name}</span>
-                  <span className="text-muted-foreground">{formatRent(a.avgRent)}</span>
-                  <span
-                    className={cn(
-                      "inline-flex items-center gap-0.5",
-                      a.change >= 0 ? "text-success" : "text-teal",
-                    )}
-                  >
-                    {a.change >= 0 ? (
-                      <TrendingUp className="size-3" aria-hidden />
-                    ) : (
-                      <TrendingDown className="size-3" aria-hidden />
-                    )}
-                    {Math.abs(a.change)}%
-                  </span>
-                </span>
-              ))}
-            </div>
-          </motion.aside>
-        )}
-      </AnimatePresence>
 
       {/* Results panel */}
       <AnimatePresence>
@@ -394,13 +346,16 @@ function Discover() {
                     />
                   ))}
                   <span className="mx-1 w-px bg-border" aria-hidden />
-                  {[25000, 40000, 70000].map((cap) => (
+                  {[1, 2, 3].map((bhk) => (
                     <QuickChip
-                      key={cap}
-                      label={`≤ ${formatRent(cap)}`}
-                      active={filters.maxRent === cap}
+                      key={bhk}
+                      label={`${bhk} BHK`}
+                      active={filters.bhk.includes(bhk)}
                       onClick={() =>
-                        setFilters((f) => ({ ...f, maxRent: f.maxRent === cap ? RENT_MAX : cap }))
+                        setFilters((f) => ({
+                          ...f,
+                          bhk: f.bhk.includes(bhk) ? f.bhk.filter((b) => b !== bhk) : [...f.bhk, bhk],
+                        }))
                       }
                     />
                   ))}
@@ -428,13 +383,37 @@ function Discover() {
                 ) : results.length === 0 ? (
                   <div className="grid h-full place-items-center px-6 text-center">
                     <div>
-                      <p className="text-sm font-medium">No homes match yet</p>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        Widen your budget or clear a few filters to see more of {filters.city}.
-                      </p>
-                      <Button variant="secondary" className="mt-4" onClick={() => setFilters(defaultFilters)}>
-                        Reset filters
-                      </Button>
+                      <div className="mx-auto mb-3 grid size-12 place-items-center rounded-2xl bg-brand/10">
+                        <Home className="size-6 text-brand" aria-hidden />
+                      </div>
+                      {allListings.length === 0 ? (
+                        <>
+                          <p className="text-sm font-semibold">Be the first to list</p>
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            No listings yet in {filters.city}. If you have a flat to rent, add it now — your beta testers are waiting.
+                          </p>
+                          <Button
+                            asChild
+                            className="mt-4 rounded-xl bg-brand text-brand-foreground hover:bg-brand/90"
+                          >
+                            {user ? (
+                              <Link to="/list-your-flat">List your flat</Link>
+                            ) : (
+                              <Link to="/auth" search={{ next: "/list-your-flat" }}>List your flat</Link>
+                            )}
+                          </Button>
+                        </>
+                      ) : (
+                        <>
+                          <p className="text-sm font-semibold">No homes match these filters</p>
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            Try clearing a filter or widening your budget.
+                          </p>
+                          <Button variant="secondary" className="mt-4" onClick={() => setFilters(defaultFilters)}>
+                            Reset filters
+                          </Button>
+                        </>
+                      )}
                     </div>
                   </div>
                 ) : (
