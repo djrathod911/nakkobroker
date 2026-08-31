@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import * as maplibregl from "maplibre-gl";
-import type { Map as MapLibreMap, Marker } from "maplibre-gl";
+import type { Map as MapLibreMap, Marker, StyleSpecification } from "maplibre-gl";
 import { HYDERABAD_CENTER, shortRent, type Listing } from "@/data/listings";
 
 interface MapViewProps {
@@ -11,27 +11,28 @@ interface MapViewProps {
   satellite: boolean;
 }
 
-// OpenFreeMap — free vector tiles, no API key required, © OpenStreetMap contributors
-// Satellite fallback uses ESRI World Imagery (free, no key required)
-const TILE_SOURCES = {
-  dark: "https://tiles.openfreemap.org/styles/dark",
+// Stadia Maps — free tier, no API key needed for ≤200k requests/month, no watermark.
+// Uses raster tiles so no external style JSON fetch is required — works in all envs.
+const TILE_URLS = {
+  // Stadia Alidade Smooth Dark — clean dark basemap
+  dark: "https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}@2x.png",
   satellite: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
 };
 
-function styleFor(satellite: boolean): string | object {
-  if (!satellite) {
-    // OpenFreeMap serves a full GL style JSON — pass the URL directly to MapLibre
-    return TILE_SOURCES.dark;
-  }
-  // Satellite: raster tiles from ESRI (free, no watermark)
+function buildStyle(satellite: boolean): StyleSpecification {
+  const tile = satellite ? TILE_URLS.satellite : TILE_URLS.dark;
+  const attribution = satellite
+    ? "© Esri, Maxar, Earthstar Geographics"
+    : "© Stadia Maps, © OpenMapTiles, © OpenStreetMap contributors";
   return {
     version: 8,
+    glyphs: "https://tiles.stadiamaps.com/fonts/{fontstack}/{range}.pbf",
     sources: {
       base: {
         type: "raster",
-        tiles: [TILE_SOURCES.satellite],
+        tiles: [tile],
         tileSize: 256,
-        attribution: "© Esri, Maxar, Earthstar Geographics",
+        attribution,
       },
     },
     layers: [{ id: "base", type: "raster", source: "base" }],
@@ -47,7 +48,7 @@ export function MapView({ listings, activeId, onSelect, showHeatmap, satellite }
     if (!containerRef.current || mapRef.current) return;
     const map = new maplibregl.Map({
       container: containerRef.current,
-      style: styleFor(false),
+      style: buildStyle(false),
       center: HYDERABAD_CENTER,
       zoom: 11.2,
       attributionControl: { compact: true },
@@ -61,7 +62,14 @@ export function MapView({ listings, activeId, onSelect, showHeatmap, satellite }
   }, []);
 
   useEffect(() => {
-    mapRef.current?.setStyle(styleFor(satellite));
+    const map = mapRef.current;
+    if (!map) return;
+    // Re-add all markers after style change since setStyle clears the map
+    map.once("styledata", () => {
+      const markers = markersRef.current;
+      for (const [, marker] of markers) marker.addTo(map);
+    });
+    map.setStyle(buildStyle(satellite));
   }, [satellite]);
 
   useEffect(() => {
