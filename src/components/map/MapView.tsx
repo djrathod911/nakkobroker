@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import * as maplibregl from "maplibre-gl";
-import type { Map as MapLibreMap, Marker, StyleSpecification } from "maplibre-gl";
+import type { Map as MapLibreMap, Marker } from "maplibre-gl";
 import { HYDERABAD_CENTER, shortRent, type Listing } from "@/data/listings";
 
 interface MapViewProps {
@@ -11,20 +11,27 @@ interface MapViewProps {
   satellite: boolean;
 }
 
-const RASTER_TILES = {
-  dark: "https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png",
+// OpenFreeMap — free vector tiles, no API key required, © OpenStreetMap contributors
+// Satellite fallback uses ESRI World Imagery (free, no key required)
+const TILE_SOURCES = {
+  dark: "https://tiles.openfreemap.org/styles/dark",
   satellite: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
 };
 
-function styleFor(satellite: boolean): StyleSpecification {
+function styleFor(satellite: boolean): string | object {
+  if (!satellite) {
+    // OpenFreeMap serves a full GL style JSON — pass the URL directly to MapLibre
+    return TILE_SOURCES.dark;
+  }
+  // Satellite: raster tiles from ESRI (free, no watermark)
   return {
     version: 8,
     sources: {
       base: {
         type: "raster",
-        tiles: [satellite ? RASTER_TILES.satellite : RASTER_TILES.dark],
+        tiles: [TILE_SOURCES.satellite],
         tileSize: 256,
-        attribution: satellite ? "© Esri" : "© OpenStreetMap, © CARTO",
+        attribution: "© Esri, Maxar, Earthstar Geographics",
       },
     },
     layers: [{ id: "base", type: "raster", source: "base" }],
