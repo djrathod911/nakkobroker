@@ -308,11 +308,11 @@ function Discover() {
               <div className="shrink-0 border-b border-border/60 px-4 py-3">
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <h1 className="text-sm font-semibold tracking-tight">
+                    <h2 className="text-sm font-semibold tracking-tight">
                       {isLoading
                         ? `Finding homes in ${filters.city}…`
                         : `${results.length} zero-brokerage ${results.length === 1 ? "home" : "homes"} in ${filters.city}`}
-                    </h1>
+                    </h2>
                     <p className="text-xs text-muted-foreground">
                       {avgRent ? `Average ${formatRent(avgRent)}/month in this view` : "Adjust filters to see homes"}
                     </p>
