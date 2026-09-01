@@ -1,4 +1,3 @@
-import { motion } from "framer-motion";
 import { Link } from "@tanstack/react-router";
 import {
   BadgeCheck,
@@ -32,11 +31,7 @@ export function ListingCard({ listing, active, onHover, onSelect, voted, onVote 
   }
 
   return (
-    <motion.article
-      layout
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.28, ease: "easeOut" }}
+    <article
       onMouseEnter={() => onHover(listing.id)}
       onFocus={() => onHover(listing.id)}
       onClick={() => onSelect(listing.id)}
@@ -45,8 +40,8 @@ export function ListingCard({ listing, active, onHover, onSelect, voted, onVote 
       role="button"
       aria-label={`${listing.bhk} BHK in ${listing.area}, ${formatRent(listing.rent)} per month. Press Enter to open.`}
       className={cn(
-        "glass group cursor-pointer rounded-2xl p-4 outline-none transition-all duration-300",
-        "hover:-translate-y-0.5 hover:shadow-lg focus-visible:ring-2 focus-visible:ring-ring",
+        "glass group animate-in fade-in slide-in-from-bottom-2 cursor-pointer rounded-2xl p-4 outline-none",
+        "duration-300 transition-all hover:-translate-y-0.5 hover:shadow-lg focus-visible:ring-2 focus-visible:ring-ring",
         active && "glow-ring",
       )}
     >
@@ -136,6 +131,6 @@ export function ListingCard({ listing, active, onHover, onSelect, voted, onVote 
           </Button>
         </div>
       </div>
-    </motion.article>
+    </article>
   );
 }

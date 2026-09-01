@@ -117,7 +117,7 @@ export function MapView({ listings, activeId, onSelect, showHeatmap, satellite }
           gestureHandling="greedy"
           disableDefaultUI={false}
           mapTypeId={satellite ? "satellite" : "roadmap"}
-          styles={satellite ? undefined : DARK_MAP_STYLE}
+          styles={satellite ? null : DARK_MAP_STYLE}
           reuseMaps
         >
           <ListingMarkers listings={listings} activeId={activeId} onSelect={onSelect} />

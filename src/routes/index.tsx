@@ -1,7 +1,6 @@
-import { useMemo, useState } from "react";
+import { lazy, Suspense, useMemo, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import {
   Search,
@@ -17,7 +16,6 @@ import {
   MessagesSquare,
   Home,
 } from "lucide-react";
-import { MapView } from "@/components/map/MapView";
 import { ListingCard } from "@/components/listings/ListingCard";
 import { NotificationBell } from "@/components/alerts/NotificationBell";
 import { SaveAlertPanel } from "@/components/alerts/SaveAlertPanel";
@@ -30,7 +28,6 @@ import {
   RENT_MAX,
   type Filters,
 } from "@/components/listings/FilterPanel";
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -40,11 +37,23 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
+// Lazy-load the map — defers Google Maps SDK (~300kB) from the initial bundle.
+// The map is visually below the results panel on mobile, so deferring it
+// does not affect LCP (which is determined by the results panel text).
+const MapView = lazy(() =>
+  import("@/components/map/MapView").then((m) => ({ default: m.MapView }))
+);
+
 const TITLE = "NakkoBroker — Zero-brokerage rentals in Hyderabad";
 const DESCRIPTION =
   "Discover Hyderabad flats directly from owners on a live map. No brokers, no brokerage — community-verified listings and To-Let boards.";
 
 export const Route = createFileRoute("/")({
+  // Prefetch listings on the server so the results panel is populated on first paint
+  // — eliminates the client waterfall (server renders → sends HTML → browser hydrates
+  // with data already in the QueryClient cache).
+  loader: ({ context: { queryClient } }) =>
+    queryClient.ensureQueryData({ queryKey: ["listings"], queryFn: fetchListings }),
   head: () => ({
     meta: [
       { title: TITLE },
@@ -71,6 +80,7 @@ function Discover() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
+  // Data is pre-populated by the route loader — no loading state on first render
   const {
     data: allListings = [],
     isLoading,
@@ -80,7 +90,6 @@ function Discover() {
     queryKey: ["listings"],
     queryFn: fetchListings,
   });
-
 
   const { data: votedIds = [] } = useQuery({
     queryKey: ["my-votes", user?.id],
@@ -139,17 +148,19 @@ function Discover() {
     (filters.houseType !== "Any" ? 1 : 0) +
     (filters.maxRent < RENT_MAX || filters.minRent > RENT_MIN ? 1 : 0);
 
-
   return (
     <main className="relative h-dvh w-full overflow-hidden bg-background">
+      {/* Map — lazy loaded, shown behind everything else */}
       <div className="absolute inset-0">
-        <MapView
-          listings={results}
-          activeId={activeId}
-          onSelect={setActiveId}
-          showHeatmap={heatmap}
-          satellite={satellite}
-        />
+        <Suspense fallback={<div className="h-full w-full bg-background" />}>
+          <MapView
+            listings={results}
+            activeId={activeId}
+            onSelect={setActiveId}
+            showHeatmap={heatmap}
+            satellite={satellite}
+          />
+        </Suspense>
       </div>
 
       {/* Persistent page heading */}
@@ -277,7 +288,6 @@ function Discover() {
                 </Link>
               </Button>
             )}
-
           </div>
         </div>
       </header>
@@ -301,158 +311,143 @@ function Discover() {
         </div>
       </div>
 
-      {/* Results panel */}
-      <AnimatePresence>
-        {resultsOpen && (
-          <motion.section
-            initial={{ opacity: 0, x: 24 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 24 }}
-            transition={{ duration: 0.25, ease: "easeOut" }}
-            aria-label="Search results"
-            className="pointer-events-none absolute inset-x-0 bottom-0 z-20 max-h-[52dvh] sm:inset-y-0 sm:left-auto sm:right-0 sm:max-h-none sm:w-[400px] sm:p-5 sm:pt-24"
-          >
-            <div className="glass pointer-events-auto flex h-full flex-col rounded-t-3xl sm:rounded-3xl">
-
-              <div className="shrink-0 border-b border-border/60 px-4 py-3">
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <h2 className="text-sm font-semibold tracking-tight">
-                      {isLoading
-                        ? `Finding homes in ${filters.city}…`
-                        : `${results.length} zero-brokerage ${results.length === 1 ? "home" : "homes"} in ${filters.city}`}
-                    </h2>
-                    <p className="text-xs text-muted-foreground">
-                      {avgRent ? `Average ${formatRent(avgRent)}/month in this view` : "Adjust filters to see homes"}
-                    </p>
-                  </div>
-                  <button
-                    aria-label="Hide results panel"
-                    className="inline-flex size-8 shrink-0 items-center justify-center rounded-full text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
-                    onClick={() => setResultsOpen(false)}
-                  >
-                    <X className="size-4" />
-                  </button>
-                </div>
-
-                {/* Quick filters */}
-                <div className="mt-3 flex flex-wrap gap-1.5">
-                  {CITIES.slice(0, 2).map((c) => (
-                    <QuickChip
-                      key={c}
-                      label={c}
-                      active={filters.city === c}
-                      onClick={() => setFilters((f) => ({ ...f, city: c }))}
-                    />
-                  ))}
-                  <span className="mx-1 w-px bg-border" aria-hidden />
-                  {["Any", ...HOUSE_TYPES].map((t) => (
-                    <QuickChip
-                      key={t}
-                      label={t}
-                      active={filters.houseType === t}
-                      onClick={() => setFilters((f) => ({ ...f, houseType: t }))}
-                    />
-                  ))}
-                  <span className="mx-1 w-px bg-border" aria-hidden />
-                  {[1, 2, 3].map((bhk) => (
-                    <QuickChip
-                      key={bhk}
-                      label={`${bhk} BHK`}
-                      active={filters.bhk.includes(bhk)}
-                      onClick={() =>
-                        setFilters((f) => ({
-                          ...f,
-                          bhk: f.bhk.includes(bhk) ? f.bhk.filter((b) => b !== bhk) : [...f.bhk, bhk],
-                        }))
-                      }
-                    />
-                  ))}
-                </div>
-              </div>
-              <div className="flex-1 space-y-3 overflow-y-auto p-3">
-                {isLoading ? (
-                  <div className="space-y-3" role="status" aria-busy="true" aria-label="Loading listings">
-                    {[0, 1, 2, 3].map((i) => (
-                      <div key={i} className="h-32 animate-pulse rounded-2xl border border-border bg-secondary/40" />
-                    ))}
-                  </div>
-                ) : isError ? (
-                  <div className="grid h-full place-items-center px-6 text-center">
-                    <div>
-                      <p className="text-sm font-medium">We couldn't load listings</p>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        Check your connection and try again.
-                      </p>
-                      <Button variant="secondary" className="mt-4" onClick={() => refetch()}>
-                        Retry
-                      </Button>
-                    </div>
-                  </div>
-                ) : results.length === 0 ? (
-                  <div className="grid h-full place-items-center px-6 text-center">
-                    <div>
-                      <div className="mx-auto mb-3 grid size-12 place-items-center rounded-2xl bg-brand/10">
-                        <Home className="size-6 text-brand" aria-hidden />
-                      </div>
-                      {allListings.length === 0 ? (
-                        <>
-                          <p className="text-sm font-semibold">Be the first to list</p>
-                          <p className="mt-1 text-xs text-muted-foreground">
-                            No listings yet in {filters.city}. If you have a flat to rent, add it now — your beta testers are waiting.
-                          </p>
-                          <Button
-                            asChild
-                            className="mt-4 rounded-xl bg-brand text-brand-foreground hover:bg-brand/90"
-                          >
-                            {user ? (
-                              <Link to="/list-your-flat">List your flat</Link>
-                            ) : (
-                              <Link to="/auth" search={{ next: "/list-your-flat" }}>List your flat</Link>
-                            )}
-                          </Button>
-                        </>
-                      ) : (
-                        <>
-                          <p className="text-sm font-semibold">No homes match these filters</p>
-                          <p className="mt-1 text-xs text-muted-foreground">
-                            Try clearing a filter or widening your budget.
-                          </p>
-                          <Button variant="secondary" className="mt-4" onClick={() => setFilters(defaultFilters)}>
-                            Reset filters
-                          </Button>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                ) : (
-                  results.map((listing) => (
-                    <ListingCard
-                      key={listing.id}
-                      listing={listing}
-                      active={activeId === listing.id}
-                      onHover={setActiveId}
-                      onSelect={setActiveId}
-                      voted={votedIds.includes(listing.id)}
-                      onVote={onVote}
-                    />
-                  ))
-                )}
-              </div>
-
-            </div>
-          </motion.section>
+      {/* Results panel — CSS transition replaces framer-motion AnimatePresence */}
+      <section
+        aria-label="Search results"
+        className={cn(
+          "pointer-events-none absolute inset-x-0 bottom-0 z-20 max-h-[52dvh] transition-all duration-300 ease-out",
+          "sm:inset-y-0 sm:left-auto sm:right-0 sm:max-h-none sm:w-[400px] sm:p-5 sm:pt-24",
+          resultsOpen ? "translate-y-0 opacity-100 sm:translate-x-0" : "translate-y-full opacity-0 sm:translate-x-full sm:translate-y-0",
         )}
-      </AnimatePresence>
+      >
+        <div className="glass pointer-events-auto flex h-full flex-col rounded-t-3xl sm:rounded-3xl">
+          <div className="shrink-0 border-b border-border/60 px-4 py-3">
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <h2 className="text-sm font-semibold tracking-tight">
+                  {isLoading
+                    ? `Finding homes in ${filters.city}…`
+                    : `${results.length} zero-brokerage ${results.length === 1 ? "home" : "homes"} in ${filters.city}`}
+                </h2>
+                <p className="text-xs text-muted-foreground">
+                  {avgRent ? `Average ${formatRent(avgRent)}/month in this view` : "Adjust filters to see homes"}
+                </p>
+              </div>
+              <button
+                aria-label="Hide results panel"
+                className="inline-flex size-8 shrink-0 items-center justify-center rounded-full text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
+                onClick={() => setResultsOpen(false)}
+              >
+                <X className="size-4" />
+              </button>
+            </div>
+
+            {/* Quick filters */}
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {CITIES.slice(0, 2).map((c) => (
+                <QuickChip
+                  key={c}
+                  label={c}
+                  active={filters.city === c}
+                  onClick={() => setFilters((f) => ({ ...f, city: c }))}
+                />
+              ))}
+              <span className="mx-1 w-px bg-border" aria-hidden />
+              {["Any", ...HOUSE_TYPES].map((t) => (
+                <QuickChip
+                  key={t}
+                  label={t}
+                  active={filters.houseType === t}
+                  onClick={() => setFilters((f) => ({ ...f, houseType: t }))}
+                />
+              ))}
+              <span className="mx-1 w-px bg-border" aria-hidden />
+              {[1, 2, 3].map((bhk) => (
+                <QuickChip
+                  key={bhk}
+                  label={`${bhk} BHK`}
+                  active={filters.bhk.includes(bhk)}
+                  onClick={() =>
+                    setFilters((f) => ({
+                      ...f,
+                      bhk: f.bhk.includes(bhk) ? f.bhk.filter((b) => b !== bhk) : [...f.bhk, bhk],
+                    }))
+                  }
+                />
+              ))}
+            </div>
+          </div>
+
+          <div className="flex-1 space-y-3 overflow-y-auto p-3">
+            {isLoading ? (
+              <div className="space-y-3" role="status" aria-busy="true" aria-label="Loading listings">
+                {[0, 1, 2, 3].map((i) => (
+                  <div key={i} className="h-32 animate-pulse rounded-2xl border border-border bg-secondary/40" />
+                ))}
+              </div>
+            ) : isError ? (
+              <div className="grid h-full place-items-center px-6 text-center">
+                <div>
+                  <p className="text-sm font-medium">We couldn't load listings</p>
+                  <p className="mt-1 text-xs text-muted-foreground">Check your connection and try again.</p>
+                  <Button variant="secondary" className="mt-4" onClick={() => refetch()}>
+                    Retry
+                  </Button>
+                </div>
+              </div>
+            ) : results.length === 0 ? (
+              <div className="grid h-full place-items-center px-6 text-center">
+                <div>
+                  <div className="mx-auto mb-3 grid size-12 place-items-center rounded-2xl bg-brand/10">
+                    <Home className="size-6 text-brand" aria-hidden />
+                  </div>
+                  {allListings.length === 0 ? (
+                    <>
+                      <p className="text-sm font-semibold">Be the first to list</p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        No listings yet in {filters.city}. If you have a flat to rent, add it now — your beta testers are waiting.
+                      </p>
+                      <Button asChild className="mt-4 rounded-xl bg-brand text-brand-foreground hover:bg-brand/90">
+                        {user ? (
+                          <Link to="/list-your-flat">List your flat</Link>
+                        ) : (
+                          <Link to="/auth" search={{ next: "/list-your-flat" }}>List your flat</Link>
+                        )}
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-sm font-semibold">No homes match these filters</p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Try clearing a filter or widening your budget.
+                      </p>
+                      <Button variant="secondary" className="mt-4" onClick={() => setFilters(defaultFilters)}>
+                        Reset filters
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </div>
+            ) : (
+              results.map((listing) => (
+                <ListingCard
+                  key={listing.id}
+                  listing={listing}
+                  active={activeId === listing.id}
+                  onHover={setActiveId}
+                  onSelect={setActiveId}
+                  voted={votedIds.includes(listing.id)}
+                  onVote={onVote}
+                />
+              ))
+            )}
+          </div>
+        </div>
+      </section>
 
       {/* Reopen results button */}
       {!resultsOpen && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.9 }}
-          className="absolute bottom-5 right-5 z-20 sm:bottom-8 sm:right-8"
-        >
+        <div className="absolute bottom-5 right-5 z-20 animate-in fade-in zoom-in-90 duration-200 sm:bottom-8 sm:right-8">
           <Button
             onClick={() => setResultsOpen(true)}
             aria-label={`Show ${results.length} results`}
@@ -462,7 +457,7 @@ function Discover() {
             <span className="hidden sm:inline">{results.length} results</span>
             <span className="sm:hidden">{results.length}</span>
           </Button>
-        </motion.div>
+        </div>
       )}
     </main>
   );

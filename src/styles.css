@@ -1,7 +1,14 @@
 @import "tailwindcss" source(none);
 @source "../src";
 @import "tw-animate-css";
-@import "maplibre-gl/dist/maplibre-gl.css";
+/* maplibre-gl CSS intentionally NOT imported here — it is lazy-loaded only on the
+   list-your-flat route via PinPicker.tsx to avoid bloating every page's stylesheet */
+
+/* Ensure Inter font never blocks rendering */
+@font-face {
+  font-family: 'Inter';
+  font-display: swap;
+}
 
 @custom-variant dark (&:is(.dark *));
 

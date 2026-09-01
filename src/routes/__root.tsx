@@ -104,6 +104,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { rel: "preconnect", href: "https://fonts.bunny.net" },
       {
+        // font-display=swap prevents font from blocking LCP — text renders
+        // immediately in system font then swaps to Inter once loaded.
         rel: "stylesheet",
         href: "https://fonts.bunny.net/css?family=inter:400,500,600,700,800&display=swap",
       },
