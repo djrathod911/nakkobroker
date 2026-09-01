@@ -16,12 +16,10 @@ dist-ssr
 .nitro
 *.local
 
-# Environment files — never commit secrets
-.env
-.env.*
-!.env.example
+# Wrangler / Cloudflare (keep .env tracked — Lovable requires it for VITE_* build-time vars)
+.wrangler/
+.dev.vars
 
-# Editor directories and files
 .vscode/*
 !.vscode/extensions.json
 .idea
