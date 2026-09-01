@@ -75,12 +75,16 @@ function ListingMarkers({
         >
           <button
             type="button"
-            aria-label={`${listing.bhk} BHK in ${listing.area}, ₹${shortRent(listing.rent)}`}
+            aria-label={`${listing.bhk} BHK in ${listing.area}, ₹${shortRent(listing.rent)}${listing.availabilityStatus !== "available" ? ` — ${listing.availabilityStatus === "occupied" ? "Occupied" : "Available Soon"}` : ""}`}
             className={cn(
               "cursor-pointer rounded-full px-2.5 py-1 text-xs font-semibold tracking-tight transition-all duration-200 border-0 outline-none",
               activeId === listing.id
                 ? "bg-brand text-brand-foreground scale-110 shadow-lg shadow-brand/40"
-                : "bg-background/80 backdrop-blur text-foreground hover:scale-105 hover:text-teal border border-border",
+                : listing.availabilityStatus === "occupied"
+                  ? "bg-warning/20 backdrop-blur text-warning border border-warning/40 hover:scale-105"
+                  : listing.availabilityStatus === "available_soon"
+                    ? "bg-blue-500/20 backdrop-blur text-blue-300 border border-blue-500/40 hover:scale-105"
+                    : "bg-background/80 backdrop-blur text-foreground hover:scale-105 hover:text-teal border border-border",
             )}
           >
             ₹{shortRent(listing.rent)}

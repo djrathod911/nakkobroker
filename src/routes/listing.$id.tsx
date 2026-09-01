@@ -13,11 +13,14 @@ import {
   Phone,
   AlertTriangle,
   ImageOff,
+  CheckCircle2,
+  Clock,
+  Ban,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MapView } from "@/components/map/MapView";
-import { formatRent } from "@/data/listings";
+import { availabilityLabel, formatRent } from "@/data/listings";
 import {
   fetchContactPhone,
   fetchListingById,
@@ -243,7 +246,27 @@ function ListingDetailPage() {
                 <AlertTriangle className="size-3.5" aria-hidden /> Price looks off
               </span>
             )}
+            {/* Availability status */}
+            {listing.availabilityStatus === "available" ? (
+              <span className="inline-flex items-center gap-1 rounded-full bg-success/15 px-2.5 py-1 text-xs font-medium text-success">
+                <CheckCircle2 className="size-3.5" aria-hidden /> Available Now
+              </span>
+            ) : listing.availabilityStatus === "occupied" ? (
+              <span className="inline-flex items-center gap-1 rounded-full bg-warning/15 px-2.5 py-1 text-xs font-medium text-warning">
+                <Ban className="size-3.5" aria-hidden /> Currently Occupied
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 rounded-full bg-blue-500/15 px-2.5 py-1 text-xs font-medium text-blue-400">
+                <Clock className="size-3.5" aria-hidden /> Available Soon
+              </span>
+            )}
           </div>
+          {/* Full availability detail */}
+          {listing.availabilityStatus !== "available" && (
+            <p className="mt-2 text-sm text-muted-foreground">
+              {availabilityLabel(listing)}
+            </p>
+          )}
           <h1 className="mt-3 text-3xl font-bold tracking-tight">{listing.title}</h1>
           <p className="mt-1 text-muted-foreground">
             {listing.area}, {listing.city ?? "Hyderabad"} · {listing.sqft} sqft · posted{" "}
@@ -275,7 +298,7 @@ function ListingDetailPage() {
           <Stat label="Monthly rent" value={`${formatRent(listing.rent)}${listing.negotiable ? " · neg." : ""}`} />
           <Stat label="Deposit" value={formatRent(listing.deposit)} />
           <Stat label="Maintenance" value={listing.maintenance ? formatRent(listing.maintenance) : "None"} />
-          <Stat label="Available" value={listing.availableFrom} />
+          <Stat label="Availability" value={availabilityLabel(listing)} />
         </section>
 
         {listing.description ? (

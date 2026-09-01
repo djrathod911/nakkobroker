@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { getListingContactPhone } from "./listing-contact.functions";
-import type { Furnishing, Listing, Tenant } from "@/data/listings";
+import type { AvailabilityStatus, Furnishing, Listing, Tenant } from "@/data/listings";
 
 export interface DbListingRow {
   id: string;
@@ -30,6 +30,9 @@ export interface DbListingRow {
   it_corridor_km: number;
   sqft: number;
   available_from: string;
+  availability_status: string;
+  available_from_date: string | null;
+  map_visible: boolean;
   amenities: string[];
   photos: string[];
   lng: number;
@@ -41,7 +44,7 @@ export interface DbListingRow {
 
 // contact_phone is intentionally excluded: it is not readable by signed-out visitors.
 const PUBLIC_COLUMNS =
-  "id,owner_id,title,city,house_type,description,bathrooms,balconies,floor,total_floors,parking,facing,area,bhk,rent,deposit,maintenance,negotiable,furnishing,tenant,owner_verified,community_verified,suspicious_price,metro_km,it_corridor_km,sqft,available_from,amenities,photos,lng,lat,source,votes,created_at";
+  "id,owner_id,title,city,house_type,description,bathrooms,balconies,floor,total_floors,parking,facing,area,bhk,rent,deposit,maintenance,negotiable,furnishing,tenant,owner_verified,community_verified,suspicious_price,metro_km,it_corridor_km,sqft,available_from,availability_status,available_from_date,map_visible,amenities,photos,lng,lat,source,votes,created_at";
 
 const daysAgo = (iso: string) =>
   Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 86_400_000));
@@ -74,6 +77,9 @@ export function toListing(row: DbListingRow): Listing {
     itCorridorKm: Number(row.it_corridor_km),
     sqft: row.sqft,
     availableFrom: row.available_from,
+    availabilityStatus: (row.availability_status as AvailabilityStatus) ?? "available",
+    availableFromDate: row.available_from_date ?? null,
+    mapVisible: row.map_visible ?? true,
     postedDaysAgo: daysAgo(row.created_at),
     amenities: row.amenities ?? [],
     votes: row.votes,
@@ -89,6 +95,8 @@ export async function fetchListings(): Promise<Listing[]> {
     .from("listings")
     .select(PUBLIC_COLUMNS)
     .eq("status", "published")
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .eq("map_visible" as any, true)
     .order("created_at", { ascending: false });
   if (error) throw error;
   return (data as unknown as DbListingRow[]).map(toListing);
@@ -178,6 +186,9 @@ export interface NewListingInput {
   it_corridor_km: number;
   sqft: number;
   available_from: string;
+  availability_status: string;
+  available_from_date: string | null;
+  map_visible: boolean;
   amenities: string[];
   contact_phone: string | null;
   lng: number;
@@ -208,7 +219,8 @@ export async function createListing(
 
   const { data, error } = await supabase
     .from("listings")
-    .insert({ ...input, owner_id: ownerId, photos })
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .insert({ ...input, owner_id: ownerId, photos } as any)
     .select("id")
     .single();
   if (error) {

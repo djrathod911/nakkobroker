@@ -7,8 +7,11 @@ import {
   TrainFront,
   Building2,
   ChevronRight,
+  Clock,
+  CheckCircle2,
+  Ban,
 } from "lucide-react";
-import { formatRent, type Listing } from "@/data/listings";
+import { availabilityLabel, formatRent, type Listing } from "@/data/listings";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -43,6 +46,7 @@ export function ListingCard({ listing, active, onHover, onSelect, voted, onVote 
         "glass group animate-in fade-in slide-in-from-bottom-2 cursor-pointer rounded-2xl p-4 outline-none",
         "duration-300 transition-all hover:-translate-y-0.5 hover:shadow-lg focus-visible:ring-2 focus-visible:ring-ring",
         active && "glow-ring",
+        listing.availabilityStatus === "occupied" && "opacity-75",
       )}
     >
       <div className="flex items-start justify-between gap-3">
@@ -54,6 +58,20 @@ export function ListingCard({ listing, active, onHover, onSelect, voted, onVote 
             </Badge>
             {listing.source === "To-Let Board" && (
               <Badge className="rounded-full bg-teal/15 text-teal">Board spotted</Badge>
+            )}
+            {/* Availability badge */}
+            {listing.availabilityStatus === "available" ? (
+              <span className="inline-flex items-center gap-1 rounded-full bg-success/15 px-2 py-0.5 text-xs text-success">
+                <CheckCircle2 className="size-3 shrink-0" aria-hidden /> Available Now
+              </span>
+            ) : listing.availabilityStatus === "occupied" ? (
+              <span className="inline-flex items-center gap-1 rounded-full bg-warning/15 px-2 py-0.5 text-xs text-warning">
+                <Ban className="size-3 shrink-0" aria-hidden /> Occupied
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 rounded-full bg-blue-500/15 px-2 py-0.5 text-xs text-blue-400">
+                <Clock className="size-3 shrink-0" aria-hidden /> Available Soon
+              </span>
             )}
           </div>
           <h2 className="mt-2 truncate text-base font-semibold tracking-tight">{listing.title}</h2>
@@ -85,6 +103,12 @@ export function ListingCard({ listing, active, onHover, onSelect, voted, onVote 
           <Users className="size-3.5 shrink-0" aria-hidden /> {listing.votes} votes
         </span>
       </div>
+      {/* Availability detail line */}
+      {listing.availabilityStatus !== "available" && (
+        <p className="mt-1.5 text-[11px] text-muted-foreground">
+          {availabilityLabel(listing)}
+        </p>
+      )}
 
       <div className="mt-3 flex items-center justify-between gap-2">
         <div className="flex min-w-0 flex-wrap items-center gap-1.5">

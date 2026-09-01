@@ -27,12 +27,13 @@ import {
   AMENITIES,
   AREAS,
   AVAILABILITY,
+  AVAILABILITY_STATUS_OPTIONS,
+  AVAILABLE_SOON_OPTIONS,
   CITIES,
   FACING,
   FURNISHING,
   HOUSE_TYPES,
   PARKING,
-
   STEPS,
   TENANTS,
   clearDraft,
@@ -411,6 +412,9 @@ function ListYourFlat() {
           it_corridor_km: draft.it_corridor_km,
           sqft: draft.sqft,
           available_from: draft.available_from.trim(),
+          availability_status: draft.availability_status,
+          available_from_date: draft.available_from_date || null,
+          map_visible: draft.map_visible,
           amenities: draft.amenities,
           contact_phone: draft.contact_phone.trim() || null,
           lng: draft.lng,
@@ -899,6 +903,88 @@ function ListYourFlat() {
                   onChange={(v) => set({ available_from: v })}
                   error={errors["available_from"]}
                 />
+
+                {/* ── Availability Status ── */}
+                <div className="space-y-3 rounded-2xl border border-border bg-secondary/30 p-4">
+                  <div>
+                    <FieldLabel required>Availability Status</FieldLabel>
+                    <p className="text-[11px] text-muted-foreground">
+                      List your property even when it's occupied — tenants can plan ahead.
+                    </p>
+                  </div>
+                  <div className="grid gap-2 sm:grid-cols-3">
+                    {AVAILABILITY_STATUS_OPTIONS.map((opt) => (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => set({ availability_status: opt.value })}
+                        className={cn(
+                          "rounded-xl border p-3 text-left transition-all",
+                          draft.availability_status === opt.value
+                            ? "border-brand bg-brand/10 text-foreground"
+                            : "border-border bg-secondary/40 text-muted-foreground hover:border-brand/40 hover:text-foreground",
+                        )}
+                      >
+                        <p className="text-xs font-semibold">{opt.label}</p>
+                        <p className="mt-0.5 text-[11px]">{opt.description}</p>
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Available Soon sub-options */}
+                  {(draft.availability_status === "available_soon" || draft.availability_status === "occupied") && (
+                    <div className="space-y-2 pt-1">
+                      <FieldLabel>Expected availability</FieldLabel>
+                      <div className="flex flex-wrap gap-2">
+                        {AVAILABLE_SOON_OPTIONS.map((opt) => (
+                          <Pill
+                            key={opt.value}
+                            label={opt.label}
+                            active={draft.available_soon_preset === opt.value}
+                            onClick={() => {
+                              set({ available_soon_preset: opt.value });
+                              if (opt.value !== "custom") {
+                                const months = opt.value === "1_month" ? 1 : opt.value === "2_months" ? 2 : 3;
+                                const d = new Date();
+                                d.setMonth(d.getMonth() + months);
+                                set({ available_from_date: d.toISOString().split("T")[0] ?? "" });
+                              }
+                            }}
+                          />
+                        ))}
+                      </div>
+                      {draft.available_soon_preset === "custom" && (
+                        <div className="space-y-1.5">
+                          <FieldLabel htmlFor="avail-date">Expected date</FieldLabel>
+                          <Input
+                            id="avail-date"
+                            type="date"
+                            min={new Date().toISOString().split("T")[0]}
+                            value={draft.available_from_date}
+                            onChange={(e) => set({ available_from_date: e.target.value })}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* ── Map Visibility Toggle ── */}
+                <div className="flex items-start justify-between gap-3 rounded-2xl border border-border bg-secondary/30 p-4">
+                  <div>
+                    <Label htmlFor="map-visible" className="text-sm font-medium">
+                      Show on map &amp; make visible to tenants
+                    </Label>
+                    <p className="mt-0.5 text-[11px] text-muted-foreground">
+                      Turn this off to save a draft without showing it publicly. You can switch it on anytime.
+                    </p>
+                  </div>
+                  <Switch
+                    id="map-visible"
+                    checked={draft.map_visible}
+                    onCheckedChange={(v) => set({ map_visible: v })}
+                  />
+                </div>
 
                 <div className="space-y-2">
                   <FieldLabel>Amenities</FieldLabel>

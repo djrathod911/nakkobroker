@@ -13,6 +13,7 @@ export interface Filters {
   ownerOnly: boolean;
   furnishing: string[];
   amenities: string[];
+  availabilityStatus: string[]; // "available" | "occupied" | "available_soon"
 }
 
 export const RENT_MIN = 5000;
@@ -30,6 +31,7 @@ export const defaultFilters: Filters = {
   ownerOnly: false,
   furnishing: [],
   amenities: [],
+  availabilityStatus: [],
 };
 
 const FURNISHING = ["Unfurnished", "Semi Furnished", "Fully Furnished"];
@@ -168,6 +170,26 @@ export function FilterPanel({
               label={a}
               selected={filters.amenities.includes(a)}
               onClick={() => onChange({ ...filters, amenities: toggle(filters.amenities, a) })}
+            />
+          ))}
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Availability</p>
+        <div className="flex flex-wrap gap-2">
+          {[
+            { value: "available", label: "Available Now" },
+            { value: "available_soon", label: "Available Soon" },
+            { value: "occupied", label: "Occupied" },
+          ].map((opt) => (
+            <Chip
+              key={opt.value}
+              label={opt.label}
+              selected={filters.availabilityStatus.includes(opt.value)}
+              onClick={() =>
+                onChange({ ...filters, availabilityStatus: toggle(filters.availabilityStatus, opt.value) })
+              }
             />
           ))}
         </div>

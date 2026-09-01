@@ -132,6 +132,7 @@ function Discover() {
       if (filters.ownerOnly && l.source !== "Owner") return false;
       if (filters.furnishing.length && !filters.furnishing.includes(l.furnishing)) return false;
       if (filters.amenities.length && !filters.amenities.every((a) => l.amenities.includes(a))) return false;
+      if (filters.availabilityStatus.length && !filters.availabilityStatus.includes(l.availabilityStatus)) return false;
       return true;
     });
   }, [query, filters, allListings]);
@@ -144,6 +145,7 @@ function Discover() {
     filters.bhk.length +
     filters.furnishing.length +
     filters.amenities.length +
+    filters.availabilityStatus.length +
     (filters.ownerOnly ? 1 : 0) +
     (filters.houseType !== "Any" ? 1 : 0) +
     (filters.maxRent < RENT_MAX || filters.minRent > RENT_MIN ? 1 : 0);
