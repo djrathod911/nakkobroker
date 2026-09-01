@@ -119,14 +119,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
             {
               "@type": "Organization",
               name: "NakkoBroker",
-              url: "https://nakkobroker.lovable.app",
+              url: "https://nakkobroker.com",
               description:
                 "Community-driven, zero-brokerage rental discovery platform for Hyderabad.",
             },
             {
               "@type": "WebSite",
               name: "NakkoBroker",
-              url: "https://nakkobroker.lovable.app",
+              url: "https://nakkobroker.com",
             },
           ],
         }),
