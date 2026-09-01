@@ -200,6 +200,7 @@ function ListingDetailPage() {
               className="glass rounded-2xl border-0"
               onClick={onVote}
               aria-pressed={voted}
+              aria-label={`${voted ? "Remove your upvote from" : "Upvote"} this listing (${listing.votes} upvotes)`}
             >
               <ArrowBigUp className="size-4" /> {listing.votes}
             </Button>

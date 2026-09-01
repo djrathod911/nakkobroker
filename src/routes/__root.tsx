@@ -94,22 +94,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "NakkoBroker" },
-      {
-        name: "description",
-        content:
-          "Find flats directly from owners in Hyderabad on a live map. Community-verified, zero brokerage.",
-      },
       { name: "author", content: "NakkoBroker" },
       { property: "og:site_name", content: "NakkoBroker" },
-      { property: "og:title", content: "NakkoBroker" },
-      {
-        property: "og:description",
-        content:
-          "Find flats directly from owners in Hyderabad on a live map. Community-verified, zero brokerage.",
-      },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
       {
@@ -133,14 +119,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
             {
               "@type": "Organization",
               name: "NakkoBroker",
-              url: "https://nakkobroker.lovable.app",
+              url: "https://nakkobroker.com",
               description:
                 "Community-driven, zero-brokerage rental discovery platform for Hyderabad.",
             },
             {
               "@type": "WebSite",
               name: "NakkoBroker",
-              url: "https://nakkobroker.lovable.app",
+              url: "https://nakkobroker.com",
             },
           ],
         }),

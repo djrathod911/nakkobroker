@@ -152,6 +152,15 @@ function Discover() {
         />
       </div>
 
+      {/* Persistent page heading */}
+      <div className="pointer-events-none absolute inset-x-0 top-16 z-20 px-3 sm:top-24 sm:px-5">
+        <div className="mx-auto max-w-6xl">
+          <h1 className="glass inline-block rounded-2xl px-3 py-1.5 text-base font-semibold tracking-tight sm:text-lg">
+            Zero-brokerage rentals in Hyderabad
+          </h1>
+        </div>
+      </div>
+
       {/* Top bar */}
       <header className="pointer-events-none absolute inset-x-0 top-0 z-30 p-3 sm:p-5">
         <div className="pointer-events-auto mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
@@ -308,11 +317,11 @@ function Discover() {
               <div className="shrink-0 border-b border-border/60 px-4 py-3">
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <h1 className="text-sm font-semibold tracking-tight">
+                    <h2 className="text-sm font-semibold tracking-tight">
                       {isLoading
                         ? `Finding homes in ${filters.city}…`
                         : `${results.length} zero-brokerage ${results.length === 1 ? "home" : "homes"} in ${filters.city}`}
-                    </h1>
+                    </h2>
                     <p className="text-xs text-muted-foreground">
                       {avgRent ? `Average ${formatRent(avgRent)}/month in this view` : "Adjust filters to see homes"}
                     </p>
