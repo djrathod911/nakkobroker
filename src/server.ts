@@ -44,22 +44,32 @@ function isH3SwallowedErrorBody(body: string): boolean {
   }
 }
 
-const CSP = [
-  "default-src 'self'",
-  // SSR hydration + Google Maps SDK need inline/eval-free remote scripts
-  "script-src 'self' 'unsafe-inline' https://maps.googleapis.com https://maps.gstatic.com https://*.lovable.app https://*.lovableproject.com https://*.gpteng.co",
-  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-  "font-src 'self' data: https://fonts.gstatic.com",
-  "img-src 'self' data: blob: https:",
-  "connect-src 'self' https: wss:",
-  "worker-src 'self' blob:",
-  "frame-src 'self' https://*.lovable.app https://*.lovableproject.com",
-  "frame-ancestors 'self' https://*.lovable.app https://*.lovableproject.com https://lovable.dev",
-  "object-src 'none'",
-  "base-uri 'self'",
-  "form-action 'self'",
-  "upgrade-insecure-requests",
-].join("; ");
+function buildCsp(embedded: boolean): string {
+  const scriptSrc = [
+    "script-src 'self' 'unsafe-inline'",
+    // Dev/preview tooling (Vite HMR, editor bridge) evaluates code at runtime.
+    embedded ? "'unsafe-eval'" : "",
+    "https://maps.googleapis.com https://maps.gstatic.com https://*.lovable.app https://*.lovableproject.com https://*.gpteng.co",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  return [
+    "default-src 'self'",
+    scriptSrc,
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "font-src 'self' data: https://fonts.gstatic.com",
+    "img-src 'self' data: blob: https:",
+    "connect-src 'self' https: wss: ws:",
+    "worker-src 'self' blob:",
+    "frame-src 'self' https://*.lovable.app https://*.lovableproject.com",
+    "frame-ancestors 'self' https://*.lovable.app https://*.lovableproject.com https://lovable.dev",
+    "object-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+  ].join("; ");
+}
+
 
 const PERMISSIONS_POLICY = [
   "accelerometer=()",
