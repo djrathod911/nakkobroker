@@ -57,8 +57,8 @@ function buildCsp(embedded: boolean): string {
   return [
     "default-src 'self'",
     scriptSrc,
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-    "font-src 'self' data: https://fonts.gstatic.com",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.bunny.net",
+    "font-src 'self' data: https://fonts.gstatic.com https://fonts.bunny.net",
     "img-src 'self' data: blob: https:",
     "connect-src 'self' https: wss: ws:",
     "worker-src 'self' blob:",
