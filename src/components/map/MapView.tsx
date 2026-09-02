@@ -4,6 +4,7 @@ import {
   Map,
   AdvancedMarker,
   useMap,
+  type MapProps,
 } from "@vis.gl/react-google-maps";
 import { HYDERABAD_CENTER, shortRent, type Listing } from "@/data/listings";
 import { cn } from "@/lib/utils";
@@ -16,7 +17,7 @@ const GOOGLE_MAPS_API_KEY =
 const MAP_CENTER = { lat: HYDERABAD_CENTER[1], lng: HYDERABAD_CENTER[0] };
 
 // Dark map style matching the app's dark theme
-const DARK_MAP_STYLE: google.maps.MapTypeStyle[] = [
+const DARK_MAP_STYLE: NonNullable<MapProps["styles"]> = [
   { elementType: "geometry", stylers: [{ color: "#1a1a2e" }] },
   { elementType: "labels.text.stroke", stylers: [{ color: "#1a1a2e" }] },
   { elementType: "labels.text.fill", stylers: [{ color: "#746855" }] },

@@ -115,7 +115,9 @@ export type Database = {
         Row: {
           amenities: string[]
           area: string
+          availability_status: string
           available_from: string
+          available_from_date: string | null
           balconies: number
           bathrooms: number
           bhk: number
@@ -134,6 +136,7 @@ export type Database = {
           lat: number
           lng: number
           maintenance: number
+          map_visible: boolean
           metro_km: number
           negotiable: boolean
           owner_id: string | null
@@ -155,7 +158,9 @@ export type Database = {
         Insert: {
           amenities?: string[]
           area: string
+          availability_status?: string
           available_from?: string
+          available_from_date?: string | null
           balconies?: number
           bathrooms?: number
           bhk?: number
@@ -174,6 +179,7 @@ export type Database = {
           lat: number
           lng: number
           maintenance?: number
+          map_visible?: boolean
           metro_km?: number
           negotiable?: boolean
           owner_id?: string | null
@@ -195,7 +201,9 @@ export type Database = {
         Update: {
           amenities?: string[]
           area?: string
+          availability_status?: string
           available_from?: string
+          available_from_date?: string | null
           balconies?: number
           bathrooms?: number
           bhk?: number
@@ -214,6 +222,7 @@ export type Database = {
           lat?: number
           lng?: number
           maintenance?: number
+          map_visible?: boolean
           metro_km?: number
           negotiable?: boolean
           owner_id?: string | null

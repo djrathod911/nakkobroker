@@ -70,6 +70,7 @@ export const Route = createFileRoute("/")({
 });
 
 function Discover() {
+  const initialListings = Route.useLoaderData();
   const [query, setQuery] = useState("");
   const [filters, setFilters] = useState<Filters>(defaultFilters);
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -82,14 +83,17 @@ function Discover() {
 
   // Data is pre-populated by the route loader — no loading state on first render
   const {
-    data: allListings = [],
+    data: queriedListings,
     isLoading,
     isError,
     refetch,
   } = useQuery({
     queryKey: ["listings"],
     queryFn: fetchListings,
+    initialData: initialListings,
   });
+  const allListings = queriedListings ?? initialListings;
+  const isInitialLoading = isLoading && allListings.length === 0;
 
   const { data: votedIds = [] } = useQuery({
     queryKey: ["my-votes", user?.id],
@@ -327,7 +331,7 @@ function Discover() {
             <div className="flex items-start justify-between gap-2">
               <div>
                 <h2 className="text-sm font-semibold tracking-tight">
-                  {isLoading
+                  {isInitialLoading
                     ? `Finding homes in ${filters.city}…`
                     : `${results.length} zero-brokerage ${results.length === 1 ? "home" : "homes"} in ${filters.city}`}
                 </h2>
@@ -381,7 +385,7 @@ function Discover() {
           </div>
 
           <div className="flex-1 space-y-3 overflow-y-auto p-3">
-            {isLoading ? (
+            {isInitialLoading ? (
               <div className="space-y-3" role="status" aria-busy="true" aria-label="Loading listings">
                 {[0, 1, 2, 3].map((i) => (
                   <div key={i} className="h-32 animate-pulse rounded-2xl border border-border bg-secondary/40" />
