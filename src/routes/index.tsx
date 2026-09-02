@@ -70,6 +70,7 @@ export const Route = createFileRoute("/")({
 });
 
 function Discover() {
+  const initialListings = Route.useLoaderData();
   const [query, setQuery] = useState("");
   const [filters, setFilters] = useState<Filters>(defaultFilters);
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -89,6 +90,7 @@ function Discover() {
   } = useQuery({
     queryKey: ["listings"],
     queryFn: fetchListings,
+    initialData: initialListings,
   });
 
   const { data: votedIds = [] } = useQuery({
