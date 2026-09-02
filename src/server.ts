@@ -102,8 +102,9 @@ function isEmbeddedHost(request: Request): boolean {
 }
 
 function withSecurityHeaders(response: Response, request: Request): Response {
+  const embedded = isEmbeddedHost(request);
   const headers = new Headers(response.headers);
-  headers.set("Content-Security-Policy", CSP);
+  headers.set("Content-Security-Policy", buildCsp(embedded));
   headers.set("X-Content-Type-Options", "nosniff");
   headers.set("X-XSS-Protection", "0");
   headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
@@ -112,7 +113,8 @@ function withSecurityHeaders(response: Response, request: Request): Response {
   headers.set("Cross-Origin-Resource-Policy", "same-site");
   headers.set("Cross-Origin-Embedder-Policy", "unsafe-none");
   headers.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload");
-  if (!isEmbeddedHost(request)) headers.set("X-Frame-Options", "SAMEORIGIN");
+  if (!embedded) headers.set("X-Frame-Options", "SAMEORIGIN");
+
 
   return new Response(response.body, {
     status: response.status,
