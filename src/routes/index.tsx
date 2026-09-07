@@ -142,6 +142,45 @@ function Discover() {
     });
   }, [query, filters, allListings]);
 
+  // Type-ahead suggestions: matching areas first, then individual homes.
+  const suggestions = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return [] as { kind: "area" | "listing"; label: string; sub: string; id?: string }[];
+    const inCity = allListings.filter((l) => (l.city ?? "Hyderabad") === filters.city);
+    const areas = Array.from(new Set(inCity.map((l) => l.area)))
+      .filter((a) => a.toLowerCase().includes(q))
+      .slice(0, 4)
+      .map((a) => ({
+        kind: "area" as const,
+        label: a,
+        sub: `${inCity.filter((l) => l.area === a).length} homes`,
+      }));
+    const homes = inCity
+      .filter((l) => `${l.title} ${l.area} ${l.bhk}bhk`.toLowerCase().includes(q))
+      .slice(0, 5)
+      .map((l) => ({
+        kind: "listing" as const,
+        label: l.title,
+        sub: `${l.bhk} BHK · ${l.area} · ${formatRent(l.rent)}`,
+        id: l.id,
+      }));
+    return [...areas, ...homes].slice(0, 7);
+  }, [query, allListings, filters.city]);
+
+  const listRef = useRef<HTMLDivElement>(null);
+
+  // Keep the results list in sync with the map: scroll the selected home into view.
+  useEffect(() => {
+    if (!activeId) return;
+    const el = listRef.current?.querySelector(`#listing-card-${CSS.escape(activeId)}`);
+    el?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }, [activeId]);
+
+  function onMapSelect(id: string) {
+    setActiveId(id);
+    setResultsOpen(true);
+  }
+
   const avgRent = results.length
     ? Math.round(results.reduce((sum, l) => sum + l.rent, 0) / results.length)
     : 0;
