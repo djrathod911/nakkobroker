@@ -1,12 +1,14 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
+import { Link } from "@tanstack/react-router";
 import {
   APIProvider,
   Map,
   AdvancedMarker,
+  InfoWindow,
   useMap,
   type MapProps,
 } from "@vis.gl/react-google-maps";
-import { HYDERABAD_CENTER, shortRent, type Listing } from "@/data/listings";
+import { HYDERABAD_CENTER, formatRent, shortRent, type Listing } from "@/data/listings";
 import { cn } from "@/lib/utils";
 
 const GOOGLE_MAPS_API_KEY =
@@ -42,6 +44,7 @@ interface MapViewProps {
   listings: Listing[];
   activeId: string | null;
   onSelect: (id: string) => void;
+  onClose?: (() => void) | undefined;
   showHeatmap: boolean;
   satellite: boolean;
 }
@@ -50,9 +53,11 @@ function ListingMarkers({
   listings,
   activeId,
   onSelect,
-}: Pick<MapViewProps, "listings" | "activeId" | "onSelect">) {
+  onClose,
+}: Pick<MapViewProps, "listings" | "activeId" | "onSelect" | "onClose">) {
   const map = useMap();
   const prevActiveRef = useRef<string | null>(null);
+  const active = listings.find((l) => l.id === activeId) ?? null;
 
   // Fly to active listing
   useEffect(() => {
@@ -92,11 +97,35 @@ function ListingMarkers({
           </button>
         </AdvancedMarker>
       ))}
+
+      {active && (
+        <InfoWindow
+          position={{ lat: active.lat, lng: active.lng }}
+          pixelOffset={[0, -34]}
+          onCloseClick={() => onClose?.()}
+          headerDisabled
+        >
+          <div className="min-w-[210px] max-w-[250px] p-1 text-slate-900">
+            <p className="text-sm font-semibold leading-snug">{active.title}</p>
+            <p className="mt-0.5 text-xs text-slate-600">
+              {active.bhk} BHK · {active.furnishing} · {active.area}
+            </p>
+            <p className="mt-1 text-base font-bold">{formatRent(active.rent)}/mo</p>
+            <Link
+              to="/listing/$id"
+              params={{ id: active.id }}
+              className="mt-2 inline-flex w-full items-center justify-center rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white"
+            >
+              View details
+            </Link>
+          </div>
+        </InfoWindow>
+      )}
     </>
   );
 }
 
-export function MapView({ listings, activeId, onSelect, showHeatmap, satellite }: MapViewProps) {
+export function MapView({ listings, activeId, onSelect, onClose, showHeatmap, satellite }: MapViewProps) {
   const mapId = "nakkobroker-map";
 
   if (!GOOGLE_MAPS_API_KEY) {
@@ -125,7 +154,7 @@ export function MapView({ listings, activeId, onSelect, showHeatmap, satellite }
           styles={satellite ? null : DARK_MAP_STYLE}
           reuseMaps
         >
-          <ListingMarkers listings={listings} activeId={activeId} onSelect={onSelect} />
+          <ListingMarkers listings={listings} activeId={activeId} onSelect={onSelect} onClose={onClose} />
         </Map>
       </APIProvider>
 

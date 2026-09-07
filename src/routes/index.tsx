@@ -1,4 +1,4 @@
-import { lazy, Suspense, useMemo, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -15,6 +15,7 @@ import {
   UserRound,
   MessagesSquare,
   Home,
+  MapPin,
 } from "lucide-react";
 import { ListingCard } from "@/components/listings/ListingCard";
 import { NotificationBell } from "@/components/alerts/NotificationBell";
@@ -77,6 +78,7 @@ function Discover() {
   const [heatmap, setHeatmap] = useState(false);
   const [satellite, setSatellite] = useState(false);
   const [resultsOpen, setResultsOpen] = useState(true);
+  const [suggestOpen, setSuggestOpen] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -141,6 +143,45 @@ function Discover() {
     });
   }, [query, filters, allListings]);
 
+  // Type-ahead suggestions: matching areas first, then individual homes.
+  const suggestions = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return [] as { kind: "area" | "listing"; label: string; sub: string; id?: string }[];
+    const inCity = allListings.filter((l) => (l.city ?? "Hyderabad") === filters.city);
+    const areas = Array.from(new Set(inCity.map((l) => l.area)))
+      .filter((a) => a.toLowerCase().includes(q))
+      .slice(0, 4)
+      .map((a) => ({
+        kind: "area" as const,
+        label: a,
+        sub: (() => { const n = inCity.filter((l) => l.area === a).length; return `${n} ${n === 1 ? "home" : "homes"}`; })(),
+      }));
+    const homes = inCity
+      .filter((l) => `${l.title} ${l.area} ${l.bhk}bhk`.toLowerCase().includes(q))
+      .slice(0, 5)
+      .map((l) => ({
+        kind: "listing" as const,
+        label: l.title,
+        sub: `${l.bhk} BHK · ${l.area} · ${formatRent(l.rent)}`,
+        id: l.id,
+      }));
+    return [...areas, ...homes].slice(0, 7);
+  }, [query, allListings, filters.city]);
+
+  const listRef = useRef<HTMLDivElement>(null);
+
+  // Keep the results list in sync with the map: scroll the selected home into view.
+  useEffect(() => {
+    if (!activeId) return;
+    const el = listRef.current?.querySelector(`#listing-card-${CSS.escape(activeId)}`);
+    el?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }, [activeId]);
+
+  function onMapSelect(id: string) {
+    setActiveId(id);
+    setResultsOpen(true);
+  }
+
   const avgRent = results.length
     ? Math.round(results.reduce((sum, l) => sum + l.rent, 0) / results.length)
     : 0;
@@ -162,7 +203,8 @@ function Discover() {
           <MapView
             listings={results}
             activeId={activeId}
-            onSelect={setActiveId}
+            onSelect={onMapSelect}
+            onClose={() => setActiveId(null)}
             showHeatmap={heatmap}
             satellite={satellite}
           />
@@ -181,32 +223,83 @@ function Discover() {
       {/* Top bar */}
       <header className="pointer-events-none absolute inset-x-0 top-0 z-30 p-3 sm:p-5">
         <div className="pointer-events-auto mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
-          <div className="glass flex min-w-0 items-center gap-2 rounded-2xl px-3 py-2">
-            <span className="hidden shrink-0 items-center gap-2 pr-2 sm:flex">
-              <span className="grid size-7 shrink-0 place-items-center rounded-lg bg-brand text-xs font-black text-brand-foreground">
-                N
+          <div className="relative min-w-0">
+            <div className="glass flex min-w-0 items-center gap-2 rounded-2xl px-3 py-2">
+              <span className="hidden shrink-0 items-center gap-2 pr-2 sm:flex">
+                <span className="grid size-7 shrink-0 place-items-center rounded-lg bg-brand text-xs font-black text-brand-foreground">
+                  N
+                </span>
+                <span className="text-sm font-semibold tracking-tight">NakkoBroker</span>
               </span>
-              <span className="text-sm font-semibold tracking-tight">NakkoBroker</span>
-            </span>
-            <div className="hidden h-6 w-px shrink-0 bg-border sm:block" />
-            <Search className="size-4 shrink-0 text-muted-foreground" aria-hidden />
-            <Input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search area, society or locality…"
-              aria-label="Search areas and listings"
-              className="min-w-0 border-0 bg-transparent px-0 shadow-none focus-visible:ring-0"
-            />
-            {query && (
-              <Button
-                size="icon"
-                variant="ghost"
-                aria-label="Clear search"
-                className="size-7 shrink-0 rounded-full"
-                onClick={() => setQuery("")}
+              <div className="hidden h-6 w-px shrink-0 bg-border sm:block" />
+              <Search className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+              <Input
+                value={query}
+                onChange={(e) => {
+                  setQuery(e.target.value);
+                  setSuggestOpen(true);
+                }}
+                onFocus={() => setSuggestOpen(true)}
+                onBlur={() => window.setTimeout(() => setSuggestOpen(false), 150)}
+                placeholder="Search area, society or locality…"
+                aria-label="Search areas and listings"
+                role="combobox"
+                aria-expanded={suggestOpen && suggestions.length > 0}
+                aria-controls="search-suggestions"
+                autoComplete="off"
+                className="min-w-0 border-0 bg-transparent px-0 shadow-none focus-visible:ring-0"
+              />
+              {query && (
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  aria-label="Clear search"
+                  className="size-7 shrink-0 rounded-full"
+                  onClick={() => setQuery("")}
+                >
+                  <X className="size-4" />
+                </Button>
+              )}
+            </div>
+
+            {suggestOpen && suggestions.length > 0 && (
+              <ul
+                id="search-suggestions"
+                role="listbox"
+                aria-label="Search suggestions"
+                className="glass absolute left-0 right-0 top-full z-40 mt-2 max-h-80 overflow-y-auto rounded-2xl p-1.5"
               >
-                <X className="size-4" />
-              </Button>
+                {suggestions.map((s) => (
+                  <li key={`${s.kind}-${s.label}`}>
+                    <button
+                      type="button"
+                      role="option"
+                      aria-selected={false}
+                      className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left transition-colors hover:bg-accent"
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => {
+                        setSuggestOpen(false);
+                        if (s.kind === "area") {
+                          setQuery(s.label);
+                        } else if (s.id) {
+                          setQuery("");
+                          navigate({ to: "/listing/$id", params: { id: s.id } });
+                        }
+                      }}
+                    >
+                      {s.kind === "area" ? (
+                        <MapPin className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+                      ) : (
+                        <Home className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+                      )}
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-sm font-medium">{s.label}</span>
+                        <span className="block truncate text-xs text-muted-foreground">{s.sub}</span>
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
             )}
           </div>
 
@@ -384,7 +477,7 @@ function Discover() {
             </div>
           </div>
 
-          <div className="flex-1 space-y-3 overflow-y-auto p-3">
+          <div ref={listRef} className="flex-1 space-y-3 overflow-y-auto p-3">
             {isInitialLoading ? (
               <div className="space-y-3" role="status" aria-busy="true" aria-label="Loading listings">
                 {[0, 1, 2, 3].map((i) => (
