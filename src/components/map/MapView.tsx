@@ -125,7 +125,7 @@ function ListingMarkers({
   );
 }
 
-export function MapView({ listings, activeId, onSelect, showHeatmap, satellite }: MapViewProps) {
+export function MapView({ listings, activeId, onSelect, onClose, showHeatmap, satellite }: MapViewProps) {
   const mapId = "nakkobroker-map";
 
   if (!GOOGLE_MAPS_API_KEY) {
