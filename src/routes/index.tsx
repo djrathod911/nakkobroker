@@ -202,7 +202,8 @@ function Discover() {
           <MapView
             listings={results}
             activeId={activeId}
-            onSelect={setActiveId}
+            onSelect={onMapSelect}
+            onClose={() => setActiveId(null)}
             showHeatmap={heatmap}
             satellite={satellite}
           />
