@@ -154,7 +154,7 @@ function Discover() {
       .map((a) => ({
         kind: "area" as const,
         label: a,
-        sub: `${inCity.filter((l) => l.area === a).length} homes`,
+        sub: (() => { const n = inCity.filter((l) => l.area === a).length; return `${n} ${n === 1 ? "home" : "homes"}`; })(),
       }));
     const homes = inCity
       .filter((l) => `${l.title} ${l.area} ${l.bhk}bhk`.toLowerCase().includes(q))
