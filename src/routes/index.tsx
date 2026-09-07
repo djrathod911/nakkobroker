@@ -77,6 +77,7 @@ function Discover() {
   const [heatmap, setHeatmap] = useState(false);
   const [satellite, setSatellite] = useState(false);
   const [resultsOpen, setResultsOpen] = useState(true);
+  const [suggestOpen, setSuggestOpen] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
