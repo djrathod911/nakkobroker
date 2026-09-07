@@ -270,7 +270,7 @@ function Discover() {
                 className="glass absolute left-0 right-0 top-full z-40 mt-2 max-h-80 overflow-y-auto rounded-2xl p-1.5"
               >
                 {suggestions.map((s) => (
-                  <li key={`${s.kind}-${s.id ?? s.label}`}>
+                  <li key={`${s.kind}-${s.label}`}>
                     <button
                       type="button"
                       role="option"

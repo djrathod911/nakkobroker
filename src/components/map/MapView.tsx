@@ -44,7 +44,7 @@ interface MapViewProps {
   listings: Listing[];
   activeId: string | null;
   onSelect: (id: string) => void;
-  onClose?: () => void;
+  onClose?: (() => void) | undefined;
   showHeatmap: boolean;
   satellite: boolean;
 }
