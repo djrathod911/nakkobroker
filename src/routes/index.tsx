@@ -477,7 +477,7 @@ function Discover() {
             </div>
           </div>
 
-          <div className="flex-1 space-y-3 overflow-y-auto p-3">
+          <div ref={listRef} className="flex-1 space-y-3 overflow-y-auto p-3">
             {isInitialLoading ? (
               <div className="space-y-3" role="status" aria-busy="true" aria-label="Loading listings">
                 {[0, 1, 2, 3].map((i) => (
