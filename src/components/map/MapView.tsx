@@ -44,6 +44,7 @@ interface MapViewProps {
   listings: Listing[];
   activeId: string | null;
   onSelect: (id: string) => void;
+  onClose?: () => void;
   showHeatmap: boolean;
   satellite: boolean;
 }
@@ -52,7 +53,8 @@ function ListingMarkers({
   listings,
   activeId,
   onSelect,
-}: Pick<MapViewProps, "listings" | "activeId" | "onSelect">) {
+  onClose,
+}: Pick<MapViewProps, "listings" | "activeId" | "onSelect" | "onClose">) {
   const map = useMap();
   const prevActiveRef = useRef<string | null>(null);
 
