@@ -154,7 +154,7 @@ export function MapView({ listings, activeId, onSelect, onClose, showHeatmap, sa
           styles={satellite ? null : DARK_MAP_STYLE}
           reuseMaps
         >
-          <ListingMarkers listings={listings} activeId={activeId} onSelect={onSelect} />
+          <ListingMarkers listings={listings} activeId={activeId} onSelect={onSelect} onClose={onClose} />
         </Map>
       </APIProvider>
 
