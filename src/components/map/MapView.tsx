@@ -1,12 +1,14 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
+import { Link } from "@tanstack/react-router";
 import {
   APIProvider,
   Map,
   AdvancedMarker,
+  InfoWindow,
   useMap,
   type MapProps,
 } from "@vis.gl/react-google-maps";
-import { HYDERABAD_CENTER, shortRent, type Listing } from "@/data/listings";
+import { HYDERABAD_CENTER, formatRent, shortRent, type Listing } from "@/data/listings";
 import { cn } from "@/lib/utils";
 
 const GOOGLE_MAPS_API_KEY =
