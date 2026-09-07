@@ -15,6 +15,7 @@ import {
   UserRound,
   MessagesSquare,
   Home,
+  MapPin,
 } from "lucide-react";
 import { ListingCard } from "@/components/listings/ListingCard";
 import { NotificationBell } from "@/components/alerts/NotificationBell";
