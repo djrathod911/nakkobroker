@@ -57,6 +57,7 @@ function ListingMarkers({
 }: Pick<MapViewProps, "listings" | "activeId" | "onSelect" | "onClose">) {
   const map = useMap();
   const prevActiveRef = useRef<string | null>(null);
+  const active = listings.find((l) => l.id === activeId) ?? null;
 
   // Fly to active listing
   useEffect(() => {
