@@ -222,32 +222,83 @@ function Discover() {
       {/* Top bar */}
       <header className="pointer-events-none absolute inset-x-0 top-0 z-30 p-3 sm:p-5">
         <div className="pointer-events-auto mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
-          <div className="glass flex min-w-0 items-center gap-2 rounded-2xl px-3 py-2">
-            <span className="hidden shrink-0 items-center gap-2 pr-2 sm:flex">
-              <span className="grid size-7 shrink-0 place-items-center rounded-lg bg-brand text-xs font-black text-brand-foreground">
-                N
+          <div className="relative min-w-0">
+            <div className="glass flex min-w-0 items-center gap-2 rounded-2xl px-3 py-2">
+              <span className="hidden shrink-0 items-center gap-2 pr-2 sm:flex">
+                <span className="grid size-7 shrink-0 place-items-center rounded-lg bg-brand text-xs font-black text-brand-foreground">
+                  N
+                </span>
+                <span className="text-sm font-semibold tracking-tight">NakkoBroker</span>
               </span>
-              <span className="text-sm font-semibold tracking-tight">NakkoBroker</span>
-            </span>
-            <div className="hidden h-6 w-px shrink-0 bg-border sm:block" />
-            <Search className="size-4 shrink-0 text-muted-foreground" aria-hidden />
-            <Input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search area, society or locality…"
-              aria-label="Search areas and listings"
-              className="min-w-0 border-0 bg-transparent px-0 shadow-none focus-visible:ring-0"
-            />
-            {query && (
-              <Button
-                size="icon"
-                variant="ghost"
-                aria-label="Clear search"
-                className="size-7 shrink-0 rounded-full"
-                onClick={() => setQuery("")}
+              <div className="hidden h-6 w-px shrink-0 bg-border sm:block" />
+              <Search className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+              <Input
+                value={query}
+                onChange={(e) => {
+                  setQuery(e.target.value);
+                  setSuggestOpen(true);
+                }}
+                onFocus={() => setSuggestOpen(true)}
+                onBlur={() => window.setTimeout(() => setSuggestOpen(false), 150)}
+                placeholder="Search area, society or locality…"
+                aria-label="Search areas and listings"
+                role="combobox"
+                aria-expanded={suggestOpen && suggestions.length > 0}
+                aria-controls="search-suggestions"
+                autoComplete="off"
+                className="min-w-0 border-0 bg-transparent px-0 shadow-none focus-visible:ring-0"
+              />
+              {query && (
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  aria-label="Clear search"
+                  className="size-7 shrink-0 rounded-full"
+                  onClick={() => setQuery("")}
+                >
+                  <X className="size-4" />
+                </Button>
+              )}
+            </div>
+
+            {suggestOpen && suggestions.length > 0 && (
+              <ul
+                id="search-suggestions"
+                role="listbox"
+                aria-label="Search suggestions"
+                className="glass absolute left-0 right-0 top-full z-40 mt-2 max-h-80 overflow-y-auto rounded-2xl p-1.5"
               >
-                <X className="size-4" />
-              </Button>
+                {suggestions.map((s) => (
+                  <li key={`${s.kind}-${s.id ?? s.label}`}>
+                    <button
+                      type="button"
+                      role="option"
+                      aria-selected={false}
+                      className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left transition-colors hover:bg-accent"
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => {
+                        setSuggestOpen(false);
+                        if (s.kind === "area") {
+                          setQuery(s.label);
+                        } else if (s.id) {
+                          setQuery("");
+                          navigate({ to: "/listing/$id", params: { id: s.id } });
+                        }
+                      }}
+                    >
+                      {s.kind === "area" ? (
+                        <MapPin className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+                      ) : (
+                        <Home className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+                      )}
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-sm font-medium">{s.label}</span>
+                        <span className="block truncate text-xs text-muted-foreground">{s.sub}</span>
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
             )}
           </div>
 
