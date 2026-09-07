@@ -96,6 +96,30 @@ function ListingMarkers({
           </button>
         </AdvancedMarker>
       ))}
+
+      {active && (
+        <InfoWindow
+          position={{ lat: active.lat, lng: active.lng }}
+          pixelOffset={[0, -34]}
+          onCloseClick={() => onClose?.()}
+          headerDisabled
+        >
+          <div className="min-w-[210px] max-w-[250px] p-1 text-slate-900">
+            <p className="text-sm font-semibold leading-snug">{active.title}</p>
+            <p className="mt-0.5 text-xs text-slate-600">
+              {active.bhk} BHK · {active.furnishing} · {active.area}
+            </p>
+            <p className="mt-1 text-base font-bold">{formatRent(active.rent)}/mo</p>
+            <Link
+              to="/listing/$id"
+              params={{ id: active.id }}
+              className="mt-2 inline-flex w-full items-center justify-center rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white"
+            >
+              View details
+            </Link>
+          </div>
+        </InfoWindow>
+      )}
     </>
   );
 }
