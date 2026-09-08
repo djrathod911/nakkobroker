@@ -80,10 +80,10 @@ function BudgetInputs({
   const [maxText, setMaxText] = useState(String(filters.maxRent));
 
   // Sync text inputs when the slider or parent resets the range
-  useState(() => {
+  useEffect(() => {
     setMinText(String(filters.minRent));
     setMaxText(String(filters.maxRent));
-  });
+  }, [filters.minRent, filters.maxRent]);
 
   const commit = (rawMin: string, rawMax: string) => {
     let min = Math.max(RENT_MIN, Math.min(RENT_MAX, Number(rawMin) || RENT_MIN));
