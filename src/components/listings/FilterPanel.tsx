@@ -1,8 +1,10 @@
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { formatRent } from "@/data/listings";
 import { cn } from "@/lib/utils";
+import { useEffect, useState } from "react";
 
 export interface Filters {
   city: string;
@@ -67,6 +69,84 @@ function Chip({
 const toggle = (list: string[], value: string) =>
   list.includes(value) ? list.filter((v) => v !== value) : [...list, value];
 
+function BudgetInputs({
+  filters,
+  onChange,
+}: {
+  filters: Filters;
+  onChange: (next: Filters) => void;
+}) {
+  const [minText, setMinText] = useState(String(filters.minRent));
+  const [maxText, setMaxText] = useState(String(filters.maxRent));
+
+  // Sync text inputs when the slider or parent resets the range
+  useEffect(() => {
+    setMinText(String(filters.minRent));
+    setMaxText(String(filters.maxRent));
+  }, [filters.minRent, filters.maxRent]);
+
+  const commit = (rawMin: string, rawMax: string) => {
+    let min = Math.max(RENT_MIN, Math.min(RENT_MAX, Number(rawMin) || RENT_MIN));
+    let max = Math.max(RENT_MIN, Math.min(RENT_MAX, Number(rawMax) || RENT_MAX));
+    if (min > max) {
+      // Keep the changed value and nudge the other to match
+      const prevMin = filters.minRent;
+      const prevMax = filters.maxRent;
+      if (min !== prevMin) max = min;
+      else min = max;
+    }
+    onChange({ ...filters, minRent: min, maxRent: max });
+    setMinText(String(min));
+    setMaxText(String(max));
+  };
+
+  return (
+    <div className="flex items-center gap-2">
+      <div className="relative flex-1">
+        <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">₹</span>
+        <Input
+          type="text"
+          inputMode="numeric"
+          pattern="[0-9]*"
+          value={minText}
+          onChange={(e) => {
+            const v = e.target.value.replace(/\D/g, "");
+            setMinText(v);
+          }}
+          onBlur={() => commit(minText, maxText)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") commit(minText, maxText);
+          }}
+          aria-label="Minimum rent"
+          className="h-9 rounded-lg border-border bg-secondary/40 pl-7 pr-2 text-right text-sm tabular-nums focus-visible:bg-background"
+          placeholder={String(RENT_MIN)}
+        />
+      </div>
+      <span className="text-xs text-muted-foreground">–</span>
+      <div className="relative flex-1">
+        <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">₹</span>
+        <Input
+          type="text"
+          inputMode="numeric"
+          pattern="[0-9]*"
+          value={maxText}
+          onChange={(e) => {
+            const v = e.target.value.replace(/\D/g, "");
+            setMaxText(v);
+          }}
+          onBlur={() => commit(minText, maxText)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") commit(minText, maxText);
+          }}
+          aria-label="Maximum rent"
+          className="h-9 rounded-lg border-border bg-secondary/40 pl-7 pr-2 text-right text-sm tabular-nums focus-visible:bg-background"
+          placeholder={String(RENT_MAX)}
+        />
+      </div>
+    </div>
+  );
+}
+
 export function FilterPanel({
   filters,
   onChange,
@@ -130,6 +210,9 @@ export function FilterPanel({
             {formatRent(filters.minRent)} – {formatRent(filters.maxRent)}
           </span>
         </div>
+
+        <BudgetInputs filters={filters} onChange={onChange} />
+
         <Slider
           value={[filters.minRent, filters.maxRent]}
           min={RENT_MIN}
