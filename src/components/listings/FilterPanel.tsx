@@ -79,6 +79,12 @@ function BudgetInputs({
   const [minText, setMinText] = useState(String(filters.minRent));
   const [maxText, setMaxText] = useState(String(filters.maxRent));
 
+  // Sync text inputs when the slider or parent resets the range
+  useState(() => {
+    setMinText(String(filters.minRent));
+    setMaxText(String(filters.maxRent));
+  });
+
   const commit = (rawMin: string, rawMax: string) => {
     let min = Math.max(RENT_MIN, Math.min(RENT_MAX, Number(rawMin) || RENT_MIN));
     let max = Math.max(RENT_MIN, Math.min(RENT_MAX, Number(rawMax) || RENT_MAX));
