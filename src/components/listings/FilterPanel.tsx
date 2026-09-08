@@ -132,6 +132,9 @@ export function FilterPanel({
             {formatRent(filters.minRent)} – {formatRent(filters.maxRent)}
           </span>
         </div>
+
+        <BudgetInputs filters={filters} onChange={onChange} />
+
         <Slider
           value={[filters.minRent, filters.maxRent]}
           min={RENT_MIN}
