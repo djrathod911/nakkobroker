@@ -40,7 +40,7 @@ function PinLayer({ lng, lat, onChange }: PinPickerProps) {
 
   useEffect(() => {
     if (!map) return;
-    const listener = map.addListener("click", (e: google.maps.MapMouseEvent) => {
+    const listener = map.addListener("click", (e: { latLng?: { lat(): number; lng(): number } | null }) => {
       if (!e.latLng) return;
       onChange(round(e.latLng.lng()), round(e.latLng.lat()));
     });
