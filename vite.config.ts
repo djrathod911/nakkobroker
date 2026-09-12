@@ -15,5 +15,9 @@ export default defineConfig({
   },
   vite: {
     plugins: [mcpPlugin()],
+    optimizeDeps: {
+      // maplibre-gl's worker file breaks under dep optimization (404 on the worker chunk)
+      exclude: ["maplibre-gl"],
+    },
   },
 });
