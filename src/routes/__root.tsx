@@ -96,6 +96,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { name: "author", content: "NakkoBroker" },
       { property: "og:site_name", content: "NakkoBroker" },
+      {
+        name: "google-site-verification",
+        content: "SocNE82fHhIveRYNjs1gNlO4uw1OhaG_8oZzuM41pSo",
+      },
     ],
     links: [
       {
