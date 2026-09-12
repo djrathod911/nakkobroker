@@ -8,6 +8,13 @@
       "when": 1788318273801,
       "tag": "0000_add_listing_availability_fields",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1789225133640,
+      "tag": "0001_create_saved_listings",
+      "breakpoints": true
     }
   ]
 }
