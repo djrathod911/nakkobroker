@@ -9,18 +9,32 @@ interface PinPickerProps {
   onChange: (lng: number, lat: number) => void;
 }
 
+// Keyless dark basemap (OpenFreeMap, OpenStreetMap data)
 const style: StyleSpecification = {
   version: 8,
   sources: {
     base: {
-      type: "raster",
-      tiles: ["https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png"],
-      tileSize: 256,
-      attribution: "© OpenStreetMap, © CARTO",
+      type: "vector",
+      url: "https://tiles.openfreemap.org/planet",
     },
   },
-  layers: [{ id: "base", type: "raster", source: "base" }],
+  layers: [
+    { id: "background", type: "background", paint: { "background-color": "#1d1f27" } },
+    {
+      id: "base",
+      type: "raster",
+      source: {
+        type: "raster",
+        tiles: ["https://tiles.openfreemap.org/natural_earth/ne2sr/{z}/{x}/{y}.png"],
+        tileSize: 256,
+        maxzoom: 6,
+        attribution: "© OpenStreetMap contributors",
+      } as never,
+    } as never,
+  ],
 };
+
+const STYLE_URL = "https://tiles.openfreemap.org/styles/dark";
 
 export function PinPicker({ lng, lat, onChange }: PinPickerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
