@@ -10,30 +10,6 @@ interface PinPickerProps {
 }
 
 // Keyless dark basemap (OpenFreeMap, OpenStreetMap data)
-const style: StyleSpecification = {
-  version: 8,
-  sources: {
-    base: {
-      type: "vector",
-      url: "https://tiles.openfreemap.org/planet",
-    },
-  },
-  layers: [
-    { id: "background", type: "background", paint: { "background-color": "#1d1f27" } },
-    {
-      id: "base",
-      type: "raster",
-      source: {
-        type: "raster",
-        tiles: ["https://tiles.openfreemap.org/natural_earth/ne2sr/{z}/{x}/{y}.png"],
-        tileSize: 256,
-        maxzoom: 6,
-        attribution: "© OpenStreetMap contributors",
-      } as never,
-    } as never,
-  ],
-};
-
 const STYLE_URL = "https://tiles.openfreemap.org/styles/dark";
 
 export function PinPicker({ lng, lat, onChange }: PinPickerProps) {
