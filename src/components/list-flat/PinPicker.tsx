@@ -23,7 +23,7 @@ export function PinPicker({ lng, lat, onChange }: PinPickerProps) {
     if (!containerRef.current || mapRef.current) return;
     const map = new maplibregl.Map({
       container: containerRef.current,
-      style,
+      style: STYLE_URL,
       center: [lng, lat],
       zoom: 14,
       attributionControl: false,
