@@ -30,6 +30,7 @@ import {
 } from "@/lib/listings.api";
 import { useAuth } from "@/hooks/useAuth";
 import { RequestViewingButton } from "@/components/listings/RequestViewingButton";
+import { SaveListingButton } from "@/components/listings/SaveListingButton";
 
 export const Route = createFileRoute("/listing/$id")({
   loader: ({ params }) => fetchListingById(params.id),
@@ -408,6 +409,7 @@ function ListingDetailPage() {
                   userId={user?.id ?? null}
                   listingTitle={listing.title}
                 />
+                <SaveListingButton listingId={listing.id} variant="full" className="mt-3 w-full" />
               </div>
             </div>
           </div>

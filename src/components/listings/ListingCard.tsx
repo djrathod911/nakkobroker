@@ -15,6 +15,7 @@ import { availabilityLabel, formatRent, type Listing } from "@/data/listings";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { SaveListingButton } from "@/components/listings/SaveListingButton";
 
 interface ListingCardProps {
   listing: Listing;
@@ -137,6 +138,7 @@ export function ListingCard({ listing, active, onHover, onSelect, voted, onVote 
           )}
         </div>
         <div className="flex shrink-0 items-center gap-1 opacity-70 transition-opacity group-hover:opacity-100">
+          <SaveListingButton listingId={listing.id} />
           <Button
             size="icon"
             variant="ghost"

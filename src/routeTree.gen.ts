@@ -16,6 +16,7 @@ import { Route as McpRouteImport } from './routes/mcp'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedListYourFlatRouteImport } from './routes/_authenticated/list-your-flat'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedSpotABoardRouteImport } from './routes/_authenticated/spot-a-board'
@@ -61,6 +62,11 @@ const Char91DotwellKnownChar93OauthProtectedResourceRoute =
     path: '/.well-known/oauth-protected-resource',
     getParentRoute: () => rootRouteImport,
   } as any)
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedListYourFlatRoute =
   AuthenticatedListYourFlatRouteImport.update({
     id: '/list-your-flat',
@@ -112,6 +118,7 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
   '/list-your-flat': typeof AuthenticatedListYourFlatRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/spot-a-board': typeof AuthenticatedSpotABoardRoute
@@ -128,6 +135,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
   '/list-your-flat': typeof AuthenticatedListYourFlatRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/spot-a-board': typeof AuthenticatedSpotABoardRoute
@@ -146,6 +154,7 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/list-your-flat': typeof AuthenticatedListYourFlatRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/spot-a-board': typeof AuthenticatedSpotABoardRoute
@@ -164,6 +173,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
+    | '/dashboard'
     | '/list-your-flat'
     | '/profile'
     | '/spot-a-board'
@@ -180,6 +190,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
+    | '/dashboard'
     | '/list-your-flat'
     | '/profile'
     | '/spot-a-board'
@@ -197,6 +208,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
+    | '/_authenticated/dashboard'
     | '/_authenticated/list-your-flat'
     | '/_authenticated/profile'
     | '/_authenticated/spot-a-board'
@@ -271,6 +283,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/list-your-flat': {
       id: '/_authenticated/list-your-flat'
       path: '/list-your-flat'
@@ -331,6 +350,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedListYourFlatRoute: typeof AuthenticatedListYourFlatRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedSpotABoardRoute: typeof AuthenticatedSpotABoardRoute
@@ -339,6 +359,7 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedListYourFlatRoute: AuthenticatedListYourFlatRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedSpotABoardRoute: AuthenticatedSpotABoardRoute,

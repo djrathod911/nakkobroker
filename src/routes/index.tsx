@@ -16,6 +16,7 @@ import {
   MessagesSquare,
   Home,
   MapPin,
+  LayoutDashboard,
 } from "lucide-react";
 import { ListingCard } from "@/components/listings/ListingCard";
 import { NotificationBell } from "@/components/alerts/NotificationBell";
@@ -360,6 +361,11 @@ function Discover() {
             {user ? (
               <>
                 <NotificationBell userId={user.id} />
+                <Button asChild variant="secondary" size="icon" className="glass rounded-2xl border-0">
+                  <Link to="/dashboard" aria-label="Your dashboard">
+                    <LayoutDashboard className="size-4" />
+                  </Link>
+                </Button>
                 <Button asChild variant="secondary" size="icon" className="glass rounded-2xl border-0">
                   <Link to="/messages" aria-label="Your chats">
                     <MessagesSquare className="size-4" />
