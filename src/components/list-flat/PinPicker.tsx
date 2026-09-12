@@ -1,7 +1,5 @@
-import { useEffect, useRef } from "react";
-import "maplibre-gl/dist/maplibre-gl.css";
-import * as maplibregl from "maplibre-gl";
-import type { Map as MapLibreMap, Marker } from "maplibre-gl";
+import { useEffect } from "react";
+import { APIProvider, Map, AdvancedMarker, useMap, type MapProps } from "@vis.gl/react-google-maps";
 
 interface PinPickerProps {
   lng: number;
@@ -9,64 +7,93 @@ interface PinPickerProps {
   onChange: (lng: number, lat: number) => void;
 }
 
-// Keyless dark basemap (OpenFreeMap, OpenStreetMap data)
-const STYLE_URL = "https://tiles.openfreemap.org/styles/dark";
+const GOOGLE_MAPS_API_KEY =
+  (typeof import.meta !== "undefined" && (import.meta.env as Record<string, string>)["VITE_GOOGLE_MAPS_API_KEY"]) ||
+  (typeof process !== "undefined" && process.env["VITE_GOOGLE_MAPS_API_KEY"]) ||
+  "";
+
+const DARK_MAP_STYLE: NonNullable<MapProps["styles"]> = [
+  { elementType: "geometry", stylers: [{ color: "#1a1a2e" }] },
+  { elementType: "labels.text.stroke", stylers: [{ color: "#1a1a2e" }] },
+  { elementType: "labels.text.fill", stylers: [{ color: "#9ca5b3" }] },
+  { featureType: "administrative.locality", elementType: "labels.text.fill", stylers: [{ color: "#d59563" }] },
+  { featureType: "poi", elementType: "labels.text.fill", stylers: [{ color: "#d59563" }] },
+  { featureType: "poi.park", elementType: "geometry", stylers: [{ color: "#16213e" }] },
+  { featureType: "road", elementType: "geometry", stylers: [{ color: "#2c2c54" }] },
+  { featureType: "road", elementType: "geometry.stroke", stylers: [{ color: "#212a37" }] },
+  { featureType: "road", elementType: "labels.text.fill", stylers: [{ color: "#9ca5b3" }] },
+  { featureType: "road.highway", elementType: "geometry", stylers: [{ color: "#746855" }] },
+  { featureType: "transit", elementType: "geometry", stylers: [{ color: "#2f3948" }] },
+  { featureType: "water", elementType: "geometry", stylers: [{ color: "#0e1626" }] },
+];
+
+const round = (n: number) => Number(n.toFixed(6));
+
+function PinLayer({ lng, lat, onChange }: PinPickerProps) {
+  const map = useMap();
+
+  // Recenter whenever the area chip (or pin) changes the coordinates
+  useEffect(() => {
+    if (!map) return;
+    map.panTo({ lat, lng });
+  }, [map, lat, lng]);
+
+  useEffect(() => {
+    if (!map) return;
+    const listener = map.addListener("click", (e: { latLng?: { lat(): number; lng(): number } | null }) => {
+      if (!e.latLng) return;
+      onChange(round(e.latLng.lng()), round(e.latLng.lat()));
+    });
+    return () => listener.remove();
+  }, [map, onChange]);
+
+  return (
+    <AdvancedMarker
+      position={{ lat, lng }}
+      draggable
+      onDragEnd={(e) => {
+        if (!e.latLng) return;
+        onChange(round(e.latLng.lng), round(e.latLng.lat));
+      }}
+    >
+      <div
+        aria-label="Listing location pin"
+        className="size-6 rounded-full border-2 border-white bg-brand shadow-lg shadow-brand/40"
+      />
+    </AdvancedMarker>
+  );
+}
 
 export function PinPicker({ lng, lat, onChange }: PinPickerProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<MapLibreMap | null>(null);
-  const markerRef = useRef<Marker | null>(null);
-  const changeRef = useRef(onChange);
-  changeRef.current = onChange;
-
-  useEffect(() => {
-    if (!containerRef.current || mapRef.current) return;
-    const map = new maplibregl.Map({
-      container: containerRef.current,
-      style: STYLE_URL,
-      center: [lng, lat],
-      zoom: 14,
-      attributionControl: false,
-    });
-    map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
-
-    const el = document.createElement("div");
-    el.className = "size-6 rounded-full border-2 border-white bg-brand shadow-lg";
-    el.setAttribute("aria-label", "Listing location pin");
-
-    const marker = new maplibregl.Marker({ element: el, draggable: true }).setLngLat([lng, lat]).addTo(map);
-    marker.on("dragend", () => {
-      const p = marker.getLngLat();
-      changeRef.current(Number(p.lng.toFixed(6)), Number(p.lat.toFixed(6)));
-    });
-    map.on("click", (e) => {
-      marker.setLngLat(e.lngLat);
-      changeRef.current(Number(e.lngLat.lng.toFixed(6)), Number(e.lngLat.lat.toFixed(6)));
-    });
-
-    mapRef.current = map;
-    markerRef.current = marker;
-    return () => {
-      map.remove();
-      mapRef.current = null;
-      markerRef.current = null;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    const marker = markerRef.current;
-    const map = mapRef.current;
-    if (!marker || !map) return;
-    const cur = marker.getLngLat();
-    if (Math.abs(cur.lng - lng) < 1e-6 && Math.abs(cur.lat - lat) < 1e-6) return;
-    marker.setLngLat([lng, lat]);
-    map.easeTo({ center: [lng, lat], duration: 500 });
-  }, [lng, lat]);
+  if (!GOOGLE_MAPS_API_KEY) {
+    return (
+      <div className="flex h-64 w-full items-center justify-center rounded-2xl border border-border text-xs text-muted-foreground">
+        Map unavailable
+      </div>
+    );
+  }
 
   return (
     <div className="relative overflow-hidden rounded-2xl border border-border">
-      <div ref={containerRef} className="h-64 w-full" />
+      <div className="h-64 w-full">
+        <APIProvider apiKey={GOOGLE_MAPS_API_KEY}>
+          <Map
+            mapId="nakkobroker-pin"
+            defaultCenter={{ lat, lng }}
+            defaultZoom={15}
+            gestureHandling="greedy"
+            disableDefaultUI={false}
+            mapTypeControl={false}
+            streetViewControl={false}
+            fullscreenControl={false}
+            styles={DARK_MAP_STYLE}
+            clickableIcons={false}
+            reuseMaps
+          >
+            <PinLayer lng={lng} lat={lat} onChange={onChange} />
+          </Map>
+        </APIProvider>
+      </div>
       <p className="pointer-events-none absolute inset-x-0 bottom-0 bg-background/70 px-3 py-1.5 text-center text-[11px] text-muted-foreground backdrop-blur">
         Tap the map or drag the pin to place your flat exactly
       </p>
