@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import "maplibre-gl/dist/maplibre-gl.css";
 import * as maplibregl from "maplibre-gl";
-import type { Map as MapLibreMap, Marker, StyleSpecification } from "maplibre-gl";
+import type { Map as MapLibreMap, Marker } from "maplibre-gl";
 
 interface PinPickerProps {
   lng: number;
