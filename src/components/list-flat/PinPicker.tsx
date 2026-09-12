@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import "maplibre-gl/dist/maplibre-gl.css";
 import * as maplibregl from "maplibre-gl";
-import type { Map as MapLibreMap, Marker, StyleSpecification } from "maplibre-gl";
+import type { Map as MapLibreMap, Marker } from "maplibre-gl";
 
 interface PinPickerProps {
   lng: number;
@@ -9,18 +9,8 @@ interface PinPickerProps {
   onChange: (lng: number, lat: number) => void;
 }
 
-const style: StyleSpecification = {
-  version: 8,
-  sources: {
-    base: {
-      type: "raster",
-      tiles: ["https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png"],
-      tileSize: 256,
-      attribution: "© OpenStreetMap, © CARTO",
-    },
-  },
-  layers: [{ id: "base", type: "raster", source: "base" }],
-};
+// Keyless dark basemap (OpenFreeMap, OpenStreetMap data)
+const STYLE_URL = "https://tiles.openfreemap.org/styles/dark";
 
 export function PinPicker({ lng, lat, onChange }: PinPickerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -33,7 +23,7 @@ export function PinPicker({ lng, lat, onChange }: PinPickerProps) {
     if (!containerRef.current || mapRef.current) return;
     const map = new maplibregl.Map({
       container: containerRef.current,
-      style,
+      style: STYLE_URL,
       center: [lng, lat],
       zoom: 14,
       attributionControl: false,
