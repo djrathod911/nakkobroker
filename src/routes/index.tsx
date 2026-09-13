@@ -32,6 +32,14 @@ import {
 } from "@/components/listings/FilterPanel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { formatRent } from "@/data/listings";
 import { fetchListings, fetchMyVotedIds, toggleVote } from "@/lib/listings.api";
@@ -371,20 +379,43 @@ function Discover() {
                     <MessagesSquare className="size-4" />
                   </Link>
                 </Button>
-                <Button asChild variant="secondary" size="icon" className="glass rounded-2xl border-0">
-                  <Link to="/profile" aria-label="Your profile">
-                    <UserRound className="size-4" />
-                  </Link>
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="icon"
-                  className="glass rounded-2xl border-0"
-                  aria-label="Sign out"
-                  onClick={onSignOut}
-                >
-                  <LogOut className="size-4" />
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="secondary"
+                      size="icon"
+                      className="glass rounded-2xl border-0"
+                      aria-label="Account menu"
+                    >
+                      <UserRound className="size-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="glass w-56 border-0">
+                    <DropdownMenuLabel className="text-xs font-medium text-muted-foreground">
+                      Signed in
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild className="gap-2">
+                      <Link to="/profile">
+                        <UserRound className="size-4" /> Your profile
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild className="gap-2">
+                      <Link to="/dashboard">
+                        <LayoutDashboard className="size-4" /> Dashboard
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      className="gap-2 text-destructive focus:text-destructive"
+                      onSelect={() => {
+                        void onSignOut();
+                      }}
+                    >
+                      <LogOut className="size-4" /> Sign out
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </>
             ) : (
               <Button asChild variant="secondary" className="glass rounded-2xl border-0">
