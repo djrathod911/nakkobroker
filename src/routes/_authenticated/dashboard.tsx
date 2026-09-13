@@ -117,7 +117,7 @@ function DashboardPage() {
         <Tabs defaultValue="saved" className="mt-6">
           <TabsList className="grid w-full grid-cols-3 rounded-2xl">
             <TabsTrigger value="saved" className="rounded-xl">
-              Saved{saved.data?.length ? ` (${saved.data.length})` : ""}
+              Favourites{saved.data?.length ? ` (${saved.data.length})` : ""}
             </TabsTrigger>
             <TabsTrigger value="chats" className="rounded-xl">
               Chats{unreadChats ? ` (${unreadChats})` : ""}

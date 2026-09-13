@@ -43,6 +43,7 @@ import {
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { formatRent } from "@/data/listings";
 import { fetchListings, fetchMyVotedIds, toggleVote } from "@/lib/listings.api";
+import { fetchSavedListingIds } from "@/lib/saved.api";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
@@ -109,6 +110,12 @@ function Discover() {
   const { data: votedIds = [] } = useQuery({
     queryKey: ["my-votes", user?.id],
     queryFn: () => fetchMyVotedIds(user!.id),
+    enabled: !!user,
+  });
+
+  const { data: savedIds = [] } = useQuery({
+    queryKey: ["saved-listing-ids", user?.id],
+    queryFn: () => fetchSavedListingIds(user!.id),
     enabled: !!user,
   });
 
@@ -369,9 +376,17 @@ function Discover() {
             {user ? (
               <>
                 <NotificationBell userId={user.id} />
-                <Button asChild variant="secondary" size="icon" className="glass rounded-2xl border-0">
-                  <Link to="/dashboard" aria-label="Your dashboard">
+                <Button asChild variant="secondary" size="icon" className="glass relative rounded-2xl border-0">
+                  <Link
+                    to="/dashboard"
+                    aria-label={savedIds.length ? `Your dashboard (${savedIds.length} saved homes)` : "Your dashboard"}
+                  >
                     <LayoutDashboard className="size-4" />
+                    {savedIds.length > 0 && (
+                      <span className="absolute -right-1 -top-1 grid min-w-4 place-items-center rounded-full bg-brand px-1 text-[10px] font-bold text-brand-foreground">
+                        {savedIds.length > 9 ? "9+" : savedIds.length}
+                      </span>
+                    )}
                   </Link>
                 </Button>
                 <Button asChild variant="secondary" size="icon" className="glass rounded-2xl border-0">
