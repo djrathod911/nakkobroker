@@ -221,16 +221,24 @@ function ProfilePage() {
           )}
         </section>
 
-        <Button
-          variant="ghost"
-          className="mt-6 rounded-xl text-muted-foreground"
-          onClick={async () => {
-            await supabase.auth.signOut();
-            navigate({ to: "/" });
-          }}
-        >
-          Sign out
-        </Button>
+        <section className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-3xl border border-border bg-secondary/30 p-4">
+          <div>
+            <p className="text-sm font-medium">Leaving for now?</p>
+            <p className="text-xs text-muted-foreground">
+              You can sign back in with the same mobile number — your listings stay right here.
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            className="rounded-xl border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive"
+            onClick={async () => {
+              await supabase.auth.signOut();
+              navigate({ to: "/" });
+            }}
+          >
+            <LogOut className="size-4" /> Sign out
+          </Button>
+        </section>
       </div>
     </main>
   );
