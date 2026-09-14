@@ -130,7 +130,7 @@ function DashboardPage() {
               Chats{unreadChats ? ` (${unreadChats})` : ""}
             </TabsTrigger>
             <TabsTrigger value="alerts" className="rounded-xl">
-              Alerts{alerts.data?.length ? ` (${alerts.data.length})` : ""}
+              Alerts{unreadCount ? ` (${unreadCount} new)` : alerts.data?.length ? ` (${alerts.data.length})` : ""}
             </TabsTrigger>
           </TabsList>
 
