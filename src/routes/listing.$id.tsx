@@ -30,6 +30,7 @@ import {
 } from "@/lib/listings.api";
 import { useAuth } from "@/hooks/useAuth";
 import { RequestViewingButton } from "@/components/listings/RequestViewingButton";
+import { ListingChat } from "@/components/listings/ListingChat";
 import { SaveListingButton } from "@/components/listings/SaveListingButton";
 
 export const Route = createFileRoute("/listing/$id")({
