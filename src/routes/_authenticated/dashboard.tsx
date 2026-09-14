@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -5,22 +6,28 @@ import {
   Bell,
   BellPlus,
   Heart,
+  Loader2,
   MessagesSquare,
   Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { NotificationBell } from "@/components/alerts/NotificationBell";
 import { useAuth } from "@/hooks/useAuth";
+import { useNotifications } from "@/hooks/useNotifications";
 import { fetchConversations } from "@/lib/messages.api";
 import { fetchSavedListings, toggleSavedListing } from "@/lib/saved.api";
 import {
+  createSavedAlert,
   deleteNotification,
   deleteSavedAlert,
-  fetchNotifications,
   fetchSavedAlerts,
 } from "@/lib/alerts.api";
+import { RENT_MAX, RENT_MIN, type Filters } from "@/components/listings/FilterPanel";
 import { formatRent } from "@/data/listings";
 
 const TITLE = "Your dashboard — NakkoBroker";
