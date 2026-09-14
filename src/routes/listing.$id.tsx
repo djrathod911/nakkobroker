@@ -30,6 +30,7 @@ import {
 } from "@/lib/listings.api";
 import { useAuth } from "@/hooks/useAuth";
 import { RequestViewingButton } from "@/components/listings/RequestViewingButton";
+import { ListingChat } from "@/components/listings/ListingChat";
 import { SaveListingButton } from "@/components/listings/SaveListingButton";
 
 export const Route = createFileRoute("/listing/$id")({
@@ -398,10 +399,17 @@ function ListingDetailPage() {
                 </p>
               )}
 
+              <ListingChat
+                listingId={listing.id}
+                ownerId={listing.ownerId}
+                userId={user?.id ?? null}
+                listingTitle={listing.title}
+              />
+
               <div className="mt-4 border-t border-border pt-4">
                 <h3 className="text-sm font-semibold">Want to see it in person?</h3>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Send a viewing request and we&apos;ll open a chat thread with the owner.
+                  Send a viewing request with your preferred time.
                 </p>
                 <RequestViewingButton
                   listingId={listing.id}

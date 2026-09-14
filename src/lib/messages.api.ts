@@ -182,3 +182,50 @@ export async function markConversationRead(conversationId: string, userId: strin
     .eq("read", false)
     .neq("sender_id", userId);
 }
+
+export interface ListingThread {
+  id: string;
+  tenant_id: string;
+  tenantName: string;
+  last_message_at: string;
+  unread: number;
+  lastMessage: string;
+}
+
+/** Threads on one listing that the signed-in user participates in (owner view). */
+export async function fetchListingThreads(
+  listingId: string,
+  userId: string,
+): Promise<ListingThread[]> {
+  const { data, error } = await supabase
+    .from("conversations")
+    .select("id,tenant_id,owner_id,last_message_at")
+    .eq("listing_id", listingId)
+    .order("last_message_at", { ascending: false });
+  if (error) throw error;
+  const rows = (data ?? []) as { id: string; tenant_id: string; last_message_at: string }[];
+  if (!rows.length) return [];
+
+  const [profiles, messages] = await Promise.all([
+    getProfileDisplayNames({ data: { ids: [...new Set(rows.map((r) => r.tenant_id))] } }),
+    supabase
+      .from("messages")
+      .select("conversation_id,body,read,sender_id,created_at")
+      .in("conversation_id", rows.map((r) => r.id))
+      .order("created_at", { ascending: true }),
+  ]);
+  const nameMap = new Map((profiles ?? []).map((p) => [p.id, p.display_name ?? "NakkoBroker user"]));
+
+  return rows.map((r) => {
+    const msgs = (messages.data ?? []).filter((m) => m.conversation_id === r.id);
+    const last = msgs[msgs.length - 1];
+    return {
+      id: r.id,
+      tenant_id: r.tenant_id,
+      tenantName: nameMap.get(r.tenant_id) ?? "NakkoBroker user",
+      last_message_at: r.last_message_at,
+      unread: msgs.filter((m) => !m.read && m.sender_id !== userId).length,
+      lastMessage: (last?.body as string) ?? "",
+    };
+  });
+}
