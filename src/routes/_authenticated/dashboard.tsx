@@ -325,3 +325,104 @@ function EmptyState({ icon, text, cta }: { icon: React.ReactNode; text: string; 
     </div>
   );
 }
+
+const BHK_CHOICES = [1, 2, 3, 4];
+
+function BudgetAlertForm({ userId }: { userId: string }) {
+  const queryClient = useQueryClient();
+  const [name, setName] = useState("");
+  const [maxRent, setMaxRent] = useState(30000);
+  const [bhk, setBhk] = useState<number[]>([]);
+
+  const create = useMutation({
+    mutationFn: () => {
+      const filters: Filters = {
+        city: "Hyderabad",
+        houseType: "Any",
+        bhk,
+        minRent: RENT_MIN,
+        maxRent: Math.min(Math.max(maxRent || RENT_MIN, RENT_MIN), RENT_MAX),
+        ownerOnly: false,
+        furnishing: [],
+        amenities: [],
+        availabilityStatus: [],
+      };
+      return createSavedAlert(userId, name, filters, { instant: true, dailyDigest: true });
+    },
+    onSuccess: () => {
+      setName("");
+      toast.success("Alert on — we'll ping you the moment a matching home is listed");
+      void queryClient.invalidateQueries({ queryKey: ["saved-alerts", userId] });
+    },
+    onError: () => toast.error("Could not create that alert"),
+  });
+
+  return (
+    <section className="glass space-y-4 rounded-2xl p-4">
+      <div>
+        <h2 className="text-sm font-semibold tracking-tight">Alert me about new homes</h2>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Tell us your budget and we&apos;ll notify you here the moment a matching home is added.
+        </p>
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div className="space-y-1.5">
+          <Label htmlFor="dash-alert-name">Alert name</Label>
+          <Input
+            id="dash-alert-name"
+            maxLength={60}
+            placeholder="2BHK near Madhapur"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="dash-alert-rent">Max rent (₹/month)</Label>
+          <Input
+            id="dash-alert-rent"
+            type="number"
+            inputMode="numeric"
+            min={RENT_MIN}
+            max={RENT_MAX}
+            value={maxRent}
+            onChange={(e) => setMaxRent(Number(e.target.value))}
+          />
+        </div>
+      </div>
+
+      <div className="space-y-1.5">
+        <p className="text-sm font-medium">Size (optional)</p>
+        <div className="flex flex-wrap gap-2">
+          {BHK_CHOICES.map((n) => {
+            const active = bhk.includes(n);
+            return (
+              <Button
+                key={n}
+                type="button"
+                size="sm"
+                variant={active ? "default" : "secondary"}
+                aria-pressed={active}
+                className="rounded-full"
+                onClick={() =>
+                  setBhk((prev) => (active ? prev.filter((v) => v !== n) : [...prev, n]))
+                }
+              >
+                {n} BHK
+              </Button>
+            );
+          })}
+        </div>
+      </div>
+
+      <Button
+        className="w-full rounded-2xl bg-brand text-brand-foreground hover:bg-brand/90"
+        disabled={create.isPending}
+        onClick={() => create.mutate()}
+      >
+        {create.isPending ? <Loader2 className="size-4 animate-spin" /> : <BellPlus className="size-4" />}
+        Create budget alert
+      </Button>
+    </section>
+  );
+}
