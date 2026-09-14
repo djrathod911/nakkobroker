@@ -106,11 +106,15 @@ function DashboardPage() {
   return (
     <main className="min-h-dvh bg-background">
       <div className="mx-auto w-full max-w-3xl px-4 pb-16 pt-6">
-        <Button asChild variant="ghost" className="rounded-2xl">
-          <Link to="/">
-            <ArrowLeft className="size-4" /> Back to map
-          </Link>
-        </Button>
+        <div className="flex items-center justify-between gap-2">
+          <Button asChild variant="ghost" className="rounded-2xl">
+            <Link to="/">
+              <ArrowLeft className="size-4" /> Back to map
+            </Link>
+          </Button>
+          {user && <NotificationBell userId={user.id} />}
+        </div>
+
 
         <h1 className="mt-4 text-3xl font-bold tracking-tight">Your dashboard</h1>
         <p className="mt-1 text-sm text-muted-foreground">
