@@ -77,11 +77,7 @@ function DashboardPage() {
     queryFn: fetchSavedAlerts,
     enabled: !!user,
   });
-  const notifications = useQuery({
-    queryKey: ["notifications", user?.id],
-    queryFn: fetchNotifications,
-    enabled: !!user,
-  });
+  const { notifications, unreadCount, isLoading: notificationsLoading } = useNotifications(user?.id);
 
   const unsave = useMutation({
     mutationFn: (listingId: string) => toggleSavedListing(listingId, user!.id, true),
