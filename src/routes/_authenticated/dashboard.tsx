@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -5,22 +6,28 @@ import {
   Bell,
   BellPlus,
   Heart,
+  Loader2,
   MessagesSquare,
   Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { NotificationBell } from "@/components/alerts/NotificationBell";
 import { useAuth } from "@/hooks/useAuth";
+import { useNotifications } from "@/hooks/useNotifications";
 import { fetchConversations } from "@/lib/messages.api";
 import { fetchSavedListings, toggleSavedListing } from "@/lib/saved.api";
 import {
+  createSavedAlert,
   deleteNotification,
   deleteSavedAlert,
-  fetchNotifications,
   fetchSavedAlerts,
 } from "@/lib/alerts.api";
+import { RENT_MAX, RENT_MIN, type Filters } from "@/components/listings/FilterPanel";
 import { formatRent } from "@/data/listings";
 
 const TITLE = "Your dashboard — NakkoBroker";
@@ -70,11 +77,7 @@ function DashboardPage() {
     queryFn: fetchSavedAlerts,
     enabled: !!user,
   });
-  const notifications = useQuery({
-    queryKey: ["notifications", user?.id],
-    queryFn: fetchNotifications,
-    enabled: !!user,
-  });
+  const { notifications, unreadCount, isLoading: notificationsLoading } = useNotifications(user?.id);
 
   const unsave = useMutation({
     mutationFn: (listingId: string) => toggleSavedListing(listingId, user!.id, true),
@@ -103,11 +106,15 @@ function DashboardPage() {
   return (
     <main className="min-h-dvh bg-background">
       <div className="mx-auto w-full max-w-3xl px-4 pb-16 pt-6">
-        <Button asChild variant="ghost" className="rounded-2xl">
-          <Link to="/">
-            <ArrowLeft className="size-4" /> Back to map
-          </Link>
-        </Button>
+        <div className="flex items-center justify-between gap-2">
+          <Button asChild variant="ghost" className="rounded-2xl">
+            <Link to="/">
+              <ArrowLeft className="size-4" /> Back to map
+            </Link>
+          </Button>
+          {user && <NotificationBell userId={user.id} />}
+        </div>
+
 
         <h1 className="mt-4 text-3xl font-bold tracking-tight">Your dashboard</h1>
         <p className="mt-1 text-sm text-muted-foreground">
@@ -123,7 +130,7 @@ function DashboardPage() {
               Chats{unreadChats ? ` (${unreadChats})` : ""}
             </TabsTrigger>
             <TabsTrigger value="alerts" className="rounded-xl">
-              Alerts{alerts.data?.length ? ` (${alerts.data.length})` : ""}
+              Alerts{unreadCount ? ` (${unreadCount} new)` : alerts.data?.length ? ` (${alerts.data.length})` : ""}
             </TabsTrigger>
           </TabsList>
 
@@ -211,6 +218,8 @@ function DashboardPage() {
 
           {/* Alerts */}
           <TabsContent value="alerts" className="mt-4 space-y-6">
+            {user && <BudgetAlertForm userId={user.id} />}
+
             <section className="space-y-3">
               <h2 className="text-sm font-semibold tracking-tight">Your alerts</h2>
               {alerts.isLoading ? (
@@ -258,10 +267,10 @@ function DashboardPage() {
 
             <section className="space-y-3">
               <h2 className="text-sm font-semibold tracking-tight">New matches</h2>
-              {notifications.isLoading ? (
+              {notificationsLoading ? (
                 [0, 1].map((i) => <Skeleton key={i} className="h-16 w-full rounded-2xl" />)
-              ) : notifications.data?.length ? (
-                notifications.data.map((n) => (
+              ) : notifications.length ? (
+                notifications.map((n) => (
                   <div key={n.id} className="glass flex items-start justify-between gap-3 rounded-2xl p-4">
                     <div className="min-w-0">
                       {n.listingId ? (
@@ -314,5 +323,106 @@ function EmptyState({ icon, text, cta }: { icon: React.ReactNode; text: string; 
         <Link to="/">{cta}</Link>
       </Button>
     </div>
+  );
+}
+
+const BHK_CHOICES = [1, 2, 3, 4];
+
+function BudgetAlertForm({ userId }: { userId: string }) {
+  const queryClient = useQueryClient();
+  const [name, setName] = useState("");
+  const [maxRent, setMaxRent] = useState(30000);
+  const [bhk, setBhk] = useState<number[]>([]);
+
+  const create = useMutation({
+    mutationFn: () => {
+      const filters: Filters = {
+        city: "Hyderabad",
+        houseType: "Any",
+        bhk,
+        minRent: RENT_MIN,
+        maxRent: Math.min(Math.max(maxRent || RENT_MIN, RENT_MIN), RENT_MAX),
+        ownerOnly: false,
+        furnishing: [],
+        amenities: [],
+        availabilityStatus: [],
+      };
+      return createSavedAlert(userId, name, filters, { instant: true, dailyDigest: true });
+    },
+    onSuccess: () => {
+      setName("");
+      toast.success("Alert on — we'll ping you the moment a matching home is listed");
+      void queryClient.invalidateQueries({ queryKey: ["saved-alerts", userId] });
+    },
+    onError: () => toast.error("Could not create that alert"),
+  });
+
+  return (
+    <section className="glass space-y-4 rounded-2xl p-4">
+      <div>
+        <h2 className="text-sm font-semibold tracking-tight">Alert me about new homes</h2>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Tell us your budget and we&apos;ll notify you here the moment a matching home is added.
+        </p>
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div className="space-y-1.5">
+          <Label htmlFor="dash-alert-name">Alert name</Label>
+          <Input
+            id="dash-alert-name"
+            maxLength={60}
+            placeholder="2BHK near Madhapur"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="dash-alert-rent">Max rent (₹/month)</Label>
+          <Input
+            id="dash-alert-rent"
+            type="number"
+            inputMode="numeric"
+            min={RENT_MIN}
+            max={RENT_MAX}
+            value={maxRent}
+            onChange={(e) => setMaxRent(Number(e.target.value))}
+          />
+        </div>
+      </div>
+
+      <div className="space-y-1.5">
+        <p className="text-sm font-medium">Size (optional)</p>
+        <div className="flex flex-wrap gap-2">
+          {BHK_CHOICES.map((n) => {
+            const active = bhk.includes(n);
+            return (
+              <Button
+                key={n}
+                type="button"
+                size="sm"
+                variant={active ? "default" : "secondary"}
+                aria-pressed={active}
+                className="rounded-full"
+                onClick={() =>
+                  setBhk((prev) => (active ? prev.filter((v) => v !== n) : [...prev, n]))
+                }
+              >
+                {n} BHK
+              </Button>
+            );
+          })}
+        </div>
+      </div>
+
+      <Button
+        className="w-full rounded-2xl bg-brand text-brand-foreground hover:bg-brand/90"
+        disabled={create.isPending}
+        onClick={() => create.mutate()}
+      >
+        {create.isPending ? <Loader2 className="size-4 animate-spin" /> : <BellPlus className="size-4" />}
+        Create budget alert
+      </Button>
+    </section>
   );
 }
