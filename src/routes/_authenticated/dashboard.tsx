@@ -267,10 +267,10 @@ function DashboardPage() {
 
             <section className="space-y-3">
               <h2 className="text-sm font-semibold tracking-tight">New matches</h2>
-              {notifications.isLoading ? (
+              {notificationsLoading ? (
                 [0, 1].map((i) => <Skeleton key={i} className="h-16 w-full rounded-2xl" />)
-              ) : notifications.data?.length ? (
-                notifications.data.map((n) => (
+              ) : notifications.length ? (
+                notifications.map((n) => (
                   <div key={n.id} className="glass flex items-start justify-between gap-3 rounded-2xl p-4">
                     <div className="min-w-0">
                       {n.listingId ? (
