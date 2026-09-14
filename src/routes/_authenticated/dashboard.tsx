@@ -218,6 +218,8 @@ function DashboardPage() {
 
           {/* Alerts */}
           <TabsContent value="alerts" className="mt-4 space-y-6">
+            {user && <BudgetAlertForm userId={user.id} />}
+
             <section className="space-y-3">
               <h2 className="text-sm font-semibold tracking-tight">Your alerts</h2>
               {alerts.isLoading ? (
