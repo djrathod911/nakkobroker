@@ -49,7 +49,7 @@ export const searchPlaces = createServerFn({ method: "POST" })
     z.object({ input: z.string().trim().min(2).max(120), sessionToken: z.string().uuid() }).parse(input),
   )
   .handler(async ({ data }): Promise<PlaceSuggestion[]> => {
-    const res = await fetch(`${GATEWAY_URL}/places/v1/places:autocomplete`, {
+    const res = await fetch(`${placesBase()}/v1/places:autocomplete`, {
       method: "POST",
       headers: {
         ...gatewayHeaders(),
@@ -86,7 +86,7 @@ export const getPlaceLocation = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }): Promise<PlaceResult> => {
     const res = await fetch(
-      `${GATEWAY_URL}/places/v1/places/${encodeURIComponent(data.placeId)}?sessionToken=${data.sessionToken}`,
+      `${placesBase()}/v1/places/${encodeURIComponent(data.placeId)}?sessionToken=${data.sessionToken}`,
       {
         headers: { ...gatewayHeaders(), "X-Goog-FieldMask": "location,formattedAddress,displayName" },
       },
