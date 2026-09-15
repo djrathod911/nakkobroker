@@ -17,6 +17,8 @@ import {
   Home,
   MapPin,
   LayoutDashboard,
+  Map,
+  Moon,
 } from "lucide-react";
 import { ListingCard } from "@/components/listings/ListingCard";
 import { NotificationBell } from "@/components/alerts/NotificationBell";
@@ -55,6 +57,8 @@ const MapView = lazy(() =>
   import("@/components/map/MapView").then((m) => ({ default: m.MapView }))
 );
 
+type Basemap = "map" | "dark" | "satellite";
+
 const TITLE = "NakkoBroker — Zero-brokerage rentals in Hyderabad";
 const DESCRIPTION =
   "Discover Hyderabad flats directly from owners on a live map. No brokers, no brokerage — community-verified listings and To-Let boards.";
@@ -86,7 +90,7 @@ function Discover() {
   const [filters, setFilters] = useState<Filters>(defaultFilters);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [heatmap, setHeatmap] = useState(false);
-  const [satellite, setSatellite] = useState(false);
+  const [basemap, setBasemap] = useState<Basemap>("map");
   const [resultsOpen, setResultsOpen] = useState(true);
   const [suggestOpen, setSuggestOpen] = useState(false);
   const { user } = useAuth();
@@ -222,7 +226,7 @@ function Discover() {
             onSelect={onMapSelect}
             onClose={() => setActiveId(null)}
             showHeatmap={heatmap}
-            satellite={satellite}
+            basemap={basemap}
           />
         </Suspense>
       </div>
@@ -444,15 +448,28 @@ function Discover() {
       </header>
 
       {/* Map layer controls */}
-      <div className="absolute left-3 top-1/2 z-20 hidden -translate-y-1/2 sm:block">
+      <div className="absolute left-3 top-1/2 z-20 -translate-y-1/2">
         <div className="glass flex flex-col gap-1 rounded-2xl p-1.5">
-          <LayerButton icon={Flame} label="Price heatmap" active={heatmap} onClick={() => setHeatmap((v) => !v)} />
+          <LayerButton
+            icon={Map}
+            label="Streets map"
+            active={basemap === "map"}
+            onClick={() => setBasemap("map")}
+          />
+          <LayerButton
+            icon={Moon}
+            label="Dark map"
+            active={basemap === "dark"}
+            onClick={() => setBasemap("dark")}
+          />
           <LayerButton
             icon={Satellite}
             label="Satellite"
-            active={satellite}
-            onClick={() => setSatellite((v) => !v)}
+            active={basemap === "satellite"}
+            onClick={() => setBasemap("satellite")}
           />
+          <div className="mx-1 h-px bg-border/60" />
+          <LayerButton icon={Flame} label="Price heatmap" active={heatmap} onClick={() => setHeatmap((v) => !v)} />
           <LayerButton
             icon={Camera}
             label="Spot a To-Let board"

@@ -1,6 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import type { Map as MLMap, Marker } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
+import { cn } from "@/lib/utils";
+
+// Keyless live vector tiles — work on every domain, no API key required.
+const STYLES = {
+  map: "https://tiles.openfreemap.org/styles/bright",
+  dark: "https://tiles.openfreemap.org/styles/dark",
+} as const;
+
+const round = (n: number) => Number(n.toFixed(6));
 
 interface PinPickerProps {
   lng: number;
@@ -8,16 +17,13 @@ interface PinPickerProps {
   onChange: (lng: number, lat: number) => void;
 }
 
-// Keyless live vector tiles — work on every domain, no API key required.
-const DARK_STYLE_URL = "https://tiles.openfreemap.org/styles/dark";
-
-const round = (n: number) => Number(n.toFixed(6));
-
 export function PinPicker({ lng, lat, onChange }: PinPickerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MLMap | null>(null);
   const markerRef = useRef<Marker | null>(null);
   const [failed, setFailed] = useState(false);
+  const [ready, setReady] = useState(false);
+  const [style, setStyle] = useState<"map" | "dark">("map");
 
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
@@ -30,16 +36,30 @@ export function PinPicker({ lng, lat, onChange }: PinPickerProps) {
         if (cancelled || !containerRef.current) return;
         const map = new ml.Map({
           container: containerRef.current,
-          style: DARK_STYLE_URL,
+          style: STYLES.map,
           center: [lng, lat],
-          zoom: 15,
+          zoom: 16,
           attributionControl: { compact: true },
+          dragRotate: false,
+          pitchWithRotate: false,
+          touchPitch: false,
+          // Page scroll keeps working; ctrl/⌘ + wheel (or two fingers) zooms
+          cooperativeGestures: true,
         });
-        map.addControl(new ml.NavigationControl({ showCompass: false }), "bottom-right");
+        map.touchZoomRotate.disableRotation();
+        map.addControl(new ml.NavigationControl({ showCompass: false }), "top-right");
+        map.addControl(
+          new ml.GeolocateControl({
+            positionOptions: { enableHighAccuracy: true },
+            trackUserLocation: false,
+          }),
+          "top-right",
+        );
 
         const el = document.createElement("div");
         el.setAttribute("aria-label", "Listing location pin");
-        el.className = "size-6 rounded-full border-2 border-white bg-brand shadow-lg shadow-brand/40 cursor-grab";
+        el.className =
+          "size-7 rounded-full border-[3px] border-white bg-brand shadow-lg shadow-brand/50 cursor-grab active:cursor-grabbing";
 
         const marker = new ml.Marker({ element: el, draggable: true })
           .setLngLat([lng, lat])
@@ -55,6 +75,7 @@ export function PinPicker({ lng, lat, onChange }: PinPickerProps) {
 
         mapRef.current = map;
         markerRef.current = marker;
+        setReady(true);
       } catch {
         if (!cancelled) setFailed(true);
       }
@@ -77,8 +98,13 @@ export function PinPicker({ lng, lat, onChange }: PinPickerProps) {
     const pos = marker.getLngLat();
     if (Math.abs(pos.lng - lng) < 1e-6 && Math.abs(pos.lat - lat) < 1e-6) return;
     marker.setLngLat([lng, lat]);
-    map.panTo([lng, lat]);
+    map.flyTo({ center: [lng, lat], zoom: Math.max(map.getZoom(), 16), speed: 1.3 });
   }, [lng, lat]);
+
+  useEffect(() => {
+    if (!ready) return;
+    mapRef.current?.setStyle(STYLES[style]);
+  }, [ready, style]);
 
   if (failed) {
     return (
@@ -92,7 +118,25 @@ export function PinPicker({ lng, lat, onChange }: PinPickerProps) {
 
   return (
     <div className="relative overflow-hidden rounded-2xl border border-border">
-      <div ref={containerRef} className="h-64 w-full" />
+      <div ref={containerRef} className="h-72 w-full sm:h-96" />
+
+      <div className="glass absolute left-2 top-2 z-10 flex gap-0.5 rounded-xl p-0.5">
+        {(["map", "dark"] as const).map((s) => (
+          <button
+            key={s}
+            type="button"
+            onClick={() => setStyle(s)}
+            aria-pressed={style === s}
+            className={cn(
+              "rounded-lg px-2.5 py-1 text-[11px] font-semibold capitalize transition-colors",
+              style === s ? "bg-brand text-brand-foreground" : "text-muted-foreground hover:text-foreground",
+            )}
+          >
+            {s === "map" ? "Streets" : "Dark"}
+          </button>
+        ))}
+      </div>
+
       <p className="pointer-events-none absolute inset-x-0 bottom-0 bg-background/70 px-3 py-1.5 text-center text-[11px] text-muted-foreground backdrop-blur">
         Tap the map or drag the pin to place your flat exactly
       </p>
