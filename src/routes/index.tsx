@@ -57,6 +57,8 @@ const MapView = lazy(() =>
   import("@/components/map/MapView").then((m) => ({ default: m.MapView }))
 );
 
+type Basemap = "map" | "dark" | "satellite";
+
 const TITLE = "NakkoBroker — Zero-brokerage rentals in Hyderabad";
 const DESCRIPTION =
   "Discover Hyderabad flats directly from owners on a live map. No brokers, no brokerage — community-verified listings and To-Let boards.";
