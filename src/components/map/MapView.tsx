@@ -84,7 +84,7 @@ export function MapView({ listings, activeId, onSelect, onClose, showHeatmap, ba
           dragRotate: false,
           pitchWithRotate: false,
           touchPitch: false,
-则: undefined as never,
+
         });
         map.touchZoomRotate.disableRotation();
         map.addControl(new ml.NavigationControl({ showCompass: false }), "bottom-right");
