@@ -9,6 +9,7 @@ import {
   type MapProps,
 } from "@vis.gl/react-google-maps";
 import { HYDERABAD_CENTER, formatRent, shortRent, type Listing } from "@/data/listings";
+import { MapErrorBoundary } from "@/components/map/MapErrorBoundary";
 import { cn } from "@/lib/utils";
 
 const env = (typeof import.meta !== "undefined" ? (import.meta.env as Record<string, string>) : {}) ?? {};

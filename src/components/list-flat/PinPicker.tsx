@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { APIProvider, Map, AdvancedMarker, useMap, type MapProps } from "@vis.gl/react-google-maps";
+import { MapErrorBoundary } from "@/components/map/MapErrorBoundary";
 
 interface PinPickerProps {
   lng: number;
@@ -79,6 +80,15 @@ export function PinPicker({ lng, lat, onChange }: PinPickerProps) {
   return (
     <div className="relative overflow-hidden rounded-2xl border border-border">
       <div className="h-64 w-full">
+        <MapErrorBoundary
+          fallback={
+            <div className="flex h-64 w-full items-center justify-center px-6 text-center">
+              <p className="text-xs text-muted-foreground">
+                Map unavailable here — use the address search above to set your location.
+              </p>
+            </div>
+          }
+        >
         <APIProvider apiKey={GOOGLE_MAPS_API_KEY}>
           <Map
             mapId="nakkobroker-pin"
@@ -96,6 +106,7 @@ export function PinPicker({ lng, lat, onChange }: PinPickerProps) {
             <PinLayer lng={lng} lat={lat} onChange={onChange} />
           </Map>
         </APIProvider>
+        </MapErrorBoundary>
       </div>
       <p className="pointer-events-none absolute inset-x-0 bottom-0 bg-background/70 px-3 py-1.5 text-center text-[11px] text-muted-foreground backdrop-blur">
         Tap the map or drag the pin to place your flat exactly
