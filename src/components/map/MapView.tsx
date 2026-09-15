@@ -6,7 +6,11 @@ import { HYDERABAD_CENTER, formatRent, shortRent, type Listing } from "@/data/li
 import { cn } from "@/lib/utils";
 
 // Keyless live vector tiles — work on every domain, no API key required.
-const DARK_STYLE_URL = "https://tiles.openfreemap.org/styles/dark";
+const STYLES = {
+  map: "https://tiles.openfreemap.org/styles/bright",
+  dark: "https://tiles.openfreemap.org/styles/dark",
+} as const;
+
 const SATELLITE_STYLE = {
   version: 8,
   sources: {
@@ -20,6 +24,8 @@ const SATELLITE_STYLE = {
   layers: [{ id: "esri", type: "raster", source: "esri" }],
 } as const;
 
+export type Basemap = "map" | "dark" | "satellite";
+
 const round = (n: number) => Number(n.toFixed(6));
 
 interface MapViewProps {
@@ -28,23 +34,25 @@ interface MapViewProps {
   onSelect: (id: string) => void;
   onClose?: (() => void) | undefined;
   showHeatmap: boolean;
-  satellite: boolean;
+  basemap: Basemap;
 }
 
 function markerClasses(listing: Listing, isActive: boolean) {
   return cn(
-    "cursor-pointer rounded-full px-2.5 py-1 text-xs font-semibold tracking-tight transition-all duration-200 outline-none",
+    // Bigger tap target (44px tall hit area via py) + clearer contrast
+    "cursor-pointer select-none rounded-full px-3.5 py-2 text-[13px] font-bold leading-none tracking-tight",
+    "shadow-lg ring-1 transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-brand",
     isActive
-      ? "bg-brand text-brand-foreground scale-110 shadow-lg shadow-brand/40"
+      ? "bg-brand text-brand-foreground ring-brand/50 scale-110 z-10 shadow-brand/40"
       : listing.availabilityStatus === "occupied"
-        ? "bg-warning/20 backdrop-blur text-warning border border-warning/40 hover:scale-105"
+        ? "bg-card/95 text-warning ring-warning/50 backdrop-blur hover:scale-110"
         : listing.availabilityStatus === "available_soon"
-          ? "bg-blue-500/20 backdrop-blur text-blue-300 border border-blue-500/40 hover:scale-105"
-          : "bg-background/80 backdrop-blur text-foreground hover:scale-105 hover:text-teal border border-border",
+          ? "bg-card/95 text-blue-400 ring-blue-400/50 backdrop-blur hover:scale-110"
+          : "bg-card/95 text-foreground ring-border backdrop-blur hover:scale-110 hover:text-brand",
   );
 }
 
-export function MapView({ listings, activeId, onSelect, onClose, showHeatmap, satellite }: MapViewProps) {
+export function MapView({ listings, activeId, onSelect, onClose, showHeatmap, basemap }: MapViewProps) {
   const navigate = useNavigate();
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MLMap | null>(null);
@@ -69,12 +77,25 @@ export function MapView({ listings, activeId, onSelect, onClose, showHeatmap, sa
         if (cancelled || !containerRef.current) return;
         const map = new ml.Map({
           container: containerRef.current,
-          style: DARK_STYLE_URL,
+          style: STYLES.map,
           center: HYDERABAD_CENTER,
           zoom: 11,
           attributionControl: { compact: true },
+          dragRotate: false,
+          pitchWithRotate: false,
+          touchPitch: false,
+则: undefined as never,
         });
+        map.touchZoomRotate.disableRotation();
         map.addControl(new ml.NavigationControl({ showCompass: false }), "bottom-right");
+        map.addControl(
+          new ml.GeolocateControl({
+            positionOptions: { enableHighAccuracy: true },
+            trackUserLocation: false,
+            showAccuracyCircle: true,
+          }),
+          "bottom-right",
+        );
         map.on("load", () => {
           if (cancelled) return;
           mlRef.current = ml;
@@ -96,12 +117,12 @@ export function MapView({ listings, activeId, onSelect, onClose, showHeatmap, sa
     };
   }, []);
 
-  // Toggle roadmap/satellite basemap
+  // Swap basemap: bright streets / dark / satellite
   useEffect(() => {
     const map = mapRef.current;
     if (!ready || !map) return;
-    map.setStyle(satellite ? (SATELLITE_STYLE as never) : DARK_STYLE_URL);
-  }, [ready, satellite]);
+    map.setStyle(basemap === "satellite" ? (SATELLITE_STYLE as never) : STYLES[basemap]);
+  }, [ready, basemap]);
 
   // Render listing markers
   useEffect(() => {
@@ -133,6 +154,21 @@ export function MapView({ listings, activeId, onSelect, onClose, showHeatmap, sa
     });
   }, [ready, listings, activeId]);
 
+  // Keep every result in view when the list changes
+  useEffect(() => {
+    const map = mapRef.current;
+    const ml = mlRef.current;
+    if (!ready || !map || !ml || listings.length === 0 || activeId) return;
+    const bounds = new ml.LngLatBounds();
+    listings.forEach((l) => bounds.extend([l.lng, l.lat]));
+    map.fitBounds(bounds, {
+      padding: { top: 120, bottom: 120, left: 60, right: 60 },
+      maxZoom: 14,
+      duration: 700,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready, listings]);
+
   // Active listing popup + fly-to
   useEffect(() => {
     const map = mapRef.current;
@@ -162,7 +198,7 @@ export function MapView({ listings, activeId, onSelect, onClose, showHeatmap, sa
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className =
-      "mt-2 inline-flex w-full items-center justify-center rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white";
+      "mt-2 inline-flex w-full items-center justify-center rounded-lg bg-brand px-3 py-2 text-xs font-semibold text-brand-foreground";
     btn.textContent = "View details";
     btn.addEventListener("click", () => {
       void navigate({ to: "/listing/$id", params: { id: active.id } });
