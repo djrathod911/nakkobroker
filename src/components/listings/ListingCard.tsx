@@ -27,33 +27,18 @@ interface ListingCardProps {
 }
 
 export function ListingCard({ listing, active, onHover, onSelect, voted, onVote }: ListingCardProps) {
-  const navigate = useNavigate();
-
-  function open() {
-    onSelect(listing.id);
-    navigate({ to: "/listing/$id", params: { id: listing.id } });
-  }
-
-  function handleKeyDown(e: React.KeyboardEvent<HTMLElement>) {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      open();
-    }
-  }
-
   return (
+    // The whole card is clickable through a stretched link on the title, so the
+    // card itself stays a plain article — nesting buttons inside a button role
+    // breaks screen readers and keyboard navigation.
     <article
       id={`listing-card-${listing.id}`}
       onMouseEnter={() => onHover(listing.id)}
       onFocus={() => onHover(listing.id)}
-      onClick={open}
-      onKeyDown={handleKeyDown}
-      tabIndex={0}
-      role="button"
-      aria-label={`${listing.bhk} BHK in ${listing.area}, ${formatRent(listing.rent)} per month. Press Enter to open.`}
+      onClick={() => onSelect(listing.id)}
       className={cn(
-        "glass group animate-in fade-in slide-in-from-bottom-2 cursor-pointer rounded-2xl p-4 outline-none",
-        "duration-300 transition-all hover:-translate-y-0.5 hover:shadow-lg focus-visible:ring-2 focus-visible:ring-ring",
+        "glass group animate-in fade-in slide-in-from-bottom-2 relative cursor-pointer rounded-2xl p-4 outline-none",
+        "duration-300 transition-all hover:-translate-y-0.5 hover:shadow-lg focus-within:ring-2 focus-within:ring-ring",
         active && "glow-ring",
         listing.availabilityStatus === "occupied" && "opacity-75",
       )}
