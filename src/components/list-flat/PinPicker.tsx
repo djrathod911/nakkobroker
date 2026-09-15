@@ -7,8 +7,11 @@ interface PinPickerProps {
   onChange: (lng: number, lat: number) => void;
 }
 
+const env = (typeof import.meta !== "undefined" ? (import.meta.env as Record<string, string>) : {}) ?? {};
 const GOOGLE_MAPS_API_KEY =
-  (typeof import.meta !== "undefined" && (import.meta.env as Record<string, string>)["VITE_GOOGLE_MAPS_API_KEY"]) ||
+  env["VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_BROWSER_KEY"] ||
+  env["VITE_GOOGLE_MAPS_API_KEY"] ||
+  (typeof process !== "undefined" && process.env["VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_BROWSER_KEY"]) ||
   (typeof process !== "undefined" && process.env["VITE_GOOGLE_MAPS_API_KEY"]) ||
   "";
 
