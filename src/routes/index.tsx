@@ -17,6 +17,8 @@ import {
   Home,
   MapPin,
   LayoutDashboard,
+  Map,
+  Moon,
 } from "lucide-react";
 import { ListingCard } from "@/components/listings/ListingCard";
 import { NotificationBell } from "@/components/alerts/NotificationBell";
