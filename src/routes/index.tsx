@@ -444,15 +444,28 @@ function Discover() {
       </header>
 
       {/* Map layer controls */}
-      <div className="absolute left-3 top-1/2 z-20 hidden -translate-y-1/2 sm:block">
+      <div className="absolute left-3 top-1/2 z-20 -translate-y-1/2">
         <div className="glass flex flex-col gap-1 rounded-2xl p-1.5">
-          <LayerButton icon={Flame} label="Price heatmap" active={heatmap} onClick={() => setHeatmap((v) => !v)} />
+          <LayerButton
+            icon={Map}
+            label="Streets map"
+            active={basemap === "map"}
+            onClick={() => setBasemap("map")}
+          />
+          <LayerButton
+            icon={Moon}
+            label="Dark map"
+            active={basemap === "dark"}
+            onClick={() => setBasemap("dark")}
+          />
           <LayerButton
             icon={Satellite}
             label="Satellite"
-            active={satellite}
-            onClick={() => setSatellite((v) => !v)}
+            active={basemap === "satellite"}
+            onClick={() => setBasemap("satellite")}
           />
+          <div className="mx-1 h-px bg-border/60" />
+          <LayerButton icon={Flame} label="Price heatmap" active={heatmap} onClick={() => setHeatmap((v) => !v)} />
           <LayerButton
             icon={Camera}
             label="Spot a To-Let board"
