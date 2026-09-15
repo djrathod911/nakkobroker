@@ -88,7 +88,7 @@ function Discover() {
   const [filters, setFilters] = useState<Filters>(defaultFilters);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [heatmap, setHeatmap] = useState(false);
-  const [satellite, setSatellite] = useState(false);
+  const [basemap, setBasemap] = useState<Basemap>("map");
   const [resultsOpen, setResultsOpen] = useState(true);
   const [suggestOpen, setSuggestOpen] = useState(false);
   const { user } = useAuth();
