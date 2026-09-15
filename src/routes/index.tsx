@@ -224,7 +224,7 @@ function Discover() {
             onSelect={onMapSelect}
             onClose={() => setActiveId(null)}
             showHeatmap={heatmap}
-            satellite={satellite}
+            basemap={basemap}
           />
         </Suspense>
       </div>
