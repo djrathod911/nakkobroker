@@ -173,6 +173,8 @@ export function MapView({ listings, activeId, onSelect, onClose, showHeatmap, sa
           <ListingMarkers listings={listings} activeId={activeId} onSelect={onSelect} onClose={onClose} />
         </Map>
       </APIProvider>
+      </MapErrorBoundary>
+
 
       {showHeatmap && (
         <div
