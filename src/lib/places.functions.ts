@@ -12,7 +12,7 @@ function usingOwnGoogleKey() {
 }
 
 function placesBase() {
-  return usingOwnGoogleKey() ? GOOGLE_PLACES_URL : GATEWAY_URL;
+  return usingOwnGoogleKey() ? GOOGLE_PLACES_URL : `${GATEWAY_URL}/places`;
 }
 
 // Hyderabad bounding box — keeps suggestions relevant to the app's city.
