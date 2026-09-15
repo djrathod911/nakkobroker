@@ -1,48 +1,26 @@
-import { useEffect, useRef } from "react";
-import { Link } from "@tanstack/react-router";
-import {
-  APIProvider,
-  Map,
-  AdvancedMarker,
-  InfoWindow,
-  useMap,
-  type MapProps,
-} from "@vis.gl/react-google-maps";
+import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
+import type { Map as MLMap, Marker, Popup } from "maplibre-gl";
+import "maplibre-gl/dist/maplibre-gl.css";
 import { HYDERABAD_CENTER, formatRent, shortRent, type Listing } from "@/data/listings";
-import { MapErrorBoundary } from "@/components/map/MapErrorBoundary";
 import { cn } from "@/lib/utils";
 
-const env = (typeof import.meta !== "undefined" ? (import.meta.env as Record<string, string>) : {}) ?? {};
-const GOOGLE_MAPS_API_KEY =
-  env["VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_BROWSER_KEY"] ||
-  env["VITE_GOOGLE_MAPS_API_KEY"] ||
-  (typeof process !== "undefined" && process.env["VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_BROWSER_KEY"]) ||
-  (typeof process !== "undefined" && process.env["VITE_GOOGLE_MAPS_API_KEY"]) ||
-  "";
+// Keyless live vector tiles — work on every domain, no API key required.
+const DARK_STYLE_URL = "https://tiles.openfreemap.org/styles/dark";
+const SATELLITE_STYLE = {
+  version: 8,
+  sources: {
+    esri: {
+      type: "raster",
+      tiles: ["https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"],
+      tileSize: 256,
+      attribution: "Imagery © Esri",
+    },
+  },
+  layers: [{ id: "esri", type: "raster", source: "esri" }],
+} as const;
 
-const MAP_CENTER = { lat: HYDERABAD_CENTER[1], lng: HYDERABAD_CENTER[0] };
-
-// Dark map style matching the app's dark theme
-const DARK_MAP_STYLE: NonNullable<MapProps["styles"]> = [
-  { elementType: "geometry", stylers: [{ color: "#1a1a2e" }] },
-  { elementType: "labels.text.stroke", stylers: [{ color: "#1a1a2e" }] },
-  { elementType: "labels.text.fill", stylers: [{ color: "#746855" }] },
-  { featureType: "administrative.locality", elementType: "labels.text.fill", stylers: [{ color: "#d59563" }] },
-  { featureType: "poi", elementType: "labels.text.fill", stylers: [{ color: "#d59563" }] },
-  { featureType: "poi.park", elementType: "geometry", stylers: [{ color: "#16213e" }] },
-  { featureType: "poi.park", elementType: "labels.text.fill", stylers: [{ color: "#6b9a76" }] },
-  { featureType: "road", elementType: "geometry", stylers: [{ color: "#2c2c54" }] },
-  { featureType: "road", elementType: "geometry.stroke", stylers: [{ color: "#212a37" }] },
-  { featureType: "road", elementType: "labels.text.fill", stylers: [{ color: "#9ca5b3" }] },
-  { featureType: "road.highway", elementType: "geometry", stylers: [{ color: "#746855" }] },
-  { featureType: "road.highway", elementType: "geometry.stroke", stylers: [{ color: "#1f2835" }] },
-  { featureType: "road.highway", elementType: "labels.text.fill", stylers: [{ color: "#f3d19c" }] },
-  { featureType: "transit", elementType: "geometry", stylers: [{ color: "#2f3948" }] },
-  { featureType: "transit.station", elementType: "labels.text.fill", stylers: [{ color: "#d59563" }] },
-  { featureType: "water", elementType: "geometry", stylers: [{ color: "#0e1626" }] },
-  { featureType: "water", elementType: "labels.text.fill", stylers: [{ color: "#515c6d" }] },
-  { featureType: "water", elementType: "labels.text.stroke", stylers: [{ color: "#17263c" }] },
-];
+const round = (n: number) => Number(n.toFixed(6));
 
 interface MapViewProps {
   listings: Listing[];
@@ -53,92 +31,158 @@ interface MapViewProps {
   satellite: boolean;
 }
 
-function ListingMarkers({
-  listings,
-  activeId,
-  onSelect,
-  onClose,
-}: Pick<MapViewProps, "listings" | "activeId" | "onSelect" | "onClose">) {
-  const map = useMap();
-  const prevActiveRef = useRef<string | null>(null);
-  const active = listings.find((l) => l.id === activeId) ?? null;
-
-  // Fly to active listing
-  useEffect(() => {
-    if (!map || !activeId || activeId === prevActiveRef.current) return;
-    const listing = listings.find((l) => l.id === activeId);
-    if (listing) {
-      map.panTo({ lat: listing.lat, lng: listing.lng });
-      map.setZoom(14);
-    }
-    prevActiveRef.current = activeId;
-  }, [map, activeId, listings]);
-
-  return (
-    <>
-      {listings.map((listing) => (
-        <AdvancedMarker
-          key={listing.id}
-          position={{ lat: listing.lat, lng: listing.lng }}
-          onClick={() => onSelect(listing.id)}
-          zIndex={activeId === listing.id ? 10 : 1}
-        >
-          <button
-            type="button"
-            aria-label={`${listing.bhk} BHK in ${listing.area}, ₹${shortRent(listing.rent)}${listing.availabilityStatus !== "available" ? ` — ${listing.availabilityStatus === "occupied" ? "Occupied" : "Available Soon"}` : ""}`}
-            className={cn(
-              "cursor-pointer rounded-full px-2.5 py-1 text-xs font-semibold tracking-tight transition-all duration-200 border-0 outline-none",
-              activeId === listing.id
-                ? "bg-brand text-brand-foreground scale-110 shadow-lg shadow-brand/40"
-                : listing.availabilityStatus === "occupied"
-                  ? "bg-warning/20 backdrop-blur text-warning border border-warning/40 hover:scale-105"
-                  : listing.availabilityStatus === "available_soon"
-                    ? "bg-blue-500/20 backdrop-blur text-blue-300 border border-blue-500/40 hover:scale-105"
-                    : "bg-background/80 backdrop-blur text-foreground hover:scale-105 hover:text-teal border border-border",
-            )}
-          >
-            ₹{shortRent(listing.rent)}
-          </button>
-        </AdvancedMarker>
-      ))}
-
-      {active && (
-        <InfoWindow
-          position={{ lat: active.lat, lng: active.lng }}
-          pixelOffset={[0, -34]}
-          onCloseClick={() => onClose?.()}
-          headerDisabled
-        >
-          <div className="min-w-[210px] max-w-[250px] p-1 text-slate-900">
-            <p className="text-sm font-semibold leading-snug">{active.title}</p>
-            <p className="mt-0.5 text-xs text-slate-600">
-              {active.bhk} BHK · {active.furnishing} · {active.area}
-            </p>
-            <p className="mt-1 text-base font-bold">{formatRent(active.rent)}/mo</p>
-            <Link
-              to="/listing/$id"
-              params={{ id: active.id }}
-              className="mt-2 inline-flex w-full items-center justify-center rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white"
-            >
-              View details
-            </Link>
-          </div>
-        </InfoWindow>
-      )}
-    </>
+function markerClasses(listing: Listing, isActive: boolean) {
+  return cn(
+    "cursor-pointer rounded-full px-2.5 py-1 text-xs font-semibold tracking-tight transition-all duration-200 outline-none",
+    isActive
+      ? "bg-brand text-brand-foreground scale-110 shadow-lg shadow-brand/40"
+      : listing.availabilityStatus === "occupied"
+        ? "bg-warning/20 backdrop-blur text-warning border border-warning/40 hover:scale-105"
+        : listing.availabilityStatus === "available_soon"
+          ? "bg-blue-500/20 backdrop-blur text-blue-300 border border-blue-500/40 hover:scale-105"
+          : "bg-background/80 backdrop-blur text-foreground hover:scale-105 hover:text-teal border border-border",
   );
 }
 
 export function MapView({ listings, activeId, onSelect, onClose, showHeatmap, satellite }: MapViewProps) {
-  const mapId = "nakkobroker-map";
+  const navigate = useNavigate();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<MLMap | null>(null);
+  const mlRef = useRef<typeof import("maplibre-gl") | null>(null);
+  const markersRef = useRef<Marker[]>([]);
+  const popupRef = useRef<Popup | null>(null);
+  const [ready, setReady] = useState(false);
+  const [failed, setFailed] = useState(false);
 
-  if (!GOOGLE_MAPS_API_KEY) {
+  // Keep latest callbacks in refs so map listeners never go stale
+  const onSelectRef = useRef(onSelect);
+  onSelectRef.current = onSelect;
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+
+  // Init the map once
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const ml = await import("maplibre-gl");
+        if (cancelled || !containerRef.current) return;
+        const map = new ml.Map({
+          container: containerRef.current,
+          style: DARK_STYLE_URL,
+          center: HYDERABAD_CENTER,
+          zoom: 11,
+          attributionControl: { compact: true },
+        });
+        map.addControl(new ml.NavigationControl({ showCompass: false }), "bottom-right");
+        map.on("load", () => {
+          if (cancelled) return;
+          mlRef.current = ml;
+          mapRef.current = map;
+          setReady(true);
+        });
+      } catch {
+        if (!cancelled) setFailed(true);
+      }
+    })();
+    return () => {
+      cancelled = true;
+      popupRef.current?.remove();
+      popupRef.current = null;
+      markersRef.current.forEach((m) => m.remove());
+      markersRef.current = [];
+      mapRef.current?.remove();
+      mapRef.current = null;
+    };
+  }, []);
+
+  // Toggle roadmap/satellite basemap
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!ready || !map) return;
+    map.setStyle(satellite ? (SATELLITE_STYLE as never) : DARK_STYLE_URL);
+  }, [ready, satellite]);
+
+  // Render listing markers
+  useEffect(() => {
+    const map = mapRef.current;
+    const ml = mlRef.current;
+    if (!ready || !map || !ml) return;
+
+    markersRef.current.forEach((m) => m.remove());
+    markersRef.current = listings.map((listing) => {
+      const el = document.createElement("button");
+      el.type = "button";
+      el.className = markerClasses(listing, listing.id === activeId);
+      el.textContent = `₹${shortRent(listing.rent)}`;
+      el.setAttribute(
+        "aria-label",
+        `${listing.bhk} BHK in ${listing.area}, ₹${shortRent(listing.rent)}${
+          listing.availabilityStatus !== "available"
+            ? ` — ${listing.availabilityStatus === "occupied" ? "Occupied" : "Available Soon"}`
+            : ""
+        }`,
+      );
+      el.addEventListener("click", (e) => {
+        e.stopPropagation();
+        onSelectRef.current(listing.id);
+      });
+      return new ml.Marker({ element: el })
+        .setLngLat([round(listing.lng), round(listing.lat)])
+        .addTo(map);
+    });
+  }, [ready, listings, activeId]);
+
+  // Active listing popup + fly-to
+  useEffect(() => {
+    const map = mapRef.current;
+    const ml = mlRef.current;
+    if (!ready || !map || !ml) return;
+
+    popupRef.current?.remove();
+    popupRef.current = null;
+    if (!activeId) return;
+
+    const active = listings.find((l) => l.id === activeId);
+    if (!active) return;
+
+    map.flyTo({ center: [active.lng, active.lat], zoom: 14, speed: 1.4 });
+
+    const node = document.createElement("div");
+    node.className = "min-w-[210px] max-w-[250px] p-1";
+    const title = document.createElement("p");
+    title.className = "text-sm font-semibold leading-snug";
+    title.textContent = active.title;
+    const meta = document.createElement("p");
+    meta.className = "mt-0.5 text-xs opacity-70";
+    meta.textContent = `${active.bhk} BHK · ${active.furnishing} · ${active.area}`;
+    const rent = document.createElement("p");
+    rent.className = "mt-1 text-base font-bold";
+    rent.textContent = `${formatRent(active.rent)}/mo`;
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className =
+      "mt-2 inline-flex w-full items-center justify-center rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white";
+    btn.textContent = "View details";
+    btn.addEventListener("click", () => {
+      void navigate({ to: "/listing/$id", params: { id: active.id } });
+    });
+    node.append(title, meta, rent, btn);
+
+    popupRef.current = new ml.Popup({ closeButton: true, offset: 22, maxWidth: "280px" })
+      .setLngLat([active.lng, active.lat])
+      .setDOMContent(node)
+      .addTo(map);
+    popupRef.current.on("close", () => onCloseRef.current?.());
+  }, [ready, activeId, listings, navigate]);
+
+  if (failed) {
     return (
-      <div className="flex h-full w-full items-center justify-center bg-background text-center px-6">
+      <div className="flex h-full w-full items-center justify-center bg-background px-6 text-center">
         <div>
-          <p className="text-sm font-medium text-muted-foreground">Map unavailable</p>
+          <p className="text-sm font-medium text-muted-foreground">Map unavailable right now</p>
           <p className="mt-1 text-xs text-muted-foreground">
-            Add <code className="rounded bg-secondary px-1">VITE_GOOGLE_MAPS_API_KEY</code> to your environment variables.
+            Browse the homes listed below — they all still work.
           </p>
         </div>
       </div>
@@ -147,34 +191,7 @@ export function MapView({ listings, activeId, onSelect, onClose, showHeatmap, sa
 
   return (
     <div className="relative h-full w-full">
-      <MapErrorBoundary
-        fallback={
-          <div className="flex h-full w-full items-center justify-center bg-background px-6 text-center">
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Map unavailable right now</p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Browse the homes listed below — they all still work.
-              </p>
-            </div>
-          </div>
-        }
-      >
-      <APIProvider apiKey={GOOGLE_MAPS_API_KEY}>
-        <Map
-          mapId={mapId}
-          defaultCenter={MAP_CENTER}
-          defaultZoom={11}
-          gestureHandling="greedy"
-          disableDefaultUI={false}
-          mapTypeId={satellite ? "satellite" : "roadmap"}
-          styles={satellite ? null : DARK_MAP_STYLE}
-          reuseMaps
-        >
-          <ListingMarkers listings={listings} activeId={activeId} onSelect={onSelect} onClose={onClose} />
-        </Map>
-      </APIProvider>
-      </MapErrorBoundary>
-
+      <div ref={containerRef} className="h-full w-full" />
 
       {showHeatmap && (
         <div
