@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import type { Map as MLMap, Marker } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { cn } from "@/lib/utils";
+import { ensureMaplibreWorker } from "@/lib/maplibre-worker";
 
 // Keyless live vector tiles — work on every domain, no API key required.
 const STYLES = {
@@ -33,6 +34,7 @@ export function PinPicker({ lng, lat, onChange }: PinPickerProps) {
     (async () => {
       try {
         const ml = await import("maplibre-gl");
+        await ensureMaplibreWorker(ml);
         if (cancelled || !containerRef.current) return;
         const map = new ml.Map({
           container: containerRef.current,
