@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -64,12 +64,16 @@ function AuthPage() {
 
   // After Supabase redirects back with the token in the URL hash,
   // onAuthStateChange fires automatically and the session is established.
-  // We just need to redirect the user to their intended destination.
-  supabase.auth.onAuthStateChange((event) => {
-    if (event === "SIGNED_IN") {
-      navigate({ to: next, replace: true });
-    }
-  });
+  // Subscribe once on mount (never during render) and clean up on unmount so
+  // repeated renders don't stack listeners or navigate twice.
+  useEffect(() => {
+    const { data } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_IN") {
+        navigate({ to: next, replace: true });
+      }
+    });
+    return () => data.subscription.unsubscribe();
+  }, [navigate, next]);
 
   return (
     <main className="grid min-h-dvh place-items-center bg-background px-4 py-10">
