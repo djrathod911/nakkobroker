@@ -147,6 +147,18 @@ export function MapView({ listings, activeId, onSelect, onClose, showHeatmap, sa
 
   return (
     <div className="relative h-full w-full">
+      <MapErrorBoundary
+        fallback={
+          <div className="flex h-full w-full items-center justify-center bg-background px-6 text-center">
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">Map unavailable right now</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Browse the homes listed below — they all still work.
+              </p>
+            </div>
+          </div>
+        }
+      >
       <APIProvider apiKey={GOOGLE_MAPS_API_KEY}>
         <Map
           mapId={mapId}
