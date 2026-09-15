@@ -3,6 +3,17 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const GATEWAY_URL = "https://connector-gateway.lovable.dev/google_maps";
+const GOOGLE_PLACES_URL = "https://places.googleapis.com";
+
+// A key starting with "AIza" is the owner's own Google Cloud key — call Google
+// directly. Anything else is a Lovable connector key and must go via the gateway.
+function usingOwnGoogleKey() {
+  return (process.env["GOOGLE_MAPS_API_KEY"] ?? "").startsWith("AIza");
+}
+
+function placesBase() {
+  return usingOwnGoogleKey() ? GOOGLE_PLACES_URL : GATEWAY_URL;
+}
 
 // Hyderabad bounding box — keeps suggestions relevant to the app's city.
 const LOCATION_BIAS = {
@@ -12,10 +23,14 @@ const LOCATION_BIAS = {
   },
 };
 
-function gatewayHeaders() {
-  const lovableKey = process.env["LOVABLE_API_KEY"];
+function gatewayHeaders(): Record<string, string> {
   const mapsKey = process.env["GOOGLE_MAPS_API_KEY"];
-  if (!lovableKey || !mapsKey) throw new Error("Google Maps connector is not linked");
+  if (!mapsKey) throw new Error("Google Maps key is not configured");
+  if (usingOwnGoogleKey()) {
+    return { "X-Goog-Api-Key": mapsKey, "Content-Type": "application/json" };
+  }
+  const lovableKey = process.env["LOVABLE_API_KEY"];
+  if (!lovableKey) throw new Error("Google Maps connector is not linked");
   return {
     Authorization: `Bearer ${lovableKey}`,
     "X-Connection-Api-Key": mapsKey,
