@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import {
   BadgeCheck,
   ArrowBigUp,
@@ -68,7 +68,17 @@ export function ListingCard({ listing, active, onHover, onSelect, voted, onVote 
               </span>
             )}
           </div>
-          <h2 className="mt-2 truncate text-base font-semibold tracking-tight">{listing.title}</h2>
+          <h2 className="mt-2 truncate text-base font-semibold tracking-tight">
+            <Link
+              to="/listing/$id"
+              params={{ id: listing.id }}
+              onClick={() => onSelect(listing.id)}
+              className="outline-none after:absolute after:inset-0 after:rounded-2xl after:content-['']"
+              aria-label={`${listing.title} — ${listing.bhk} BHK in ${listing.area}, ${formatRent(listing.rent)} per month`}
+            >
+              {listing.title}
+            </Link>
+          </h2>
           <p className="truncate text-sm text-muted-foreground">
             {listing.area} · {listing.sqft} sqft · {listing.tenant}
           </p>
@@ -122,7 +132,7 @@ export function ListingCard({ listing, active, onHover, onSelect, voted, onVote 
             </span>
           )}
         </div>
-        <div className="flex shrink-0 items-center gap-1 opacity-70 transition-opacity group-hover:opacity-100">
+        <div className="relative z-10 flex shrink-0 items-center gap-1 opacity-70 transition-opacity group-hover:opacity-100">
           <SaveListingButton listingId={listing.id} />
           <Button
             size="icon"
