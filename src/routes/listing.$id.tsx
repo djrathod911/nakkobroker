@@ -428,7 +428,7 @@ function ListingDetailPage() {
               activeId={listing.id}
               onSelect={() => {}}
               showHeatmap={false}
-              satellite={false}
+              basemap="map"
             />
           </div>
         </section>
