@@ -59,6 +59,18 @@ const MapView = lazy(() =>
 
 type Basemap = "map" | "dark" | "satellite";
 
+/** Well-known localities, so search helps even before homes are listed there. */
+const POPULAR_AREAS: Record<string, string[]> = {
+  Hyderabad: [
+    "Madhapur", "Gachibowli", "Kondapur", "Hitech City", "Kukatpally", "Ameerpet",
+    "Banjara Hills", "Jubilee Hills", "Begumpet", "Manikonda", "Miyapur", "Nallagandla",
+    "Kompally", "Uppal", "LB Nagar", "Secunderabad", "Attapur", "Narsingi",
+  ],
+  Bengaluru: ["Koramangala", "Indiranagar", "HSR Layout", "Whitefield", "Jayanagar", "Marathahalli"],
+  Chennai: ["Adyar", "Velachery", "T Nagar", "Anna Nagar", "OMR", "Porur"],
+  Pune: ["Kothrud", "Baner", "Hinjewadi", "Viman Nagar", "Wakad", "Kharadi"],
+};
+
 const TITLE = "NakkoBroker — Zero-brokerage rentals in Hyderabad";
 const DESCRIPTION =
   "Discover Hyderabad flats directly from owners on a live map. No brokers, no brokerage — community-verified listings and To-Let boards.";
@@ -164,18 +176,27 @@ function Discover() {
   }, [query, filters, allListings]);
 
   // Type-ahead suggestions: matching areas first, then individual homes.
+  // Known localities are always offered so search still helps while a city
+  // has few or no published homes yet.
   const suggestions = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return [] as { kind: "area" | "listing"; label: string; sub: string; id?: string }[];
     const inCity = allListings.filter((l) => (l.city ?? "Hyderabad") === filters.city);
-    const areas = Array.from(new Set(inCity.map((l) => l.area)))
+    const listedAreas = Array.from(new Set(inCity.map((l) => l.area)));
+    const knownAreas = POPULAR_AREAS[filters.city] ?? [];
+    const areaNames = Array.from(new Set([...listedAreas, ...knownAreas]));
+    const areas = areaNames
       .filter((a) => a.toLowerCase().includes(q))
+      .sort((a, b) => a.toLowerCase().indexOf(q) - b.toLowerCase().indexOf(q))
       .slice(0, 4)
-      .map((a) => ({
-        kind: "area" as const,
-        label: a,
-        sub: (() => { const n = inCity.filter((l) => l.area === a).length; return `${n} ${n === 1 ? "home" : "homes"}`; })(),
-      }));
+      .map((a) => {
+        const n = inCity.filter((l) => l.area === a).length;
+        return {
+          kind: "area" as const,
+          label: a,
+          sub: n ? `${n} ${n === 1 ? "home" : "homes"}` : "No homes here yet",
+        };
+      });
     const homes = inCity
       .filter((l) => `${l.title} ${l.area} ${l.bhk}bhk`.toLowerCase().includes(q))
       .slice(0, 5)
