@@ -47,6 +47,7 @@ import {
   type FlatDraft,
 } from "@/lib/list-flat";
 import { getCloudDraft, saveCloudDraft, deleteCloudDraft } from "@/lib/drafts.functions";
+import { AddressSearch } from "@/components/list-flat/AddressSearch";
 import { PinPicker } from "@/components/list-flat/PinPicker";
 import { OwnerVerification } from "@/components/list-flat/OwnerVerification";
 import { Button } from "@/components/ui/button";
@@ -764,6 +765,10 @@ function ListYourFlat() {
                     ))}
                   </div>
                   <FieldError message={errors["area"]} />
+                </div>
+                <div className="space-y-2">
+                  <FieldLabel>Search address</FieldLabel>
+                  <AddressSearch onPick={(lng, lat) => set({ lng, lat })} />
                 </div>
                 <PinPicker lng={draft.lng} lat={draft.lat} onChange={(lng, lat) => set({ lng, lat })} />
                 <p className="flex items-center gap-1.5 text-xs text-muted-foreground">

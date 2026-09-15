@@ -1,0 +1,91 @@
+import { createServerFn } from "@tanstack/react-start";
+import { z } from "zod";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+
+const GATEWAY_URL = "https://connector-gateway.lovable.dev/google_maps";
+
+// Hyderabad bounding box — keeps suggestions relevant to the app's city.
+const LOCATION_BIAS = {
+  rectangle: {
+    low: { latitude: 17.2, longitude: 78.2 },
+    high: { latitude: 17.6, longitude: 78.7 },
+  },
+};
+
+function gatewayHeaders() {
+  const lovableKey = process.env["LOVABLE_API_KEY"];
+  const mapsKey = process.env["GOOGLE_MAPS_API_KEY"];
+  if (!lovableKey || !mapsKey) throw new Error("Google Maps connector is not linked");
+  return {
+    Authorization: `Bearer ${lovableKey}`,
+    "X-Connection-Api-Key": mapsKey,
+    "Content-Type": "application/json",
+  };
+}
+
+export interface PlaceSuggestion {
+  placeId: string;
+  text: string;
+}
+
+export const searchPlaces = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) =>
+    z.object({ input: z.string().trim().min(2).max(120), sessionToken: z.string().uuid() }).parse(input),
+  )
+  .handler(async ({ data }): Promise<PlaceSuggestion[]> => {
+    const res = await fetch(`${GATEWAY_URL}/places/v1/places:autocomplete`, {
+      method: "POST",
+      headers: {
+        ...gatewayHeaders(),
+        "X-Goog-FieldMask": "suggestions.placePrediction.placeId,suggestions.placePrediction.text.text",
+      },
+      body: JSON.stringify({
+        input: data.input,
+        sessionToken: data.sessionToken,
+        locationBias: LOCATION_BIAS,
+        includedRegionCodes: ["in"],
+      }),
+    });
+    if (!res.ok) throw new Error(`Places autocomplete failed [${res.status}]: ${await res.text()}`);
+    const json = (await res.json()) as {
+      suggestions?: { placePrediction?: { placeId: string; text?: { text?: string } } }[];
+    };
+    return (json.suggestions ?? [])
+      .map((s) => s.placePrediction)
+      .filter((p): p is { placeId: string; text: { text: string } } => !!p?.placeId && !!p.text?.text)
+      .slice(0, 6)
+      .map((p) => ({ placeId: p.placeId, text: p.text.text }));
+  });
+
+export interface PlaceResult {
+  lng: number;
+  lat: number;
+  label: string;
+}
+
+export const getPlaceLocation = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) =>
+    z.object({ placeId: z.string().min(3).max(200), sessionToken: z.string().uuid() }).parse(input),
+  )
+  .handler(async ({ data }): Promise<PlaceResult> => {
+    const res = await fetch(
+      `${GATEWAY_URL}/places/v1/places/${encodeURIComponent(data.placeId)}?sessionToken=${data.sessionToken}`,
+      {
+        headers: { ...gatewayHeaders(), "X-Goog-FieldMask": "location,formattedAddress,displayName" },
+      },
+    );
+    if (!res.ok) throw new Error(`Place details failed [${res.status}]: ${await res.text()}`);
+    const json = (await res.json()) as {
+      location?: { latitude: number; longitude: number };
+      formattedAddress?: string;
+      displayName?: { text?: string };
+    };
+    if (!json.location) throw new Error("Place has no location");
+    return {
+      lng: Number(json.location.longitude.toFixed(6)),
+      lat: Number(json.location.latitude.toFixed(6)),
+      label: json.displayName?.text ?? json.formattedAddress ?? "Selected place",
+    };
+  });
