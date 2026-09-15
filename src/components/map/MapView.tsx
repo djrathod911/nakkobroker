@@ -9,6 +9,7 @@ import {
   type MapProps,
 } from "@vis.gl/react-google-maps";
 import { HYDERABAD_CENTER, formatRent, shortRent, type Listing } from "@/data/listings";
+import { MapErrorBoundary } from "@/components/map/MapErrorBoundary";
 import { cn } from "@/lib/utils";
 
 const env = (typeof import.meta !== "undefined" ? (import.meta.env as Record<string, string>) : {}) ?? {};
@@ -146,6 +147,18 @@ export function MapView({ listings, activeId, onSelect, onClose, showHeatmap, sa
 
   return (
     <div className="relative h-full w-full">
+      <MapErrorBoundary
+        fallback={
+          <div className="flex h-full w-full items-center justify-center bg-background px-6 text-center">
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">Map unavailable right now</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Browse the homes listed below — they all still work.
+              </p>
+            </div>
+          </div>
+        }
+      >
       <APIProvider apiKey={GOOGLE_MAPS_API_KEY}>
         <Map
           mapId={mapId}
@@ -160,6 +173,8 @@ export function MapView({ listings, activeId, onSelect, onClose, showHeatmap, sa
           <ListingMarkers listings={listings} activeId={activeId} onSelect={onSelect} onClose={onClose} />
         </Map>
       </APIProvider>
+      </MapErrorBoundary>
+
 
       {showHeatmap && (
         <div
