@@ -18,6 +18,7 @@ import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedListYourFlatRouteImport } from './routes/_authenticated/list-your-flat'
+import { Route as AuthenticatedMoveInRouteImport } from './routes/_authenticated/move-in'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedSpotABoardRouteImport } from './routes/_authenticated/spot-a-board'
 import { Route as ListingIdRouteImport } from './routes/listing.$id'
@@ -73,6 +74,11 @@ const AuthenticatedListYourFlatRoute =
     path: '/list-your-flat',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedMoveInRoute = AuthenticatedMoveInRouteImport.update({
+  id: '/move-in',
+  path: '/move-in',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
@@ -120,6 +126,7 @@ export interface FileRoutesByFullPath {
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/list-your-flat': typeof AuthenticatedListYourFlatRoute
+  '/move-in': typeof AuthenticatedMoveInRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/spot-a-board': typeof AuthenticatedSpotABoardRoute
   '/listing/$id': typeof ListingIdRoute
@@ -137,6 +144,7 @@ export interface FileRoutesByTo {
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/list-your-flat': typeof AuthenticatedListYourFlatRoute
+  '/move-in': typeof AuthenticatedMoveInRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/spot-a-board': typeof AuthenticatedSpotABoardRoute
   '/listing/$id': typeof ListingIdRoute
@@ -156,6 +164,7 @@ export interface FileRoutesById {
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/list-your-flat': typeof AuthenticatedListYourFlatRoute
+  '/_authenticated/move-in': typeof AuthenticatedMoveInRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/spot-a-board': typeof AuthenticatedSpotABoardRoute
   '/listing/$id': typeof ListingIdRoute
@@ -175,6 +184,7 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/dashboard'
     | '/list-your-flat'
+    | '/move-in'
     | '/profile'
     | '/spot-a-board'
     | '/listing/$id'
@@ -192,6 +202,7 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/dashboard'
     | '/list-your-flat'
+    | '/move-in'
     | '/profile'
     | '/spot-a-board'
     | '/listing/$id'
@@ -210,6 +221,7 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/_authenticated/dashboard'
     | '/_authenticated/list-your-flat'
+    | '/_authenticated/move-in'
     | '/_authenticated/profile'
     | '/_authenticated/spot-a-board'
     | '/listing/$id'
@@ -297,6 +309,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedListYourFlatRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/move-in': {
+      id: '/_authenticated/move-in'
+      path: '/move-in'
+      fullPath: '/move-in'
+      preLoaderRoute: typeof AuthenticatedMoveInRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/profile': {
       id: '/_authenticated/profile'
       path: '/profile'
@@ -352,6 +371,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedListYourFlatRoute: typeof AuthenticatedListYourFlatRoute
+  AuthenticatedMoveInRoute: typeof AuthenticatedMoveInRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedSpotABoardRoute: typeof AuthenticatedSpotABoardRoute
   AuthenticatedMessagesIdRoute: typeof AuthenticatedMessagesIdRoute
@@ -361,6 +381,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedListYourFlatRoute: AuthenticatedListYourFlatRoute,
+  AuthenticatedMoveInRoute: AuthenticatedMoveInRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedSpotABoardRoute: AuthenticatedSpotABoardRoute,
   AuthenticatedMessagesIdRoute: AuthenticatedMessagesIdRoute,
