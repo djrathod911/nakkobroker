@@ -5,6 +5,7 @@ import {
   ArrowLeft,
   Bell,
   BellPlus,
+  FolderLock,
   Heart,
   Loader2,
   MessagesSquare,
