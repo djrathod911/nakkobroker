@@ -174,9 +174,9 @@ function NewFolderForm({
   onCreated,
   onCancel,
 }: {
-  userId?: string;
+  userId?: string | undefined;
   onCreated: (t: Tenancy) => void;
-  onCancel?: () => void;
+  onCancel?: (() => void) | undefined;
 }) {
   const [label, setLabel] = useState("");
   const [address, setAddress] = useState("");
