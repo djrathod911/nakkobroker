@@ -493,6 +493,156 @@ export type Database = {
           },
         ]
       }
+      tenancies: {
+        Row: {
+          address: string
+          created_at: string
+          deposit: number
+          id: string
+          lease_end: string | null
+          lease_start: string | null
+          listing_id: string | null
+          notes: string
+          owner_name: string
+          owner_phone: string
+          property_label: string
+          rent: number
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string
+          created_at?: string
+          deposit?: number
+          id?: string
+          lease_end?: string | null
+          lease_start?: string | null
+          listing_id?: string | null
+          notes?: string
+          owner_name?: string
+          owner_phone?: string
+          property_label?: string
+          rent?: number
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string
+          created_at?: string
+          deposit?: number
+          id?: string
+          lease_end?: string | null
+          lease_start?: string | null
+          listing_id?: string | null
+          notes?: string
+          owner_name?: string
+          owner_phone?: string
+          property_label?: string
+          rent?: number
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenancies_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tenancy_files: {
+        Row: {
+          caption: string
+          created_at: string
+          file_name: string
+          id: string
+          kind: string
+          mime_type: string
+          path: string
+          size_bytes: number
+          tenancy_id: string
+          tenant_id: string
+        }
+        Insert: {
+          caption?: string
+          created_at?: string
+          file_name?: string
+          id?: string
+          kind?: string
+          mime_type?: string
+          path: string
+          size_bytes?: number
+          tenancy_id: string
+          tenant_id: string
+        }
+        Update: {
+          caption?: string
+          created_at?: string
+          file_name?: string
+          id?: string
+          kind?: string
+          mime_type?: string
+          path?: string
+          size_bytes?: number
+          tenancy_id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenancy_files_tenancy_id_fkey"
+            columns: ["tenancy_id"]
+            isOneToOne: false
+            referencedRelation: "tenancies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tenancy_utilities: {
+        Row: {
+          account_number: string
+          contact_phone: string
+          created_at: string
+          id: string
+          kind: string
+          notes: string
+          provider: string
+          tenancy_id: string
+          tenant_id: string
+        }
+        Insert: {
+          account_number?: string
+          contact_phone?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          notes?: string
+          provider?: string
+          tenancy_id: string
+          tenant_id: string
+        }
+        Update: {
+          account_number?: string
+          contact_phone?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          notes?: string
+          provider?: string
+          tenancy_id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenancy_utilities_tenancy_id_fkey"
+            columns: ["tenancy_id"]
+            isOneToOne: false
+            referencedRelation: "tenancies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       verified_phones: {
         Row: {
           created_at: string

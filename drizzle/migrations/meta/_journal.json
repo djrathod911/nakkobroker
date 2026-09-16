@@ -15,6 +15,13 @@
       "when": 1789225133640,
       "tag": "0001_create_saved_listings",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1789544970177,
+      "tag": "0002_create_move_in_folder",
+      "breakpoints": true
     }
   ]
 }
