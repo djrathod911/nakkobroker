@@ -121,6 +121,19 @@ function DashboardPage() {
           Homes you saved, chats with owners, and alerts for new homes in your budget.
         </p>
 
+        <Link
+          to="/move-in"
+          className="glass mt-5 flex items-center gap-3 rounded-2xl p-4 transition-colors hover:bg-secondary/50"
+        >
+          <FolderLock className="size-5 shrink-0 text-brand" aria-hidden />
+          <span className="min-w-0 flex-1">
+            <span className="block text-sm font-semibold">Move-in folder</span>
+            <span className="block text-xs text-muted-foreground">
+              Keep your signed lease, utility contacts and move-in photos safe for deposit disputes.
+            </span>
+          </span>
+        </Link>
+
         <Tabs defaultValue="saved" className="mt-6">
           <TabsList className="grid w-full grid-cols-3 rounded-2xl">
             <TabsTrigger value="saved" className="rounded-xl">
