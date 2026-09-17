@@ -11,7 +11,7 @@ import {
   CheckCircle2,
   Ban,
 } from "lucide-react";
-import { availabilityLabel, formatRent, type Listing } from "@/data/listings";
+import { availabilityLabel, availabilityStatusLabel, formatRent, type Listing } from "@/data/listings";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -56,15 +56,15 @@ export function ListingCard({ listing, active, onHover, onSelect, voted, onVote 
             {/* Availability badge */}
             {listing.availabilityStatus === "available" ? (
               <span className="inline-flex items-center gap-1 rounded-full bg-success/15 px-2 py-0.5 text-xs text-success">
-                <CheckCircle2 className="size-3 shrink-0" aria-hidden /> Available Now
+                <CheckCircle2 className="size-3 shrink-0" aria-hidden /> {availabilityStatusLabel(listing.availabilityStatus)}
               </span>
             ) : listing.availabilityStatus === "occupied" ? (
               <span className="inline-flex items-center gap-1 rounded-full bg-warning/15 px-2 py-0.5 text-xs text-warning">
-                <Ban className="size-3 shrink-0" aria-hidden /> Occupied
+                <Ban className="size-3 shrink-0" aria-hidden /> {availabilityStatusLabel(listing.availabilityStatus)}
               </span>
             ) : (
               <span className="inline-flex items-center gap-1 rounded-full bg-blue-500/15 px-2 py-0.5 text-xs text-blue-400">
-                <Clock className="size-3 shrink-0" aria-hidden /> Available Soon
+                <Clock className="size-3 shrink-0" aria-hidden /> {availabilityStatusLabel(listing.availabilityStatus)}
               </span>
             )}
           </div>

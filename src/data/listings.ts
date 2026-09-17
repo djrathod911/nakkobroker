@@ -61,6 +61,18 @@ export function availabilityLabel(listing: Pick<Listing, "availabilityStatus" | 
 
 export const HYDERABAD_CENTER: [number, number] = [78.4483, 17.4239];
 
+/** Short, plain-language status used on map pins, cards, and filters. */
+export function availabilityStatusLabel(status: AvailabilityStatus): string {
+  switch (status) {
+    case "available":
+      return "Vacant";
+    case "occupied":
+      return "Living Here Now";
+    case "available_soon":
+      return "Available Soon";
+  }
+}
+
 export const formatRent = (value: number) =>
   new Intl.NumberFormat("en-IN", {
     style: "currency",

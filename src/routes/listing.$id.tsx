@@ -20,7 +20,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MapView } from "@/components/map/MapView";
-import { availabilityLabel, formatRent } from "@/data/listings";
+import { availabilityLabel, availabilityStatusLabel, formatRent } from "@/data/listings";
 import {
   fetchContactPhone,
   fetchListingById,
@@ -251,15 +251,15 @@ function ListingDetailPage() {
             {/* Availability status */}
             {listing.availabilityStatus === "available" ? (
               <span className="inline-flex items-center gap-1 rounded-full bg-success/15 px-2.5 py-1 text-xs font-medium text-success">
-                <CheckCircle2 className="size-3.5" aria-hidden /> Available Now
+                 <CheckCircle2 className="size-3.5" aria-hidden /> {availabilityStatusLabel(listing.availabilityStatus)}
               </span>
             ) : listing.availabilityStatus === "occupied" ? (
               <span className="inline-flex items-center gap-1 rounded-full bg-warning/15 px-2.5 py-1 text-xs font-medium text-warning">
-                <Ban className="size-3.5" aria-hidden /> Currently Occupied
+                 <Ban className="size-3.5" aria-hidden /> {availabilityStatusLabel(listing.availabilityStatus)}
               </span>
             ) : (
               <span className="inline-flex items-center gap-1 rounded-full bg-blue-500/15 px-2.5 py-1 text-xs font-medium text-blue-400">
-                <Clock className="size-3.5" aria-hidden /> Available Soon
+                 <Clock className="size-3.5" aria-hidden /> {availabilityStatusLabel(listing.availabilityStatus)}
               </span>
             )}
           </div>

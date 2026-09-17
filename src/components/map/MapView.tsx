@@ -2,7 +2,13 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import type { Map as MLMap, Marker, Popup } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { HYDERABAD_CENTER, formatRent, shortRent, type Listing } from "@/data/listings";
+import {
+  HYDERABAD_CENTER,
+  availabilityStatusLabel,
+  formatRent,
+  shortRent,
+  type Listing,
+} from "@/data/listings";
 import { cn } from "@/lib/utils";
 import { ensureMaplibreWorker } from "@/lib/maplibre-worker";
 
@@ -41,7 +47,7 @@ interface MapViewProps {
 function markerClasses(listing: Listing, isActive: boolean) {
   return cn(
     // Bigger tap target (44px tall hit area via py) + clearer contrast
-    "cursor-pointer select-none rounded-full px-3.5 py-2 text-[13px] font-bold leading-none tracking-tight",
+    "cursor-pointer select-none whitespace-nowrap rounded-full px-3.5 py-2 text-[12px] font-bold leading-none tracking-normal",
     "shadow-lg ring-1 transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-brand",
     isActive
       ? "bg-brand text-brand-foreground ring-brand/50 scale-110 z-10 shadow-brand/40"
@@ -137,14 +143,11 @@ export function MapView({ listings, activeId, onSelect, onClose, showHeatmap, ba
       const el = document.createElement("button");
       el.type = "button";
       el.className = markerClasses(listing, listing.id === activeId);
-      el.textContent = `₹${shortRent(listing.rent)}`;
+      const status = availabilityStatusLabel(listing.availabilityStatus);
+      el.textContent = `₹${shortRent(listing.rent)} · ${status}`;
       el.setAttribute(
         "aria-label",
-        `${listing.bhk} BHK in ${listing.area}, ₹${shortRent(listing.rent)}${
-          listing.availabilityStatus !== "available"
-            ? ` — ${listing.availabilityStatus === "occupied" ? "Occupied" : "Available Soon"}`
-            : ""
-        }`,
+        `${listing.bhk} BHK in ${listing.area}, ₹${shortRent(listing.rent)} — ${status}`,
       );
       el.addEventListener("click", (e) => {
         e.stopPropagation();
@@ -194,6 +197,9 @@ export function MapView({ listings, activeId, onSelect, onClose, showHeatmap, ba
     const meta = document.createElement("p");
     meta.className = "mt-0.5 text-xs opacity-70";
     meta.textContent = `${active.bhk} BHK · ${active.furnishing} · ${active.area}`;
+    const status = document.createElement("p");
+    status.className = "mt-1 text-xs font-semibold";
+    status.textContent = availabilityStatusLabel(active.availabilityStatus);
     const rent = document.createElement("p");
     rent.className = "mt-1 text-base font-bold";
     rent.textContent = `${formatRent(active.rent)}/mo`;
@@ -205,7 +211,7 @@ export function MapView({ listings, activeId, onSelect, onClose, showHeatmap, ba
     btn.addEventListener("click", () => {
       void navigate({ to: "/listing/$id", params: { id: active.id } });
     });
-    node.append(title, meta, rent, btn);
+    node.append(title, meta, status, rent, btn);
 
     popupRef.current = new ml.Popup({ closeButton: true, offset: 22, maxWidth: "280px" })
       .setLngLat([active.lng, active.lat])
