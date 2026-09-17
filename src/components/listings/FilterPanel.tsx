@@ -1,5 +1,6 @@
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
+import { availabilityStatusLabel, type AvailabilityStatus } from "@/data/listings";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { formatRent } from "@/data/listings";
@@ -261,17 +262,13 @@ export function FilterPanel({
       <div className="space-y-2">
         <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Availability</p>
         <div className="flex flex-wrap gap-2">
-          {[
-            { value: "available", label: "Available Now" },
-            { value: "available_soon", label: "Available Soon" },
-            { value: "occupied", label: "Occupied" },
-          ].map((opt) => (
+          {(["available", "available_soon", "occupied"] as AvailabilityStatus[]).map((value) => (
             <Chip
-              key={opt.value}
-              label={opt.label}
-              selected={filters.availabilityStatus.includes(opt.value)}
+              key={value}
+              label={availabilityStatusLabel(value)}
+              selected={filters.availabilityStatus.includes(value)}
               onClick={() =>
-                onChange({ ...filters, availabilityStatus: toggle(filters.availabilityStatus, opt.value) })
+                onChange({ ...filters, availabilityStatus: toggle(filters.availabilityStatus, value) })
               }
             />
           ))}
