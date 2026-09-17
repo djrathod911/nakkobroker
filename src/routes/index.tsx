@@ -25,6 +25,7 @@ import { NotificationBell } from "@/components/alerts/NotificationBell";
 import { SaveAlertPanel } from "@/components/alerts/SaveAlertPanel";
 import {
   FilterPanel,
+  activeFilterChips,
   defaultFilters,
   CITIES,
   HOUSE_TYPES,
