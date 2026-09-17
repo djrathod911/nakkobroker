@@ -70,6 +70,81 @@ function Chip({
 const toggle = (list: string[], value: string) =>
   list.includes(value) ? list.filter((v) => v !== value) : [...list, value];
 
+/** Section wrapper with a live count and a one-tap clear. */
+function Section({
+  title,
+  count = 0,
+  onClear,
+  hint,
+  children,
+}: {
+  title: string;
+  count?: number;
+  onClear?: () => void;
+  hint?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          {title}
+          {count > 0 && (
+            <span className="ml-2 rounded-full bg-brand/15 px-1.5 py-0.5 text-[10px] font-semibold text-brand">
+              {count}
+            </span>
+          )}
+        </p>
+        {count > 0 && onClear && (
+          <button
+            type="button"
+            onClick={onClear}
+            className="text-xs font-medium text-muted-foreground underline-offset-2 transition-colors hover:text-foreground hover:underline"
+          >
+            Clear
+          </button>
+        )}
+      </div>
+      {children}
+      {hint && <p className="text-[11px] text-muted-foreground">{hint}</p>}
+    </div>
+  );
+}
+
+/** Removable summary of every filter that is currently narrowing results. */
+export function activeFilterChips(filters: Filters): { id: string; label: string; next: Filters }[] {
+  const chips: { id: string; label: string; next: Filters }[] = [];
+  if (filters.houseType !== "Any")
+    chips.push({ id: "houseType", label: filters.houseType, next: { ...filters, houseType: "Any" } });
+  for (const b of filters.bhk)
+    chips.push({ id: `bhk-${b}`, label: `${b} BHK`, next: { ...filters, bhk: filters.bhk.filter((v) => v !== b) } });
+  if (filters.minRent > RENT_MIN || filters.maxRent < RENT_MAX)
+    chips.push({
+      id: "budget",
+      label: `${formatRent(filters.minRent)} – ${formatRent(filters.maxRent)}`,
+      next: { ...filters, minRent: RENT_MIN, maxRent: RENT_MAX },
+    });
+  for (const f of filters.furnishing)
+    chips.push({ id: `fur-${f}`, label: f, next: { ...filters, furnishing: filters.furnishing.filter((v) => v !== f) } });
+  for (const a of filters.amenities)
+    chips.push({ id: `am-${a}`, label: a, next: { ...filters, amenities: filters.amenities.filter((v) => v !== a) } });
+  for (const s of filters.availabilityStatus)
+    chips.push({
+      id: `av-${s}`,
+      label: availabilityStatusLabel(s as AvailabilityStatus),
+      next: { ...filters, availabilityStatus: filters.availabilityStatus.filter((v) => v !== s) },
+    });
+  if (filters.ownerOnly) chips.push({ id: "owner", label: "Direct owners", next: { ...filters, ownerOnly: false } });
+  return chips;
+}
+
+const BUDGET_PRESETS: { label: string; min: number; max: number }[] = [
+  { label: "Under ₹15k", min: RENT_MIN, max: 15000 },
+  { label: "₹15k – ₹30k", min: 15000, max: 30000 },
+  { label: "₹30k – ₹60k", min: 30000, max: 60000 },
+  { label: "₹60k+", min: 60000, max: RENT_MAX },
+];
+
 function BudgetInputs({
   filters,
   onChange,
