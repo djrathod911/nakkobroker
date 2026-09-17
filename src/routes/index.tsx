@@ -346,7 +346,7 @@ function Discover() {
           </div>
 
           <div className="flex shrink-0 items-center gap-2">
-            <Sheet>
+            <Sheet open={filtersOpen} onOpenChange={setFiltersOpen}>
               <SheetTrigger asChild>
                 <Button variant="secondary" aria-label="Filters" className="glass rounded-2xl border-0">
                   <SlidersHorizontal className="size-4" />
@@ -358,16 +358,37 @@ function Discover() {
                   )}
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-full border-border bg-card/95 backdrop-blur-xl sm:max-w-md">
-                <SheetHeader>
+              <SheetContent
+                side="right"
+                className="flex w-full flex-col gap-0 border-border bg-card/95 p-0 backdrop-blur-xl sm:max-w-md"
+              >
+                <SheetHeader className="shrink-0 border-b border-border/60 px-4 py-4 text-left">
                   <SheetTitle>Refine your search</SheetTitle>
+                  <p className="text-xs text-muted-foreground">
+                    {results.length === 1 ? "1 home matches" : `${results.length} homes match`} right now
+                  </p>
                 </SheetHeader>
-                <div className="overflow-y-auto px-4 pb-8">
+                <div className="flex-1 overflow-y-auto px-4 py-5">
                   <FilterPanel filters={filters} onChange={setFilters} />
                   <SaveAlertPanel filters={filters} userId={user?.id} />
-                  <Button variant="ghost" className="mt-5 w-full" onClick={() => setFilters(defaultFilters)}>
-                    Reset all
-                  </Button>
+                </div>
+                <div className="shrink-0 border-t border-border/60 bg-card/80 px-4 py-3">
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      className="flex-1"
+                      disabled={activeFilterCount === 0}
+                      onClick={() => setFilters(defaultFilters)}
+                    >
+                      Reset all
+                    </Button>
+                    <Button
+                      className="flex-1 bg-brand text-brand-foreground hover:bg-brand/90"
+                      onClick={() => setFiltersOpen(false)}
+                    >
+                      {results.length === 1 ? "Show 1 home" : `Show ${results.length} homes`}
+                    </Button>
+                  </div>
                 </div>
               </SheetContent>
             </Sheet>
