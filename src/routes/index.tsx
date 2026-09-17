@@ -587,7 +587,33 @@ function Discover() {
                 />
               ))}
             </div>
+
+            {/* Applied filters — each chip removes just that one */}
+            {activeFilterChips(filters).length > 0 && (
+              <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                {activeFilterChips(filters).map((chip) => (
+                  <button
+                    key={chip.id}
+                    type="button"
+                    onClick={() => setFilters(chip.next)}
+                    aria-label={`Remove filter ${chip.label}`}
+                    className="inline-flex items-center gap-1 rounded-full border border-brand/40 bg-brand/10 px-2.5 py-1 text-xs font-medium text-foreground transition-colors hover:bg-brand/20"
+                  >
+                    {chip.label}
+                    <X className="size-3 opacity-70" aria-hidden />
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => setFilters(defaultFilters)}
+                  className="px-1.5 py-1 text-xs font-medium text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+                >
+                  Clear all
+                </button>
+              </div>
+            )}
           </div>
+
 
           <div ref={listRef} className="flex-1 space-y-3 overflow-y-auto p-3">
             {isInitialLoading ? (
