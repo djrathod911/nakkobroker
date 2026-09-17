@@ -231,9 +231,8 @@ export function FilterPanel({
   onChange: (next: Filters) => void;
 }) {
   return (
-    <div className="space-y-5">
-      <div className="space-y-2">
-        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">City</p>
+    <div className="space-y-6">
+      <Section title="City">
         <div className="flex flex-wrap gap-2">
           {CITIES.map((c) => (
             <Chip
@@ -244,10 +243,13 @@ export function FilterPanel({
             />
           ))}
         </div>
-      </div>
+      </Section>
 
-      <div className="space-y-2">
-        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Home type</p>
+      <Section
+        title="Home type"
+        count={filters.houseType !== "Any" ? 1 : 0}
+        onClear={() => onChange({ ...filters, houseType: "Any" })}
+      >
         <div className="flex flex-wrap gap-2">
           {["Any", ...HOUSE_TYPES].map((t) => (
             <Chip
@@ -258,10 +260,13 @@ export function FilterPanel({
             />
           ))}
         </div>
-      </div>
+      </Section>
 
-      <div className="space-y-2">
-        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Configuration</p>
+      <Section
+        title="Configuration"
+        count={filters.bhk.length}
+        onClear={() => onChange({ ...filters, bhk: [] })}
+      >
         <div className="flex flex-wrap gap-2">
           {[1, 2, 3, 4].map((n) => (
             <Chip
@@ -277,14 +282,31 @@ export function FilterPanel({
             />
           ))}
         </div>
-      </div>
+      </Section>
 
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Budget</p>
-          <span className="text-xs text-foreground">
-            {formatRent(filters.minRent)} – {formatRent(filters.maxRent)}
-          </span>
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Budget / month</p>
+          {(filters.minRent > RENT_MIN || filters.maxRent < RENT_MAX) && (
+            <button
+              type="button"
+              onClick={() => onChange({ ...filters, minRent: RENT_MIN, maxRent: RENT_MAX })}
+              className="text-xs font-medium text-muted-foreground underline-offset-2 transition-colors hover:text-foreground hover:underline"
+            >
+              Clear
+            </button>
+          )}
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          {BUDGET_PRESETS.map((p) => (
+            <Chip
+              key={p.label}
+              label={p.label}
+              selected={filters.minRent === p.min && filters.maxRent === p.max}
+              onClick={() => onChange({ ...filters, minRent: p.min, maxRent: p.max })}
+            />
+          ))}
         </div>
 
         <BudgetInputs filters={filters} onChange={onChange} />
@@ -303,11 +325,17 @@ export function FilterPanel({
           }
           aria-label="Monthly rent range"
         />
+        <p className="text-[11px] text-muted-foreground">
+          Showing homes between {formatRent(filters.minRent)} and {formatRent(filters.maxRent)}
+        </p>
       </div>
 
-
-      <div className="space-y-2">
-        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Furnishing</p>
+      <Section
+        title="Furnishing"
+        count={filters.furnishing.length}
+        onClear={() => onChange({ ...filters, furnishing: [] })}
+        hint="Pick more than one to widen the search."
+      >
         <div className="flex flex-wrap gap-2">
           {FURNISHING.map((f) => (
             <Chip
@@ -318,10 +346,14 @@ export function FilterPanel({
             />
           ))}
         </div>
-      </div>
+      </Section>
 
-      <div className="space-y-2">
-        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Amenities</p>
+      <Section
+        title="Must have"
+        count={filters.amenities.length}
+        onClear={() => onChange({ ...filters, amenities: [] })}
+        hint="Homes must have every amenity you pick."
+      >
         <div className="flex flex-wrap gap-2">
           {AMENITIES.map((a) => (
             <Chip
@@ -332,10 +364,13 @@ export function FilterPanel({
             />
           ))}
         </div>
-      </div>
+      </Section>
 
-      <div className="space-y-2">
-        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Availability</p>
+      <Section
+        title="Availability"
+        count={filters.availabilityStatus.length}
+        onClear={() => onChange({ ...filters, availabilityStatus: [] })}
+      >
         <div className="flex flex-wrap gap-2">
           {(["available", "available_soon", "occupied"] as AvailabilityStatus[]).map((value) => (
             <Chip
@@ -348,7 +383,7 @@ export function FilterPanel({
             />
           ))}
         </div>
-      </div>
+      </Section>
 
       <div className="flex items-center justify-between rounded-xl border border-border bg-secondary/40 px-3 py-2.5">
         <Label htmlFor="owner-only" className="text-sm font-medium">
