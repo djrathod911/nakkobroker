@@ -105,6 +105,7 @@ function Discover() {
   const [basemap, setBasemap] = useState<Basemap>("map");
   const [resultsOpen, setResultsOpen] = useState(true);
   const [suggestOpen, setSuggestOpen] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
