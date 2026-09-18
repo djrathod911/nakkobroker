@@ -69,7 +69,7 @@ export async function removeTourSlot(slotId: string): Promise<void> {
 export async function bookTourSlot(slotId: string, note?: string): Promise<string> {
   const { data, error } = await supabase.rpc("book_tour_slot", {
     _slot_id: slotId,
-    _note: note ?? undefined,
+    ...(note ? { _note: note } : {}),
   });
   if (error) throw error;
   return data as unknown as string;
