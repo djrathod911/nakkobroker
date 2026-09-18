@@ -29,6 +29,13 @@
       "when": 1789703748472,
       "tag": "0003_create_tour_scheduler",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1789751792346,
+      "tag": "0004_secure_tour_functions_and_slot_visibility",
+      "breakpoints": true
     }
   ]
 }
