@@ -759,10 +759,13 @@ export type Database = {
     }
     Functions: {
       book_tour_slot: {
-        Args: { _note?: string; _slot_id: string }
+        Args: { _actor: string; _note?: string; _slot_id: string }
         Returns: string
       }
-      cancel_tour_booking: { Args: { _booking_id: string }; Returns: undefined }
+      cancel_tour_booking: {
+        Args: { _actor: string; _booking_id: string }
+        Returns: undefined
+      }
       get_profile_display_names: {
         Args: { _ids: string[] }
         Returns: {
