@@ -32,6 +32,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { RequestViewingButton } from "@/components/listings/RequestViewingButton";
 import { ListingChat } from "@/components/listings/ListingChat";
 import { SaveListingButton } from "@/components/listings/SaveListingButton";
+import { TourScheduler } from "@/components/listings/TourScheduler";
 
 export const Route = createFileRoute("/listing/$id")({
   loader: ({ params }) => fetchListingById(params.id),
@@ -400,6 +401,13 @@ function ListingDetailPage() {
               )}
 
               <ListingChat
+                listingId={listing.id}
+                ownerId={listing.ownerId}
+                userId={user?.id ?? null}
+                listingTitle={listing.title}
+              />
+
+              <TourScheduler
                 listingId={listing.id}
                 ownerId={listing.ownerId}
                 userId={user?.id ?? null}

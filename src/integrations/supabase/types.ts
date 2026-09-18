@@ -643,6 +643,92 @@ export type Database = {
           },
         ]
       }
+      tour_bookings: {
+        Row: {
+          created_at: string
+          id: string
+          listing_id: string
+          note: string | null
+          owner_id: string
+          slot_id: string
+          status: string
+          tenant_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          listing_id: string
+          note?: string | null
+          owner_id: string
+          slot_id: string
+          status?: string
+          tenant_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          listing_id?: string
+          note?: string | null
+          owner_id?: string
+          slot_id?: string
+          status?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tour_bookings_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tour_bookings_slot_id_fkey"
+            columns: ["slot_id"]
+            isOneToOne: true
+            referencedRelation: "tour_slots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tour_slots: {
+        Row: {
+          created_at: string
+          duration_minutes: number
+          id: string
+          listing_id: string
+          owner_id: string
+          starts_at: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          duration_minutes?: number
+          id?: string
+          listing_id: string
+          owner_id: string
+          starts_at: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          duration_minutes?: number
+          id?: string
+          listing_id?: string
+          owner_id?: string
+          starts_at?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tour_slots_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       verified_phones: {
         Row: {
           created_at: string
@@ -672,6 +758,11 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      book_tour_slot: {
+        Args: { _note?: string; _slot_id: string }
+        Returns: string
+      }
+      cancel_tour_booking: { Args: { _booking_id: string }; Returns: undefined }
       get_profile_display_names: {
         Args: { _ids: string[] }
         Returns: {
