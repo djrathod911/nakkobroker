@@ -67,17 +67,12 @@ export async function removeTourSlot(slotId: string): Promise<void> {
 
 /** Atomic one-click booking — fails if someone else just took the slot. */
 export async function bookTourSlot(slotId: string, note?: string): Promise<string> {
-  const { data, error } = await supabase.rpc("book_tour_slot", {
-    _slot_id: slotId,
-    ...(note ? { _note: note } : {}),
-  });
-  if (error) throw error;
-  return data as unknown as string;
+  const res = await bookTourSlotFn({ data: { slotId, ...(note ? { note } : {}) } });
+  return res.bookingId;
 }
 
 export async function cancelTourBooking(bookingId: string): Promise<void> {
-  const { error } = await supabase.rpc("cancel_tour_booking", { _booking_id: bookingId });
-  if (error) throw error;
+  await cancelTourBookingFn({ data: { bookingId } });
 }
 
 interface BookingRow {
