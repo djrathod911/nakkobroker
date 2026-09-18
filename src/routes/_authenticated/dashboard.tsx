@@ -5,11 +5,13 @@ import {
   ArrowLeft,
   Bell,
   BellPlus,
+  CalendarCheck,
   FolderLock,
   Heart,
   Loader2,
   MessagesSquare,
   Trash2,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -30,6 +32,12 @@ import {
 } from "@/lib/alerts.api";
 import { RENT_MAX, RENT_MIN, type Filters } from "@/components/listings/FilterPanel";
 import { formatRent } from "@/data/listings";
+import {
+  cancelTourBooking,
+  fetchMyTours,
+  tourDayLabel,
+  tourTimeLabel,
+} from "@/lib/tours.api";
 
 const TITLE = "Your dashboard — NakkoBroker";
 const DESCRIPTION =
@@ -77,6 +85,22 @@ function DashboardPage() {
     queryKey: ["saved-alerts", user?.id],
     queryFn: fetchSavedAlerts,
     enabled: !!user,
+  });
+  const tours = useQuery({
+    queryKey: ["my-tours", user?.id],
+    queryFn: () => fetchMyTours(user!.id),
+    enabled: !!user,
+  });
+  const tourList = [...(tours.data?.asTenant ?? []), ...(tours.data?.asOwner ?? [])].sort((a, b) =>
+    a.startsAt.localeCompare(b.startsAt),
+  );
+  const cancelTour = useMutation({
+    mutationFn: (bookingId: string) => cancelTourBooking(bookingId),
+    onSuccess: () => {
+      toast.success("Tour cancelled");
+      void queryClient.invalidateQueries({ queryKey: ["my-tours", user?.id] });
+    },
+    onError: () => toast.error("Could not cancel the tour"),
   });
   const { notifications, unreadCount, isLoading: notificationsLoading } = useNotifications(user?.id);
 
@@ -136,9 +160,12 @@ function DashboardPage() {
         </Link>
 
         <Tabs defaultValue="saved" className="mt-6">
-          <TabsList className="grid w-full grid-cols-3 rounded-2xl">
+          <TabsList className="grid w-full grid-cols-4 rounded-2xl">
             <TabsTrigger value="saved" className="rounded-xl">
               Favourites{saved.data?.length ? ` (${saved.data.length})` : ""}
+            </TabsTrigger>
+            <TabsTrigger value="tours" className="rounded-xl">
+              Tours{tourList.length ? ` (${tourList.length})` : ""}
             </TabsTrigger>
             <TabsTrigger value="chats" className="rounded-xl">
               Chats{unreadChats ? ` (${unreadChats})` : ""}
@@ -147,6 +174,53 @@ function DashboardPage() {
               Alerts{unreadCount ? ` (${unreadCount} new)` : alerts.data?.length ? ` (${alerts.data.length})` : ""}
             </TabsTrigger>
           </TabsList>
+
+          {/* Tours */}
+          <TabsContent value="tours" className="mt-4 space-y-3">
+            {tours.isLoading ? (
+              [0, 1].map((i) => <Skeleton key={i} className="h-24 w-full rounded-2xl" />)
+            ) : tourList.length ? (
+              tourList.map((t) => (
+                <div key={t.id} className="glass rounded-2xl p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <Link
+                      to="/listing/$id"
+                      params={{ id: t.listing_id }}
+                      className="min-w-0 flex-1 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      <p className="truncate text-sm font-semibold">{t.listingTitle}</p>
+                      <p className="truncate text-xs text-muted-foreground">
+                        {t.listingArea}
+                        {t.listingCity ? `, ${t.listingCity}` : ""} ·{" "}
+                        {t.owner_id === user?.id ? "You are showing this home" : "Your visit"}
+                      </p>
+                      <p className="mt-1.5 inline-flex items-center gap-1.5 text-sm font-semibold text-brand">
+                        <CalendarCheck className="size-4" aria-hidden />
+                        {tourDayLabel(t.startsAt)} at {tourTimeLabel(t.startsAt)}
+                      </p>
+                    </Link>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="size-8 shrink-0 rounded-full text-destructive hover:text-destructive"
+                      aria-label={`Cancel tour of ${t.listingTitle}`}
+                      disabled={cancelTour.isPending}
+                      onClick={() => cancelTour.mutate(t.id)}
+                    >
+                      <X className="size-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <EmptyState
+                icon={<CalendarCheck className="size-5 text-muted-foreground" aria-hidden />}
+                text="No tours booked yet. Open a home and pick a time from the owner's calendar."
+                cta="Browse homes"
+              />
+            )}
+          </TabsContent>
+
 
           {/* Saved homes */}
           <TabsContent value="saved" className="mt-4 space-y-3">
