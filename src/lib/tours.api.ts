@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { bookTourSlotFn, cancelTourBookingFn } from "./tours.functions";
 
 export interface TourSlot {
   id: string;
