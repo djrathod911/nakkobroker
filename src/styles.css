@@ -192,6 +192,30 @@
   box-shadow: var(--shadow-elevated);
 }
 
+/* MapLibre's lazy-loaded stylesheet arrives after this file. Keep listing
+   preview content on the app surface instead of reverting to white-on-white. */
+.maplibregl-popup.listing-map-popup .maplibregl-popup-content {
+  background: var(--popover) !important;
+  color: var(--popover-foreground) !important;
+  border-color: var(--border) !important;
+}
+
+.maplibregl-popup.listing-map-popup.maplibregl-popup-anchor-top .maplibregl-popup-tip {
+  border-bottom-color: var(--popover) !important;
+}
+
+.maplibregl-popup.listing-map-popup.maplibregl-popup-anchor-bottom .maplibregl-popup-tip {
+  border-top-color: var(--popover) !important;
+}
+
+.maplibregl-popup.listing-map-popup.maplibregl-popup-anchor-left .maplibregl-popup-tip {
+  border-right-color: var(--popover) !important;
+}
+
+.maplibregl-popup.listing-map-popup.maplibregl-popup-anchor-right .maplibregl-popup-tip {
+  border-left-color: var(--popover) !important;
+}
+
 .maplibregl-popup-tip {
   border-top-color: var(--popover);
   border-bottom-color: var(--popover);
