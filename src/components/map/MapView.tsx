@@ -213,7 +213,12 @@ export function MapView({ listings, activeId, onSelect, onClose, showHeatmap, ba
     });
     node.append(title, meta, status, rent, btn);
 
-    popupRef.current = new ml.Popup({ closeButton: true, offset: 22, maxWidth: "280px" })
+    popupRef.current = new ml.Popup({
+      closeButton: true,
+      offset: 22,
+      maxWidth: "280px",
+      className: "listing-map-popup",
+    })
       .setLngLat([active.lng, active.lat])
       .setDOMContent(node)
       .addTo(map);
