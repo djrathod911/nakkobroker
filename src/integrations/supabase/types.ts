@@ -82,6 +82,51 @@ export type Database = {
         }
         Relationships: []
       }
+      listing_lifecycle_rules: {
+        Row: {
+          active: boolean
+          city: string | null
+          created_at: string
+          decay_half_life_days: number
+          grace_days: number
+          house_type: string | null
+          id: string
+          name: string
+          priority: number
+          source: string | null
+          updated_at: string
+          warn_after_days: number
+        }
+        Insert: {
+          active?: boolean
+          city?: string | null
+          created_at?: string
+          decay_half_life_days?: number
+          grace_days?: number
+          house_type?: string | null
+          id?: string
+          name: string
+          priority?: number
+          source?: string | null
+          updated_at?: string
+          warn_after_days?: number
+        }
+        Update: {
+          active?: boolean
+          city?: string | null
+          created_at?: string
+          decay_half_life_days?: number
+          grace_days?: number
+          house_type?: string | null
+          id?: string
+          name?: string
+          priority?: number
+          source?: string | null
+          updated_at?: string
+          warn_after_days?: number
+        }
+        Relationships: []
+      }
       listing_votes: {
         Row: {
           created_at: string
@@ -125,6 +170,7 @@ export type Database = {
           community_verified: boolean
           contact_phone: string | null
           created_at: string
+          delisted_at: string | null
           deposit: number
           description: string
           facing: string
@@ -133,7 +179,9 @@ export type Database = {
           house_type: string
           id: string
           it_corridor_km: number
+          last_confirmed_at: string
           lat: number
+          lifecycle_state: string
           lng: number
           maintenance: number
           map_visible: boolean
@@ -154,6 +202,7 @@ export type Database = {
           total_floors: number
           updated_at: string
           votes: number
+          warned_at: string | null
         }
         Insert: {
           amenities?: string[]
@@ -168,6 +217,7 @@ export type Database = {
           community_verified?: boolean
           contact_phone?: string | null
           created_at?: string
+          delisted_at?: string | null
           deposit?: number
           description?: string
           facing?: string
@@ -176,7 +226,9 @@ export type Database = {
           house_type?: string
           id?: string
           it_corridor_km?: number
+          last_confirmed_at?: string
           lat: number
+          lifecycle_state?: string
           lng: number
           maintenance?: number
           map_visible?: boolean
@@ -197,6 +249,7 @@ export type Database = {
           total_floors?: number
           updated_at?: string
           votes?: number
+          warned_at?: string | null
         }
         Update: {
           amenities?: string[]
@@ -211,6 +264,7 @@ export type Database = {
           community_verified?: boolean
           contact_phone?: string | null
           created_at?: string
+          delisted_at?: string | null
           deposit?: number
           description?: string
           facing?: string
@@ -219,7 +273,9 @@ export type Database = {
           house_type?: string
           id?: string
           it_corridor_km?: number
+          last_confirmed_at?: string
           lat?: number
+          lifecycle_state?: string
           lng?: number
           maintenance?: number
           map_visible?: boolean
@@ -240,6 +296,7 @@ export type Database = {
           total_floors?: number
           updated_at?: string
           votes?: number
+          warned_at?: string | null
         }
         Relationships: []
       }
@@ -766,6 +823,10 @@ export type Database = {
         Args: { _actor: string; _booking_id: string }
         Returns: undefined
       }
+      confirm_listing_freshness: {
+        Args: { _actor: string; _listing_id: string }
+        Returns: undefined
+      }
       get_profile_display_names: {
         Args: { _ids: string[] }
         Returns: {
@@ -775,6 +836,30 @@ export type Database = {
         }[]
       }
       normalize_in_phone: { Args: { _phone: string }; Returns: string }
+      resolve_lifecycle_rule: {
+        Args: { _city: string; _house_type: string; _source: string }
+        Returns: {
+          active: boolean
+          city: string | null
+          created_at: string
+          decay_half_life_days: number
+          grace_days: number
+          house_type: string | null
+          id: string
+          name: string
+          priority: number
+          source: string | null
+          updated_at: string
+          warn_after_days: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "listing_lifecycle_rules"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      run_listing_lifecycle: { Args: never; Returns: undefined }
       send_daily_alert_digests: { Args: never; Returns: undefined }
     }
     Enums: {

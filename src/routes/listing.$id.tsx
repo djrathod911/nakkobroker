@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MapView } from "@/components/map/MapView";
 import { availabilityLabel, availabilityStatusLabel, formatRent } from "@/data/listings";
+import { isStale } from "@/lib/relevance";
 import {
   fetchContactPhone,
   fetchListingById,
@@ -261,6 +262,11 @@ function ListingDetailPage() {
             ) : (
               <span className="inline-flex items-center gap-1 rounded-full bg-blue-500/15 px-2.5 py-1 text-xs font-medium text-blue-400">
                  <Clock className="size-3.5" aria-hidden /> {availabilityStatusLabel(listing.availabilityStatus)}
+              </span>
+            )}
+            {isStale(listing) && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
+                Not recently confirmed
               </span>
             )}
           </div>

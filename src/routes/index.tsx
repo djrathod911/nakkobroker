@@ -45,7 +45,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { formatRent } from "@/data/listings";
-import { fetchListings, fetchMyVotedIds, toggleVote } from "@/lib/listings.api";
+import { fetchLifecycleRules, fetchListings, fetchMyVotedIds, toggleVote } from "@/lib/listings.api";
+import { rankListings } from "@/lib/relevance";
 import { fetchSavedListingIds } from "@/lib/saved.api";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -161,9 +162,15 @@ function Discover() {
     toast.success("Signed out");
   }
 
+  const lifecycleRules = useQuery({
+    queryKey: ["lifecycle-rules"],
+    queryFn: fetchLifecycleRules,
+    staleTime: 10 * 60 * 1000,
+  });
+
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return allListings.filter((l) => {
+    const matched = allListings.filter((l) => {
       if ((l.city ?? "Hyderabad") !== filters.city) return false;
       if (filters.houseType !== "Any" && (l.houseType ?? "Flat") !== filters.houseType) return false;
       if (q && !`${l.area} ${l.title} ${l.bhk}bhk`.toLowerCase().includes(q)) return false;
@@ -175,7 +182,9 @@ function Discover() {
       if (filters.availabilityStatus.length && !filters.availabilityStatus.includes(l.availabilityStatus)) return false;
       return true;
     });
-  }, [query, filters, allListings]);
+    // Freshly confirmed homes rank first; stale ones sink instead of vanishing.
+    return rankListings(matched, lifecycleRules.data ?? []);
+  }, [query, filters, allListings, lifecycleRules.data]);
 
   // Type-ahead suggestions: matching areas first, then individual homes.
   // Known localities are always offered so search still helps while a city

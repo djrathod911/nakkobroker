@@ -6,6 +6,7 @@ import { ArrowLeft, BadgeCheck, Building2, Loader2, LogOut, Phone, ShieldCheck, 
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import {
+  confirmListingFreshness,
   deleteListing,
   fetchMyListings,
   fetchMyProfile,
@@ -71,6 +72,20 @@ function ProfilePage() {
       toast.error(err instanceof Error ? err.message : "Could not save your profile");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function confirmStillAvailable(row: MyListingRow) {
+    if (!user) return;
+    try {
+      await confirmListingFreshness(row.id);
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["my-listings", user.id] }),
+        queryClient.invalidateQueries({ queryKey: ["listings"] }),
+      ]);
+      toast.success("Thanks — this home is confirmed and back at full visibility");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not update that listing");
     }
   }
 
@@ -191,7 +206,8 @@ function ProfilePage() {
           ) : (
             <ul className="mt-4 space-y-2">
               {rows.map((row) => (
-                <li key={row.id} className="glass flex items-center justify-between gap-3 rounded-2xl p-4">
+                <li key={row.id} className="glass gap-3 rounded-2xl p-4">
+                  <div className="flex items-center justify-between gap-3">
                   <div className="min-w-0">
                     <p className="truncate text-sm font-medium">{row.title}</p>
                     <p className="text-xs text-muted-foreground">
@@ -215,6 +231,36 @@ function ProfilePage() {
                       <Trash2 className="size-4" />
                     </Button>
                   </div>
+                  </div>
+
+                  {(row.lifecycle_state === "warned" || row.lifecycle_state === "delisted") && (
+                    <div className="mt-3 rounded-xl border border-warning/40 bg-warning/10 p-3">
+                      <p className="text-xs font-medium text-warning">
+                        {row.lifecycle_state === "warned"
+                          ? "This property will be delisted unless you take action."
+                          : "This home is no longer shown to tenants."}
+                      </p>
+                      <p className="mt-1 text-[11px] text-muted-foreground">
+                        {row.lifecycle_state === "warned"
+                          ? "Confirm it is still available to keep it visible in search."
+                          : "Relist it in one tap whenever it is available again."}
+                      </p>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        <Button
+                          size="sm"
+                          className="rounded-xl bg-brand text-brand-foreground hover:bg-brand/90"
+                          onClick={() => confirmStillAvailable(row)}
+                        >
+                          {row.lifecycle_state === "warned" ? "Still available" : "Relist"}
+                        </Button>
+                        {row.lifecycle_state === "warned" && (
+                          <Button size="sm" variant="secondary" className="rounded-xl" onClick={() => remove(row)}>
+                            Mark as rented out
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </li>
               ))}
             </ul>

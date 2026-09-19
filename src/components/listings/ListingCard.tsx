@@ -12,6 +12,7 @@ import {
   Ban,
 } from "lucide-react";
 import { availabilityLabel, availabilityStatusLabel, formatRent, type Listing } from "@/data/listings";
+import { isStale } from "@/lib/relevance";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -65,6 +66,11 @@ export function ListingCard({ listing, active, onHover, onSelect, voted, onVote 
             ) : (
               <span className="inline-flex items-center gap-1 rounded-full bg-blue-500/15 px-2 py-0.5 text-xs text-blue-400">
                 <Clock className="size-3 shrink-0" aria-hidden /> {availabilityStatusLabel(listing.availabilityStatus)}
+              </span>
+            )}
+            {isStale(listing) && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+                Not recently confirmed
               </span>
             )}
           </div>
