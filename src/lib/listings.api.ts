@@ -1,5 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { getListingContactPhone } from "./listing-contact.functions";
+import { confirmListingFreshnessFn } from "./lifecycle.functions";
+import { DEFAULT_RULE, type LifecycleRule } from "./relevance";
 import type { AvailabilityStatus, Furnishing, Listing, Tenant } from "@/data/listings";
 
 export interface DbListingRow {
@@ -40,11 +42,13 @@ export interface DbListingRow {
   source: string;
   votes: number;
   created_at: string;
+  last_confirmed_at: string;
+  lifecycle_state: string;
 }
 
 // contact_phone is intentionally excluded: it is not readable by signed-out visitors.
 const PUBLIC_COLUMNS =
-  "id,owner_id,title,city,house_type,description,bathrooms,balconies,floor,total_floors,parking,facing,area,bhk,rent,deposit,maintenance,negotiable,furnishing,tenant,owner_verified,community_verified,suspicious_price,metro_km,it_corridor_km,sqft,available_from,availability_status,available_from_date,map_visible,amenities,photos,lng,lat,source,votes,created_at";
+  "id,owner_id,title,city,house_type,description,bathrooms,balconies,floor,total_floors,parking,facing,area,bhk,rent,deposit,maintenance,negotiable,furnishing,tenant,owner_verified,community_verified,suspicious_price,metro_km,it_corridor_km,sqft,available_from,availability_status,available_from_date,map_visible,amenities,photos,lng,lat,source,votes,created_at,last_confirmed_at,lifecycle_state";
 
 const daysAgo = (iso: string) =>
   Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 86_400_000));
@@ -81,6 +85,8 @@ export function toListing(row: DbListingRow): Listing {
     availableFromDate: row.available_from_date ?? null,
     mapVisible: row.map_visible ?? true,
     postedDaysAgo: daysAgo(row.created_at),
+    lastConfirmedAt: row.last_confirmed_at ?? row.created_at,
+    lifecycleState: (row.lifecycle_state as Listing["lifecycleState"]) ?? "active",
     amenities: row.amenities ?? [],
     votes: row.votes,
     lng: row.lng,
@@ -257,12 +263,15 @@ export interface MyListingRow {
   owner_verified: boolean;
   photos: string[];
   created_at: string;
+  last_confirmed_at: string;
+  lifecycle_state: string;
+  warned_at: string | null;
 }
 
 export async function fetchMyListings(userId: string): Promise<MyListingRow[]> {
   const { data, error } = await supabase
     .from("listings")
-    .select("id,title,area,city,house_type,bhk,rent,status,votes,owner_verified,photos,created_at")
+    .select("id,title,area,city,house_type,bhk,rent,status,votes,owner_verified,photos,created_at,last_confirmed_at,lifecycle_state,warned_at")
     .eq("owner_id", userId)
     .order("created_at", { ascending: false });
   if (error) throw error;
@@ -297,3 +306,28 @@ export async function updateMyProfile(userId: string, patch: { display_name: str
   if (error) throw error;
 }
 
+
+
+/** Configurable freshness/delisting rules per city, home type and source. */
+export async function fetchLifecycleRules(): Promise<LifecycleRule[]> {
+  const { data, error } = await supabase
+    .from("listing_lifecycle_rules")
+    .select("id,name,city,house_type,source,priority,warn_after_days,grace_days,decay_half_life_days");
+  if (error || !data?.length) return [DEFAULT_RULE];
+  return data.map((r) => ({
+    id: r.id,
+    name: r.name,
+    city: r.city,
+    houseType: r.house_type,
+    source: r.source,
+    priority: r.priority,
+    warnAfterDays: r.warn_after_days,
+    graceDays: r.grace_days,
+    decayHalfLifeDays: Number(r.decay_half_life_days),
+  }));
+}
+
+/** Owner taps "Still available": resets the decay clock and relists if needed. */
+export async function confirmListingFreshness(listingId: string) {
+  await confirmListingFreshnessFn({ data: { listingId } });
+}
