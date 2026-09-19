@@ -34,6 +34,9 @@ export interface Listing {
   availableFromDate?: string | null; // ISO date string for available_soon
   mapVisible: boolean;
   postedDaysAgo: number;
+  /** When the owner last confirmed the home is still available. */
+  lastConfirmedAt?: string;
+  lifecycleState?: "active" | "warned" | "delisted";
   amenities: string[];
   votes: number;
   lng: number;
