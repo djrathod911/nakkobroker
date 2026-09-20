@@ -50,6 +50,13 @@
       "when": 1789794218874,
       "tag": "0006_grant_lifecycle_rules_anon",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1789875803318,
+      "tag": "0007_create_maintenance_tracker",
+      "breakpoints": true
     }
   ]
 }

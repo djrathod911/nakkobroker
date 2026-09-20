@@ -11,6 +11,7 @@ import {
   Loader2,
   MessagesSquare,
   Trash2,
+  Wrench,
   X,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -155,6 +156,20 @@ function DashboardPage() {
             <span className="block text-sm font-semibold">Move-in folder</span>
             <span className="block text-xs text-muted-foreground">
               Keep your signed lease, utility contacts and move-in photos safe for deposit disputes.
+            </span>
+          </span>
+        </Link>
+
+        <Link
+          to="/maintenance"
+          className="glass mt-3 flex items-center gap-3 rounded-2xl p-4 transition-colors hover:bg-secondary/50"
+        >
+          <Wrench className="size-5 shrink-0 text-brand" aria-hidden />
+          <span className="min-w-0 flex-1">
+            <span className="block text-sm font-semibold">Repairs & maintenance</span>
+            <span className="block text-xs text-muted-foreground">
+              Log repairs, message the owner about them, and build a dated record of how the home
+              was cared for.
             </span>
           </span>
         </Link>

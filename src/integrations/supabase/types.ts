@@ -330,6 +330,113 @@ export type Database = {
         }
         Relationships: []
       }
+      maintenance_requests: {
+        Row: {
+          category: string
+          cost: number
+          created_at: string
+          description: string
+          id: string
+          listing_id: string | null
+          owner_id: string | null
+          priority: string
+          property_label: string
+          reported_at: string
+          resolved_at: string | null
+          status: string
+          tenancy_id: string | null
+          tenant_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          cost?: number
+          created_at?: string
+          description?: string
+          id?: string
+          listing_id?: string | null
+          owner_id?: string | null
+          priority?: string
+          property_label?: string
+          reported_at?: string
+          resolved_at?: string | null
+          status?: string
+          tenancy_id?: string | null
+          tenant_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          cost?: number
+          created_at?: string
+          description?: string
+          id?: string
+          listing_id?: string | null
+          owner_id?: string | null
+          priority?: string
+          property_label?: string
+          reported_at?: string
+          resolved_at?: string | null
+          status?: string
+          tenancy_id?: string | null
+          tenant_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "maintenance_requests_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "maintenance_requests_tenancy_id_fkey"
+            columns: ["tenancy_id"]
+            isOneToOne: false
+            referencedRelation: "tenancies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      maintenance_updates: {
+        Row: {
+          author_id: string
+          body: string
+          created_at: string
+          id: string
+          kind: string
+          request_id: string
+        }
+        Insert: {
+          author_id: string
+          body: string
+          created_at?: string
+          id?: string
+          kind?: string
+          request_id: string
+        }
+        Update: {
+          author_id?: string
+          body?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          request_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "maintenance_updates_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "maintenance_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           body: string
