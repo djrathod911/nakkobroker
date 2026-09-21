@@ -267,7 +267,8 @@ function Discover() {
       <div className="pointer-events-none absolute inset-x-0 top-16 z-20 px-3 sm:top-24 sm:px-5">
         <div className="mx-auto max-w-6xl">
           <h1 className="glass inline-block rounded-2xl px-3 py-1.5 text-base font-semibold tracking-tight sm:text-lg">
-            Zero-brokerage rentals in Hyderabad
+            Zero-brokerage rentals in {filters.city}
+
           </h1>
         </div>
       </div>
