@@ -98,6 +98,12 @@ function DashboardPage() {
     queryFn: () => fetchMyTours(user!.id),
     enabled: !!user,
   });
+  const repairs = useQuery({
+    queryKey: ["maintenance-requests", user?.id],
+    queryFn: fetchMaintenanceRequests,
+    enabled: !!user,
+  });
+  const openRepairs = (repairs.data ?? []).filter((r) => r.status !== "resolved");
   const tourList = [...(tours.data?.asTenant ?? []), ...(tours.data?.asOwner ?? [])].sort((a, b) =>
     a.startsAt.localeCompare(b.startsAt),
   );
