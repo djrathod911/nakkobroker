@@ -334,6 +334,11 @@ function DashboardPage() {
 
           {/* Chats */}
           <TabsContent value="chats" className="mt-4 space-y-3">
+            <RepairsSection
+              repairs={openRepairs}
+              userId={user?.id}
+              heading="Repair conversations"
+            />
             {chats.isLoading ? (
               [0, 1, 2].map((i) => <Skeleton key={i} className="h-20 w-full rounded-2xl" />)
             ) : chats.data?.length ? (
