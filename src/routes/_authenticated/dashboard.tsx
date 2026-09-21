@@ -39,6 +39,12 @@ import {
   tourDayLabel,
   tourTimeLabel,
 } from "@/lib/tours.api";
+import {
+  REPAIR_STATUS_LABEL,
+  fetchMaintenanceRequests,
+  repairDateLabel,
+  type MaintenanceRequest,
+} from "@/lib/maintenance.api";
 
 const TITLE = "Your dashboard — NakkoBroker";
 const DESCRIPTION =
