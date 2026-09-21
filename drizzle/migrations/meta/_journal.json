@@ -64,6 +64,13 @@
       "when": 1789966082205,
       "tag": "0008_notify_on_maintenance_activity",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1789966206415,
+      "tag": "0009_restrict_listing_phone_columns",
+      "breakpoints": true
     }
   ]
 }
