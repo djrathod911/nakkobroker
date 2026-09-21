@@ -244,6 +244,11 @@ function DashboardPage() {
 
           {/* Tours */}
           <TabsContent value="tours" className="mt-4 space-y-3">
+            <RepairsSection
+              repairs={openRepairs}
+              userId={user?.id}
+              heading="Repairs needing attention"
+            />
             {tours.isLoading ? (
               [0, 1].map((i) => <Skeleton key={i} className="h-24 w-full rounded-2xl" />)
             ) : tourList.length ? (
