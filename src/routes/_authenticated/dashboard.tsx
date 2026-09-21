@@ -39,6 +39,12 @@ import {
   tourDayLabel,
   tourTimeLabel,
 } from "@/lib/tours.api";
+import {
+  REPAIR_STATUS_LABEL,
+  fetchMaintenanceRequests,
+  repairDateLabel,
+  type MaintenanceRequest,
+} from "@/lib/maintenance.api";
 
 const TITLE = "Your dashboard — NakkoBroker";
 const DESCRIPTION =
@@ -68,6 +74,46 @@ function timeAgo(iso: string) {
   return `${Math.round(hrs / 24)}d ago`;
 }
 
+function RepairsSection({
+  repairs,
+  userId,
+  heading,
+}: {
+  repairs: MaintenanceRequest[];
+  userId: string | undefined;
+  heading: string;
+}) {
+  if (!repairs.length) return null;
+  return (
+    <section className="space-y-3">
+      <h2 className="text-sm font-semibold tracking-tight">{heading}</h2>
+      {repairs.map((r) => (
+        <Link
+          key={r.id}
+          to="/maintenance"
+          className="glass block rounded-2xl p-4 transition-colors hover:bg-secondary/50"
+        >
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold">{r.title}</p>
+              <p className="truncate text-xs text-muted-foreground">
+                {r.property_label || "Your home"} ·{" "}
+                {r.tenant_id === userId ? "You reported this" : "Reported by your tenant"} ·{" "}
+                {repairDateLabel(r.reported_at)}
+              </p>
+              <p className="mt-1.5 inline-flex items-center gap-1.5 text-sm font-semibold text-brand">
+                <Wrench className="size-4" aria-hidden />
+                {REPAIR_STATUS_LABEL[r.status]}
+                {r.priority === "urgent" ? " · Urgent" : ""}
+              </p>
+            </div>
+          </div>
+        </Link>
+      ))}
+    </section>
+  );
+}
+
 function DashboardPage() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -92,6 +138,12 @@ function DashboardPage() {
     queryFn: () => fetchMyTours(user!.id),
     enabled: !!user,
   });
+  const repairs = useQuery({
+    queryKey: ["maintenance-requests", user?.id],
+    queryFn: fetchMaintenanceRequests,
+    enabled: !!user,
+  });
+  const openRepairs = (repairs.data ?? []).filter((r) => r.status !== "resolved");
   const tourList = [...(tours.data?.asTenant ?? []), ...(tours.data?.asOwner ?? [])].sort((a, b) =>
     a.startsAt.localeCompare(b.startsAt),
   );
@@ -192,6 +244,11 @@ function DashboardPage() {
 
           {/* Tours */}
           <TabsContent value="tours" className="mt-4 space-y-3">
+            <RepairsSection
+              repairs={openRepairs}
+              userId={user?.id}
+              heading="Repairs needing attention"
+            />
             {tours.isLoading ? (
               [0, 1].map((i) => <Skeleton key={i} className="h-24 w-full rounded-2xl" />)
             ) : tourList.length ? (
@@ -282,6 +339,11 @@ function DashboardPage() {
 
           {/* Chats */}
           <TabsContent value="chats" className="mt-4 space-y-3">
+            <RepairsSection
+              repairs={openRepairs}
+              userId={user?.id}
+              heading="Repair conversations"
+            />
             {chats.isLoading ? (
               [0, 1, 2].map((i) => <Skeleton key={i} className="h-20 w-full rounded-2xl" />)
             ) : chats.data?.length ? (
