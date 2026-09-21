@@ -57,6 +57,13 @@
       "when": 1789875803318,
       "tag": "0007_create_maintenance_tracker",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1789966082205,
+      "tag": "0008_notify_on_maintenance_activity",
+      "breakpoints": true
     }
   ]
 }
