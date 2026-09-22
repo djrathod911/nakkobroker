@@ -23,6 +23,7 @@ import {
   REPAIR_STATUS_LABEL,
   createMaintenanceRequest,
   deleteMaintenanceRequest,
+  fetchLinkableHomes,
   fetchMaintenanceRequests,
   fetchMaintenanceUpdates,
   postMaintenanceMessage,
