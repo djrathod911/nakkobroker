@@ -166,3 +166,38 @@ export function repairDateLabel(iso: string) {
     year: "numeric",
   });
 }
+
+export interface LinkableHome {
+  listing_id: string;
+  label: string;
+  reason: string;
+}
+
+/** Homes on NakkoBroker the tenant already has a connection with (tour booked,
+ *  chat started, or saved), so a repair can be linked to the right owner. */
+export async function fetchLinkableHomes(userId: string): Promise<LinkableHome[]> {
+  const [tours, chats, saved] = await Promise.all([
+    supabase.from("tour_bookings").select("listing_id").eq("tenant_id", userId),
+    supabase.from("conversations").select("listing_id").eq("tenant_id", userId),
+    supabase.from("saved_listings").select("listing_id").eq("user_id", userId),
+  ]);
+
+  const reasons = new Map<string, string>();
+  for (const row of saved.data ?? []) if (row.listing_id) reasons.set(row.listing_id, "Saved home");
+  for (const row of chats.data ?? []) if (row.listing_id) reasons.set(row.listing_id, "You chatted about this home");
+  for (const row of tours.data ?? []) if (row.listing_id) reasons.set(row.listing_id, "You booked a visit here");
+
+  const ids = [...reasons.keys()];
+  if (ids.length === 0) return [];
+
+  const { data } = await supabase
+    .from("listings")
+    .select("id, title, area, city")
+    .in("id", ids);
+
+  return (data ?? []).map((l) => ({
+    listing_id: l.id,
+    label: [l.title, l.area].filter(Boolean).join(" · "),
+    reason: reasons.get(l.id) ?? "",
+  }));
+}

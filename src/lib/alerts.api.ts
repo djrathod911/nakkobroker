@@ -18,7 +18,7 @@ export interface AppNotification {
   id: string;
   alertId: string | null;
   listingId: string | null;
-  kind: "instant" | "digest";
+  kind: "instant" | "digest" | "tour" | "repair";
   title: string;
   body: string;
   read: boolean;
@@ -81,7 +81,8 @@ export async function fetchNotifications(): Promise<AppNotification[]> {
     id: r.id,
     alertId: r.alert_id,
     listingId: r.listing_id,
-    kind: r.kind === "digest" ? "digest" : "instant",
+    kind:
+      r.kind === "digest" || r.kind === "tour" || r.kind === "repair" ? r.kind : "instant",
     title: r.title,
     body: r.body,
     read: r.read,

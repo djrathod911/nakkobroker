@@ -23,6 +23,7 @@ import {
   REPAIR_STATUS_LABEL,
   createMaintenanceRequest,
   deleteMaintenanceRequest,
+  fetchLinkableHomes,
   fetchMaintenanceRequests,
   fetchMaintenanceUpdates,
   postMaintenanceMessage,
@@ -165,7 +166,7 @@ function NewRepairForm({
   const [category, setCategory] = useState<RepairCategory>("plumbing");
   const [priority, setPriority] = useState<RepairPriority>("normal");
   const [description, setDescription] = useState("");
-  const [tenancyId, setTenancyId] = useState<string>("none");
+  const [homeKey, setHomeKey] = useState<string>("none");
 
   const folders = useQuery({
     queryKey: ["tenancies", userId],
@@ -173,26 +174,39 @@ function NewRepairForm({
     enabled: !!userId,
   });
 
+  const homes = useQuery({
+    queryKey: ["linkable-homes", userId],
+    queryFn: () => fetchLinkableHomes(userId),
+    enabled: !!userId,
+  });
+
+  const folderList = folders.data ?? [];
+  const homeList = homes.data ?? [];
+
   const save = useMutation({
-    mutationFn: () =>
-      createMaintenanceRequest(
+    mutationFn: () => {
+      const tenancyId = homeKey.startsWith("tenancy:") ? homeKey.slice(8) : null;
+      const listingId = homeKey.startsWith("listing:") ? homeKey.slice(8) : null;
+      const picked = listingId ? homeList.find((h) => h.listing_id === listingId) : undefined;
+      return createMaintenanceRequest(
         {
           title: title.trim(),
           category,
           priority,
           description: description.trim(),
-          tenancy_id: tenancyId === "none" ? null : tenancyId,
+          tenancy_id: tenancyId,
+          listing_id: listingId,
+          property_label: picked?.label ?? "",
         },
         userId,
-      ),
+      );
+    },
     onSuccess: () => {
       toast.success("Repair logged");
       onDone();
     },
     onError: () => toast.error("Could not save that repair"),
   });
-
-  const folderList = folders.data ?? [];
 
   return (
     <div className="glass mt-4 space-y-3 rounded-2xl p-4">
@@ -243,18 +257,23 @@ function NewRepairForm({
         </div>
       </div>
 
-      {folderList.length > 0 && (
+      {(folderList.length > 0 || homeList.length > 0) && (
         <div>
           <Label className="text-xs">Which home?</Label>
-          <Select value={tenancyId} onValueChange={setTenancyId}>
+          <Select value={homeKey} onValueChange={setHomeKey}>
             <SelectTrigger className="mt-1 rounded-2xl">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="none">Not linked to a home</SelectItem>
               {folderList.map((f) => (
-                <SelectItem key={f.id} value={f.id}>
+                <SelectItem key={f.id} value={`tenancy:${f.id}`}>
                   {f.property_label}
+                </SelectItem>
+              ))}
+              {homeList.map((h) => (
+                <SelectItem key={h.listing_id} value={`listing:${h.listing_id}`}>
+                  {h.label} — {h.reason}
                 </SelectItem>
               ))}
             </SelectContent>

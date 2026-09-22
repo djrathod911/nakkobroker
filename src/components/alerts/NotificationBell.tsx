@@ -95,7 +95,14 @@ export function NotificationBell({ userId }: { userId: string }) {
                   )}
                   <p className="mt-0.5 text-xs text-muted-foreground">{n.body}</p>
                   <p className="mt-1 text-[11px] uppercase tracking-wider text-muted-foreground">
-                    {n.kind === "digest" ? "Daily digest" : "Instant match"} ·{" "}
+                    {n.kind === "digest"
+                      ? "Daily digest"
+                      : n.kind === "tour"
+                        ? "Tour visit"
+                        : n.kind === "repair"
+                          ? "Repair"
+                          : "Instant match"}{" "}
+                    ·{" "}
                     {formatDistanceToNow(new Date(n.createdAt), { addSuffix: true })}
                   </p>
                 </div>
