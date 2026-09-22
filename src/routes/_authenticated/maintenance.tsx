@@ -256,18 +256,23 @@ function NewRepairForm({
         </div>
       </div>
 
-      {folderList.length > 0 && (
+      {(folderList.length > 0 || homeList.length > 0) && (
         <div>
           <Label className="text-xs">Which home?</Label>
-          <Select value={tenancyId} onValueChange={setTenancyId}>
+          <Select value={homeKey} onValueChange={setHomeKey}>
             <SelectTrigger className="mt-1 rounded-2xl">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="none">Not linked to a home</SelectItem>
               {folderList.map((f) => (
-                <SelectItem key={f.id} value={f.id}>
+                <SelectItem key={f.id} value={`tenancy:${f.id}`}>
                   {f.property_label}
+                </SelectItem>
+              ))}
+              {homeList.map((h) => (
+                <SelectItem key={h.listing_id} value={`listing:${h.listing_id}`}>
+                  {h.label} — {h.reason}
                 </SelectItem>
               ))}
             </SelectContent>
