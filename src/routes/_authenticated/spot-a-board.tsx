@@ -32,25 +32,13 @@ export const Route = createFileRoute("/_authenticated/spot-a-board")({
   component: SpotABoard,
 });
 
-const AREAS: Record<string, [number, number]> = {
-  Madhapur: [78.3908, 17.4483],
-  Gachibowli: [78.3489, 17.4401],
-  Kondapur: [78.3639, 17.4622],
-  Ameerpet: [78.4483, 17.4374],
-  Kukatpally: [78.4089, 17.4948],
-  "Jubilee Hills": [78.4089, 17.4239],
-  Nanakramguda: [78.3364, 17.4211],
-  Begumpet: [78.4614, 17.4435],
-  Manikonda: [78.3838, 17.4021],
-  Himayatnagar: [78.4867, 17.4009],
-};
-
 const FURNISHING = ["Unfurnished", "Semi Furnished", "Fully Furnished"];
 const TENANTS = ["Family", "Bachelor", "Anyone"];
 
 const schema = z.object({
   title: z.string().trim().min(6, "Add a short descriptive title").max(120),
-  area: z.string().refine((v) => v in AREAS, "Pick the area where you saw the board"),
+  city: z.string().refine((v) => CITIES.includes(v), "Pick the city"),
+  area: z.string().min(1, "Pick the area where you saw the board"),
   bhk: z.number().int().min(1).max(6),
   rent: z.number().int().min(1000, "Add the rent shown on the board").max(1_000_000),
   deposit: z.number().int().min(0).max(10_000_000),
