@@ -42,7 +42,9 @@ export function AddressSearch({ onPick, city }: AddressSearchProps) {
     const timer = window.setTimeout(async () => {
       setLoading(true);
       try {
-        const results = await runSearch({ data: { input: q, sessionToken: sessionToken.current } });
+        const results = await runSearch({
+          data: { input: q, sessionToken: sessionToken.current, ...(city ? { city } : {}) },
+        });
         if (id !== requestId.current) return; // stale response
         setSuggestions(results);
         setOpen(true);
