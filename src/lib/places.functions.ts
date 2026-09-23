@@ -60,7 +60,7 @@ export const searchPlaces = createServerFn({ method: "POST" })
       body: JSON.stringify({
         input: data.input,
         sessionToken: data.sessionToken,
-        locationBias: LOCATION_BIAS,
+        locationBias: locationBiasFor(data.city),
         includedRegionCodes: ["in"],
       }),
     });
