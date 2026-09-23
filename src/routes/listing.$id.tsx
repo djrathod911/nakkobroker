@@ -118,11 +118,13 @@ function ListingDetailPage() {
     queryFn: () => fetchListingById(id),
   });
 
+  // Photos are only shared with signed-in people, so scammers can't scrape them.
   const { data: photos = [] } = useQuery({
-    queryKey: ["listing-photos", id, listing?.photoPaths],
+    queryKey: ["listing-photos", id, listing?.photoPaths, user?.id],
     queryFn: () => signedPhotoUrls(listing?.photoPaths ?? []),
-    enabled: !!listing?.photoPaths.length,
+    enabled: !!user && !!listing?.photoPaths.length,
   });
+  const photosHidden = !user && !!listing?.photoPaths.length;
 
   const { data: votedIds = [] } = useQuery({
     queryKey: ["my-votes", user?.id],
