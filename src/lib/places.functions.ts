@@ -42,7 +42,13 @@ export interface PlaceSuggestion {
 export const searchPlaces = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) =>
-    z.object({ input: z.string().trim().min(2).max(120), sessionToken: z.string().uuid() }).parse(input),
+    z
+      .object({
+        input: z.string().trim().min(2).max(120),
+        sessionToken: z.string().uuid(),
+        city: z.string().trim().max(60).optional(),
+      })
+      .parse(input),
   )
   .handler(async ({ data }): Promise<PlaceSuggestion[]> => {
     const res = await fetch(`${placesBase()}/v1/places:autocomplete`, {
