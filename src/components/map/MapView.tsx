@@ -61,8 +61,10 @@ function markerClasses(listing: Listing, isActive: boolean) {
   );
 }
 
-export function MapView({ listings, activeId, onSelect, onClose, showHeatmap, basemap }: MapViewProps) {
+export function MapView({ listings, activeId, onSelect, onClose, showHeatmap, basemap, center }: MapViewProps) {
   const navigate = useNavigate();
+  const centerRef = useRef<[number, number]>(center ?? HYDERABAD_CENTER);
+  centerRef.current = center ?? HYDERABAD_CENTER;
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MLMap | null>(null);
   const mlRef = useRef<typeof import("maplibre-gl") | null>(null);
@@ -88,7 +90,7 @@ export function MapView({ listings, activeId, onSelect, onClose, showHeatmap, ba
         const map = new ml.Map({
           container: containerRef.current,
           style: STYLES.map,
-          center: HYDERABAD_CENTER,
+          center: centerRef.current,
           zoom: 11,
           attributionControl: { compact: true },
           dragRotate: false,
