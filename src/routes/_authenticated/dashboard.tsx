@@ -45,10 +45,11 @@ import {
   repairDateLabel,
   type MaintenanceRequest,
 } from "@/lib/maintenance.api";
+import { CITIES, DEFAULT_CITY, cityLabel } from "@/lib/cities";
 
 const TITLE = "Your dashboard — NakkoBroker";
 const DESCRIPTION =
-  "Saved homes, chats with owners and budget alerts for new zero-brokerage rentals in Hyderabad.";
+  "Saved homes, chats with owners and budget alerts for new zero-brokerage rentals across Hyderabad, Bengaluru, Chennai, Pune and Visakhapatnam.";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({

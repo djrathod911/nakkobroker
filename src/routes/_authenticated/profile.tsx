@@ -105,7 +105,7 @@ function ProfilePage() {
   }
 
   const rows = listings.data ?? [];
-  const cities = Array.from(new Set(["Hyderabad", ...rows.map((r) => r.city)]));
+  const cities = Array.from(new Set([...CITIES, ...rows.map((r) => r.city)]));
 
   return (
     <main className="min-h-dvh bg-background px-4 py-8">
