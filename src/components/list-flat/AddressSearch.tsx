@@ -7,9 +7,11 @@ import { toast } from "sonner";
 
 interface AddressSearchProps {
   onPick: (lng: number, lat: number, label: string) => void;
+  /** Keeps suggestions inside the city the owner picked. */
+  city?: string;
 }
 
-export function AddressSearch({ onPick }: AddressSearchProps) {
+export function AddressSearch({ onPick, city }: AddressSearchProps) {
   const runSearch = useServerFn(searchPlaces);
   const resolvePlace = useServerFn(getPlaceLocation);
 
