@@ -27,7 +27,6 @@ import {
   FilterPanel,
   activeFilterChips,
   defaultFilters,
-  CITIES,
   HOUSE_TYPES,
   RENT_MIN,
   RENT_MAX,
@@ -51,6 +50,7 @@ import { fetchSavedListingIds } from "@/lib/saved.api";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { CITIES, areaNames, cityLabel, cityOf } from "@/lib/cities";
 
 // Lazy-load the map — defers Google Maps SDK (~300kB) from the initial bundle.
 // The map is visually below the results panel on mobile, so deferring it
@@ -62,20 +62,13 @@ const MapView = lazy(() =>
 type Basemap = "map" | "dark" | "satellite";
 
 /** Well-known localities, so search helps even before homes are listed there. */
-const POPULAR_AREAS: Record<string, string[]> = {
-  Hyderabad: [
-    "Madhapur", "Gachibowli", "Kondapur", "Hitech City", "Kukatpally", "Ameerpet",
-    "Banjara Hills", "Jubilee Hills", "Begumpet", "Manikonda", "Miyapur", "Nallagandla",
-    "Kompally", "Uppal", "LB Nagar", "Secunderabad", "Attapur", "Narsingi",
-  ],
-  Bengaluru: ["Koramangala", "Indiranagar", "HSR Layout", "Whitefield", "Jayanagar", "Marathahalli"],
-  Chennai: ["Adyar", "Velachery", "T Nagar", "Anna Nagar", "OMR", "Porur"],
-  Pune: ["Kothrud", "Baner", "Hinjewadi", "Viman Nagar", "Wakad", "Kharadi"],
-};
+const POPULAR_AREAS: Record<string, string[]> = Object.fromEntries(
+  CITIES.map((c) => [c, areaNames(c)]),
+);
 
-const TITLE = "NakkoBroker — Zero-brokerage rentals in Hyderabad";
+const TITLE = "NakkoBroker — Zero-brokerage rentals in Hyderabad, Bengaluru, Chennai, Pune & Vizag";
 const DESCRIPTION =
-  "Discover Hyderabad flats directly from owners on a live map. No brokers, no brokerage — community-verified listings and To-Let boards.";
+  "Discover flats directly from owners on a live map across Hyderabad, Bengaluru, Chennai, Pune and Visakhapatnam. No brokers, no brokerage — community-verified listings and To-Let boards.";
 
 export const Route = createFileRoute("/")({
   // Prefetch listings on the server so the results panel is populated on first paint
