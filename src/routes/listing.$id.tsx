@@ -298,6 +298,19 @@ function ListingDetailPage() {
                 />
               ))}
             </div>
+          ) : photosHidden ? (
+            <div className="glass flex h-40 flex-col items-center justify-center gap-2 rounded-2xl px-6 text-center text-sm text-muted-foreground">
+              <ImageOff className="size-4" aria-hidden />
+              <p>Photos are shared with signed-in members only.</p>
+              <Link
+                to="/auth"
+                search={{ next: `/listing/${id}` }}
+                className="text-xs font-semibold text-brand hover:underline"
+              >
+                Sign in to see {listing.photoPaths.length} photo
+                {listing.photoPaths.length === 1 ? "" : "s"}
+              </Link>
+            </div>
           ) : (
             <div className="glass flex h-40 items-center justify-center gap-2 rounded-2xl text-sm text-muted-foreground">
               <ImageOff className="size-4" aria-hidden /> No photos shared yet
