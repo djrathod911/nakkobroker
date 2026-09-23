@@ -66,9 +66,9 @@ const POPULAR_AREAS: Record<string, string[]> = Object.fromEntries(
   CITIES.map((c) => [c, areaNames(c)]),
 );
 
-const TITLE = "NakkoBroker — Zero-brokerage rentals in Hyderabad, Bengaluru, Chennai, Pune & Vizag";
+const TITLE = "NakkoBroker — Zero-brokerage rentals in 5 Indian cities";
 const DESCRIPTION =
-  "Discover flats directly from owners on a live map across Hyderabad, Bengaluru, Chennai, Pune and Visakhapatnam. No brokers, no brokerage — community-verified listings and To-Let boards.";
+  "Find flats from owners on a live map in Hyderabad, Bengaluru, Chennai, Pune and Vizag. No brokers, no brokerage, community-verified.";
 
 export const Route = createFileRoute("/")({
   // Prefetch listings on the server so the results panel is populated on first paint
