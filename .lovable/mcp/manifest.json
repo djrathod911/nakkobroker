@@ -33,7 +33,7 @@
               "anyOf": [
                 {
                   "type": "string",
-                  "description": "City name, e.g. Hyderabad."
+                  "description": "City name: Hyderabad, Bengaluru, Chennai, Pune or Visakhapatnam."
                 },
                 {
                   "type": "null"
