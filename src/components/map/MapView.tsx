@@ -42,6 +42,8 @@ interface MapViewProps {
   onClose?: (() => void) | undefined;
   showHeatmap: boolean;
   basemap: Basemap;
+  /** Centre of the selected city — used before any homes are listed there. */
+  center?: [number, number];
 }
 
 function markerClasses(listing: Listing, isActive: boolean) {

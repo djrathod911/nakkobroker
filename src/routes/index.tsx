@@ -252,6 +252,7 @@ function Discover() {
             onClose={() => setActiveId(null)}
             showHeatmap={heatmap}
             basemap={basemap}
+            center={cityOf(filters.city).center}
           />
         </Suspense>
       </div>
