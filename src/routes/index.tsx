@@ -66,7 +66,7 @@ const POPULAR_AREAS: Record<string, string[]> = Object.fromEntries(
   CITIES.map((c) => [c, areaNames(c)]),
 );
 
-const TITLE = "NakkoBroker — Zero-brokerage rentals in 5 Indian cities";
+const TITLE = "NakkoBroker — Zero-brokerage rentals in Hyderabad + 4 cities";
 const DESCRIPTION =
   "Find flats from owners on a live map in Hyderabad, Bengaluru, Chennai, Pune and Vizag. No brokers, no brokerage, community-verified.";
 
