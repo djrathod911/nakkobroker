@@ -13,10 +13,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { CITIES, DEFAULT_CITY, areasForCity, cityLabel, defaultAreaFor } from "@/lib/cities";
 
 const TITLE = "Spot a To-Let board — scan it into NakkoBroker";
 const DESCRIPTION =
-  "Snap a Hyderabad To-Let board and let NakkoBroker read the rent, BHK and phone number for you, then share it with the community in one tap.";
+  "Snap a To-Let board and let NakkoBroker read the rent, BHK and phone number for you, then share it with the community in one tap.";
 
 export const Route = createFileRoute("/_authenticated/spot-a-board")({
   head: () => ({
@@ -67,7 +68,8 @@ function SpotABoard() {
   const [result, setResult] = useState<BoardScanResult | null>(null);
   const [form, setForm] = useState({
     title: "",
-    area: "Madhapur",
+    city: DEFAULT_CITY,
+    area: defaultAreaFor(DEFAULT_CITY).area,
     bhk: 2,
     rent: 0,
     deposit: 0,
@@ -98,7 +100,7 @@ function SpotABoard() {
       setForm((f) => ({
         ...f,
         title: res.title ?? (res.bhk ? `${res.bhk} BHK spotted on a To-Let board` : f.title),
-        area: res.area && res.area in AREAS ? res.area : f.area,
+        area: res.area && res.area in areasForCity(f.city) ? res.area : f.area,
         bhk: res.bhk ?? f.bhk,
         rent: res.rent ?? f.rent,
         deposit: res.deposit ?? f.deposit,
@@ -130,12 +132,12 @@ function SpotABoard() {
     try {
       const { data: auth } = await supabase.auth.getUser();
       if (!auth.user) throw new Error("Please sign in again");
-      const coords = AREAS[form.area]!;
+      const coords = areasForCity(form.city)[form.area]!;
       const id = await createListing(
         {
           title: form.title.trim(),
           description: "Spotted on a To-Let board by the NakkoBroker community.",
-          city: "Hyderabad",
+          city: form.city,
           house_type: "Flat",
           bathrooms: 1,
           balconies: 0,
@@ -270,9 +272,23 @@ function SpotABoard() {
             </div>
 
             <div className="space-y-2">
+              <Label>City</Label>
+              <div className="flex flex-wrap gap-2">
+                {CITIES.map((c) => (
+                  <Pill
+                    key={c}
+                    label={cityLabel(c)}
+                    active={form.city === c}
+                    onClick={() => setForm({ ...form, city: c, area: defaultAreaFor(c).area })}
+                  />
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-2">
               <Label>Area where you saw it</Label>
               <div className="flex flex-wrap gap-2">
-                {Object.keys(AREAS).map((a) => (
+                {Object.keys(areasForCity(form.city)).map((a) => (
                   <Pill
                     key={a}
                     label={a}
