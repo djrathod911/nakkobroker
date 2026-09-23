@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { ArrowLeft, Loader2, Mail, ShieldCheck } from "lucide-react";
 
-const TITLE = "Sign in with your email — NakkoBroker Hyderabad rentals";
+const TITLE = "Sign in with your email — NakkoBroker zero-brokerage rentals";
 const DESCRIPTION =
   "Sign in or create your account with just your email address. No passwords, no brokers — list your flat or contact owners directly on NakkoBroker.";
 

@@ -22,13 +22,13 @@ export interface BoardScanResult {
   confidence: "high" | "medium" | "low";
 }
 
-const SYSTEM = `You read photographs of Indian "To-Let" / "For Rent" boards and signage, usually from Hyderabad.
+const SYSTEM = `You read photographs of Indian "To-Let" / "For Rent" boards and signage, usually from Indian cities such as Hyderabad, Bengaluru, Chennai, Pune and Visakhapatnam.
 Extract the rental details you can actually see. Never invent values — use null when a field is not legible or absent.
 Rent and deposit must be plain integers in rupees (expand shorthand: "15k" -> 15000, "1.5 L" -> 150000).
 bhk is an integer 1-6 (treat "single room"/"1RK" as 1).
 furnishing must be exactly one of "Unfurnished", "Semi Furnished", "Fully Furnished".
 tenant must be exactly one of "Family", "Bachelor", "Anyone".
-area should be the Hyderabad locality name if visible, else null.
+area should be the locality name if visible, else null.
 title is a short human listing title you can infer, max 80 chars.
 rawText is the transcribed text on the board.
 confidence reflects how legible the board is.

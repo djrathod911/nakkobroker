@@ -930,6 +930,7 @@ export type Database = {
         Args: { _actor: string; _booking_id: string }
         Returns: undefined
       }
+      canonical_city: { Args: { _city: string }; Returns: string }
       confirm_listing_freshness: {
         Args: { _actor: string; _listing_id: string }
         Returns: undefined

@@ -7,9 +7,11 @@ import { toast } from "sonner";
 
 interface AddressSearchProps {
   onPick: (lng: number, lat: number, label: string) => void;
+  /** Keeps suggestions inside the city the owner picked. */
+  city?: string;
 }
 
-export function AddressSearch({ onPick }: AddressSearchProps) {
+export function AddressSearch({ onPick, city }: AddressSearchProps) {
   const runSearch = useServerFn(searchPlaces);
   const resolvePlace = useServerFn(getPlaceLocation);
 
@@ -40,7 +42,9 @@ export function AddressSearch({ onPick }: AddressSearchProps) {
     const timer = window.setTimeout(async () => {
       setLoading(true);
       try {
-        const results = await runSearch({ data: { input: q, sessionToken: sessionToken.current } });
+        const results = await runSearch({
+          data: { input: q, sessionToken: sessionToken.current, ...(city ? { city } : {}) },
+        });
         if (id !== requestId.current) return; // stale response
         setSuggestions(results);
         setOpen(true);

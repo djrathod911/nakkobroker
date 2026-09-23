@@ -22,7 +22,8 @@ export interface Filters {
 export const RENT_MIN = 5000;
 export const RENT_MAX = 130000;
 
-export const CITIES = ["Hyderabad", "Bengaluru", "Chennai", "Pune"];
+export { CITIES } from "@/lib/cities";
+import { CITIES, cityLabel } from "@/lib/cities";
 export const HOUSE_TYPES = ["Flat", "Villa"];
 
 export const defaultFilters: Filters = {
@@ -237,7 +238,7 @@ export function FilterPanel({
           {CITIES.map((c) => (
             <Chip
               key={c}
-              label={c}
+              label={cityLabel(c)}
               selected={filters.city === c}
               onClick={() => onChange({ ...filters, city: c })}
             />

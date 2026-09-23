@@ -13,10 +13,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { CITIES, DEFAULT_CITY, areasForCity, cityLabel, defaultAreaFor } from "@/lib/cities";
 
 const TITLE = "Spot a To-Let board — scan it into NakkoBroker";
 const DESCRIPTION =
-  "Snap a Hyderabad To-Let board and let NakkoBroker read the rent, BHK and phone number for you, then share it with the community in one tap.";
+  "Snap a To-Let board and let NakkoBroker read the rent, BHK and phone number for you, then share it with the community in one tap.";
 
 export const Route = createFileRoute("/_authenticated/spot-a-board")({
   head: () => ({
@@ -32,25 +33,13 @@ export const Route = createFileRoute("/_authenticated/spot-a-board")({
   component: SpotABoard,
 });
 
-const AREAS: Record<string, [number, number]> = {
-  Madhapur: [78.3908, 17.4483],
-  Gachibowli: [78.3489, 17.4401],
-  Kondapur: [78.3639, 17.4622],
-  Ameerpet: [78.4483, 17.4374],
-  Kukatpally: [78.4089, 17.4948],
-  "Jubilee Hills": [78.4089, 17.4239],
-  Nanakramguda: [78.3364, 17.4211],
-  Begumpet: [78.4614, 17.4435],
-  Manikonda: [78.3838, 17.4021],
-  Himayatnagar: [78.4867, 17.4009],
-};
-
 const FURNISHING = ["Unfurnished", "Semi Furnished", "Fully Furnished"];
 const TENANTS = ["Family", "Bachelor", "Anyone"];
 
 const schema = z.object({
   title: z.string().trim().min(6, "Add a short descriptive title").max(120),
-  area: z.string().refine((v) => v in AREAS, "Pick the area where you saw the board"),
+  city: z.string().refine((v) => CITIES.includes(v), "Pick the city"),
+  area: z.string().min(1, "Pick the area where you saw the board"),
   bhk: z.number().int().min(1).max(6),
   rent: z.number().int().min(1000, "Add the rent shown on the board").max(1_000_000),
   deposit: z.number().int().min(0).max(10_000_000),
@@ -79,7 +68,8 @@ function SpotABoard() {
   const [result, setResult] = useState<BoardScanResult | null>(null);
   const [form, setForm] = useState({
     title: "",
-    area: "Madhapur",
+    city: DEFAULT_CITY,
+    area: defaultAreaFor(DEFAULT_CITY).area,
     bhk: 2,
     rent: 0,
     deposit: 0,
@@ -110,7 +100,7 @@ function SpotABoard() {
       setForm((f) => ({
         ...f,
         title: res.title ?? (res.bhk ? `${res.bhk} BHK spotted on a To-Let board` : f.title),
-        area: res.area && res.area in AREAS ? res.area : f.area,
+        area: res.area && res.area in areasForCity(f.city) ? res.area : f.area,
         bhk: res.bhk ?? f.bhk,
         rent: res.rent ?? f.rent,
         deposit: res.deposit ?? f.deposit,
@@ -142,12 +132,12 @@ function SpotABoard() {
     try {
       const { data: auth } = await supabase.auth.getUser();
       if (!auth.user) throw new Error("Please sign in again");
-      const coords = AREAS[form.area]!;
+      const coords = areasForCity(form.city)[form.area]!;
       const id = await createListing(
         {
           title: form.title.trim(),
           description: "Spotted on a To-Let board by the NakkoBroker community.",
-          city: "Hyderabad",
+          city: form.city,
           house_type: "Flat",
           bathrooms: 1,
           balconies: 0,
@@ -282,9 +272,23 @@ function SpotABoard() {
             </div>
 
             <div className="space-y-2">
+              <Label>City</Label>
+              <div className="flex flex-wrap gap-2">
+                {CITIES.map((c) => (
+                  <Pill
+                    key={c}
+                    label={cityLabel(c)}
+                    active={form.city === c}
+                    onClick={() => setForm({ ...form, city: c, area: defaultAreaFor(c).area })}
+                  />
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-2">
               <Label>Area where you saw it</Label>
               <div className="flex flex-wrap gap-2">
-                {Object.keys(AREAS).map((a) => (
+                {Object.keys(areasForCity(form.city)).map((a) => (
                   <Pill
                     key={a}
                     label={a}

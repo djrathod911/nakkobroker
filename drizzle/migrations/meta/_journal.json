@@ -85,6 +85,13 @@
       "when": 1790052727539,
       "tag": "0011_notify_owner_on_tour_booking",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1790138580919,
+      "tag": "0012_canonical_city_names_for_listings",
+      "breakpoints": true
     }
   ]
 }

@@ -45,10 +45,11 @@ import {
   repairDateLabel,
   type MaintenanceRequest,
 } from "@/lib/maintenance.api";
+import { CITIES, DEFAULT_CITY, cityLabel } from "@/lib/cities";
 
 const TITLE = "Your dashboard — NakkoBroker";
 const DESCRIPTION =
-  "Saved homes, chats with owners and budget alerts for new zero-brokerage rentals in Hyderabad.";
+  "Saved homes, chats with owners and budget alerts for new zero-brokerage rentals across Hyderabad, Bengaluru, Chennai, Pune and Visakhapatnam.";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
@@ -498,11 +499,12 @@ function BudgetAlertForm({ userId }: { userId: string }) {
   const [name, setName] = useState("");
   const [maxRent, setMaxRent] = useState(30000);
   const [bhk, setBhk] = useState<number[]>([]);
+  const [city, setCity] = useState(DEFAULT_CITY);
 
   const create = useMutation({
     mutationFn: () => {
       const filters: Filters = {
-        city: "Hyderabad",
+        city,
         houseType: "Any",
         bhk,
         minRent: RENT_MIN,
@@ -553,6 +555,25 @@ function BudgetAlertForm({ userId }: { userId: string }) {
             value={maxRent}
             onChange={(e) => setMaxRent(Number(e.target.value))}
           />
+        </div>
+      </div>
+
+      <div className="space-y-1.5">
+        <p className="text-sm font-medium">City</p>
+        <div className="flex flex-wrap gap-2">
+          {CITIES.map((c) => (
+            <Button
+              key={c}
+              type="button"
+              size="sm"
+              variant={city === c ? "default" : "secondary"}
+              aria-pressed={city === c}
+              className="rounded-full"
+              onClick={() => setCity(c)}
+            >
+              {cityLabel(c)}
+            </Button>
+          ))}
         </div>
       </div>
 

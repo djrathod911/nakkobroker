@@ -25,7 +25,6 @@ import {
 import { createListing, fetchVerifiedPhones } from "@/lib/listings.api";
 import {
   AMENITIES,
-  AREAS,
   AVAILABILITY,
   AVAILABILITY_STATUS_OPTIONS,
   AVAILABLE_SOON_OPTIONS,
@@ -58,10 +57,11 @@ import { Switch } from "@/components/ui/switch";
 import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { areasForCity, defaultAreaFor } from "@/lib/cities";
 
-const TITLE = "List your flat free — NakkoBroker Hyderabad";
+const TITLE = "List your flat free — NakkoBroker";
 const DESCRIPTION =
-  "Post your Hyderabad flat directly to tenants on NakkoBroker in five guided steps. No brokers, no brokerage, photos and map pin included.";
+  "Post your flat in Hyderabad, Bengaluru, Chennai, Pune or Visakhapatnam directly to tenants on NakkoBroker in five guided steps. No brokers, no brokerage, photos and map pin included.";
 
 export const Route = createFileRoute("/_authenticated/list-your-flat")({
   head: () => ({
@@ -737,7 +737,12 @@ function ListYourFlat() {
                   required
                   options={CITIES}
                   value={draft.city}
-                  onChange={(v) => set({ city: v })}
+                  onChange={(v) => {
+                    if (v === draft.city) return;
+                    // Move the area + pin into the new city so they can never mismatch
+                    const next = defaultAreaFor(v);
+                    set({ city: v, area: next.area, lng: next.lng, lat: next.lat });
+                  }}
                   error={errors["city"]}
                 />
                 <PillGroup
@@ -752,15 +757,12 @@ function ListYourFlat() {
                 <div className="space-y-2">
                   <FieldLabel required>Area</FieldLabel>
                   <div className="flex flex-wrap gap-2">
-                    {Object.keys(AREAS).map((a) => (
+                    {Object.entries(areasForCity(draft.city)).map(([a, c]) => (
                       <Pill
                         key={a}
                         label={a}
                         active={draft.area === a}
-                        onClick={() => {
-                          const c = AREAS[a]!;
-                          set({ area: a, lng: c[0], lat: c[1] });
-                        }}
+                        onClick={() => set({ area: a, lng: c[0], lat: c[1] })}
                       />
                     ))}
                   </div>
@@ -768,7 +770,7 @@ function ListYourFlat() {
                 </div>
                 <div className="space-y-2">
                   <FieldLabel>Search address</FieldLabel>
-                  <AddressSearch onPick={(lng, lat) => set({ lng, lat })} />
+                  <AddressSearch city={draft.city} onPick={(lng, lat) => set({ lng, lat })} />
                 </div>
                 <PinPicker lng={draft.lng} lat={draft.lat} onChange={(lng, lat) => set({ lng, lat })} />
                 <p className="flex items-center gap-1.5 text-xs text-muted-foreground">

@@ -1,17 +1,18 @@
 import { z } from "zod";
+import {
+  CITIES as CITY_NAMES,
+  areaRate,
+  areasForCity,
+  canonicalCity,
+  withinCity,
+} from "@/lib/cities";
 
-export const AREAS: Record<string, [number, number]> = {
-  Madhapur: [78.3908, 17.4483],
-  Gachibowli: [78.3489, 17.4401],
-  Kondapur: [78.3639, 17.4622],
-  Ameerpet: [78.4483, 17.4374],
-  Kukatpally: [78.4089, 17.4948],
-  "Jubilee Hills": [78.4089, 17.4239],
-  Nanakramguda: [78.3364, 17.4211],
-  Begumpet: [78.4614, 17.4435],
-  Manikonda: [78.3838, 17.4021],
-  Himayatnagar: [78.4867, 17.4009],
-};
+export { areasForCity, areaNames, defaultAreaFor, cityLabel } from "@/lib/cities";
+
+/** Every locality across every city — handy for lookups that ignore the city. */
+export const AREAS: Record<string, [number, number]> = Object.fromEntries(
+  CITY_NAMES.flatMap((c) => Object.entries(areasForCity(c))),
+);
 
 export const FURNISHING = ["Unfurnished", "Semi Furnished", "Fully Furnished"];
 export const TENANTS = ["Family", "Bachelor", "Anyone"];
@@ -37,7 +38,7 @@ export const AVAILABLE_SOON_OPTIONS = [
   { value: "3_months", label: "In 3 months" },
   { value: "custom", label: "Pick a date" },
 ] as const;
-export const CITIES = ["Hyderabad"];
+export const CITIES = CITY_NAMES;
 export const HOUSE_TYPES = ["Flat", "Villa"] as const;
 export const PARKING = ["None", "Bike", "Car", "Bike + Car"];
 export const FACING = ["East", "West", "North", "South", "North-East", "South-East"];
@@ -111,13 +112,27 @@ export const emptyDraft: FlatDraft = {
 const phoneRegex = /^(\+91[\s-]?)?[6-9]\d{9}$/;
 
 export const stepSchemas = [
-  z.object({
-    city: z.string().refine((v) => CITIES.includes(v), "Pick a city"),
-    house_type: z.string().refine((v) => (HOUSE_TYPES as readonly string[]).includes(v), "Pick Flat or Villa"),
-    area: z.string().refine((v) => v in AREAS, "Pick an area in Hyderabad"),
-    lng: z.number().min(78).max(79),
-    lat: z.number().min(17).max(18),
-  }),
+  z
+    .object({
+      city: z.string().refine((v) => CITIES.includes(v), "Pick a city"),
+      house_type: z.string().refine((v) => (HOUSE_TYPES as readonly string[]).includes(v), "Pick Flat or Villa"),
+      area: z.string().min(1, "Pick an area"),
+      lng: z.number(),
+      lat: z.number(),
+    })
+    .superRefine((v, ctx) => {
+      const city = canonicalCity(v.city);
+      if (!(v.area in areasForCity(city))) {
+        ctx.addIssue({ code: "custom", path: ["area"], message: `Pick an area in ${city}` });
+      }
+      if (!withinCity(city, v.lng, v.lat)) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["lat"],
+          message: `That pin is outside ${city} — move it inside the city`,
+        });
+      }
+    }),
   z.object({
     title: z.string().trim().min(6, "Add a short descriptive title").max(120),
     description: z.string().trim().min(30, "Describe the home in at least 30 characters").max(2000),
@@ -217,22 +232,8 @@ export function clearDraft() {
 }
 
 
-/** Rough market bands (₹/sqft/month) used to warn about outlier pricing. */
-const AREA_RATE: Record<string, number> = {
-  Madhapur: 28,
-  Gachibowli: 29,
-  Kondapur: 24,
-  Ameerpet: 22,
-  Kukatpally: 19,
-  "Jubilee Hills": 37,
-  Nanakramguda: 27,
-  Begumpet: 23,
-  Manikonda: 22,
-  Himayatnagar: 24,
-};
-
 export function priceHint(draft: FlatDraft): { tone: "ok" | "low" | "high"; text: string } {
-  const rate = AREA_RATE[draft.area] ?? 24;
+  const rate = areaRate(draft.city, draft.area);
   const expected = Math.round((rate * draft.sqft) / 500) * 500;
   const ratio = draft.rent / Math.max(expected, 1);
   if (ratio < 0.6)

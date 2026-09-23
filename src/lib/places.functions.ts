@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { DEFAULT_CITY, placesBiasFor } from "@/lib/cities";
 
 const GATEWAY_URL = "https://connector-gateway.lovable.dev/google_maps";
 const GOOGLE_PLACES_URL = "https://places.googleapis.com";
@@ -15,13 +16,8 @@ function placesBase() {
   return usingOwnGoogleKey() ? GOOGLE_PLACES_URL : `${GATEWAY_URL}/places`;
 }
 
-// Hyderabad bounding box — keeps suggestions relevant to the app's city.
-const LOCATION_BIAS = {
-  rectangle: {
-    low: { latitude: 17.2, longitude: 78.2 },
-    high: { latitude: 17.6, longitude: 78.7 },
-  },
-};
+// Bias suggestions to the city the owner picked, so "MG Road" resolves nearby.
+const locationBiasFor = (city?: string) => placesBiasFor(city ?? DEFAULT_CITY);
 
 function gatewayHeaders(): Record<string, string> {
   const mapsKey = process.env["GOOGLE_MAPS_API_KEY"];
@@ -46,7 +42,13 @@ export interface PlaceSuggestion {
 export const searchPlaces = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) =>
-    z.object({ input: z.string().trim().min(2).max(120), sessionToken: z.string().uuid() }).parse(input),
+    z
+      .object({
+        input: z.string().trim().min(2).max(120),
+        sessionToken: z.string().uuid(),
+        city: z.string().trim().max(60).optional(),
+      })
+      .parse(input),
   )
   .handler(async ({ data }): Promise<PlaceSuggestion[]> => {
     const res = await fetch(`${placesBase()}/v1/places:autocomplete`, {
@@ -58,7 +60,7 @@ export const searchPlaces = createServerFn({ method: "POST" })
       body: JSON.stringify({
         input: data.input,
         sessionToken: data.sessionToken,
-        locationBias: LOCATION_BIAS,
+        locationBias: locationBiasFor(data.city),
         includedRegionCodes: ["in"],
       }),
     });

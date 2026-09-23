@@ -42,6 +42,8 @@ interface MapViewProps {
   onClose?: (() => void) | undefined;
   showHeatmap: boolean;
   basemap: Basemap;
+  /** Centre of the selected city — used before any homes are listed there. */
+  center?: [number, number];
 }
 
 function markerClasses(listing: Listing, isActive: boolean) {
@@ -59,8 +61,10 @@ function markerClasses(listing: Listing, isActive: boolean) {
   );
 }
 
-export function MapView({ listings, activeId, onSelect, onClose, showHeatmap, basemap }: MapViewProps) {
+export function MapView({ listings, activeId, onSelect, onClose, showHeatmap, basemap, center }: MapViewProps) {
   const navigate = useNavigate();
+  const centerRef = useRef<[number, number]>(center ?? HYDERABAD_CENTER);
+  centerRef.current = center ?? HYDERABAD_CENTER;
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MLMap | null>(null);
   const mlRef = useRef<typeof import("maplibre-gl") | null>(null);
@@ -86,7 +90,7 @@ export function MapView({ listings, activeId, onSelect, onClose, showHeatmap, ba
         const map = new ml.Map({
           container: containerRef.current,
           style: STYLES.map,
-          center: HYDERABAD_CENTER,
+          center: centerRef.current,
           zoom: 11,
           attributionControl: { compact: true },
           dragRotate: false,
@@ -158,6 +162,14 @@ export function MapView({ listings, activeId, onSelect, onClose, showHeatmap, ba
         .addTo(map);
     });
   }, [ready, listings, activeId]);
+
+  // Recentre on the chosen city when there is nothing to fit yet
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!ready || !map || !center || listings.length > 0 || activeId) return;
+    map.flyTo({ center, zoom: 11, speed: 1.2 });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready, center?.[0], center?.[1], listings.length]);
 
   // Keep every result in view when the list changes
   useEffect(() => {
