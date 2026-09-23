@@ -57,10 +57,11 @@ import { Switch } from "@/components/ui/switch";
 import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { areasForCity, cityLabel, defaultAreaFor } from "@/lib/cities";
 
-const TITLE = "List your flat free — NakkoBroker Hyderabad";
+const TITLE = "List your flat free — NakkoBroker";
 const DESCRIPTION =
-  "Post your Hyderabad flat directly to tenants on NakkoBroker in five guided steps. No brokers, no brokerage, photos and map pin included.";
+  "Post your flat in Hyderabad, Bengaluru, Chennai, Pune or Visakhapatnam directly to tenants on NakkoBroker in five guided steps. No brokers, no brokerage, photos and map pin included.";
 
 export const Route = createFileRoute("/_authenticated/list-your-flat")({
   head: () => ({
