@@ -1,17 +1,19 @@
 import { z } from "zod";
+import {
+  CITIES as CITY_NAMES,
+  areaRate,
+  areasForCity,
+  canonicalCity,
+  defaultAreaFor,
+  withinCity,
+} from "@/lib/cities";
 
-export const AREAS: Record<string, [number, number]> = {
-  Madhapur: [78.3908, 17.4483],
-  Gachibowli: [78.3489, 17.4401],
-  Kondapur: [78.3639, 17.4622],
-  Ameerpet: [78.4483, 17.4374],
-  Kukatpally: [78.4089, 17.4948],
-  "Jubilee Hills": [78.4089, 17.4239],
-  Nanakramguda: [78.3364, 17.4211],
-  Begumpet: [78.4614, 17.4435],
-  Manikonda: [78.3838, 17.4021],
-  Himayatnagar: [78.4867, 17.4009],
-};
+export { areasForCity, areaNames, defaultAreaFor, cityLabel } from "@/lib/cities";
+
+/** Every locality across every city — handy for lookups that ignore the city. */
+export const AREAS: Record<string, [number, number]> = Object.fromEntries(
+  CITY_NAMES.flatMap((c) => Object.entries(areasForCity(c))),
+);
 
 export const FURNISHING = ["Unfurnished", "Semi Furnished", "Fully Furnished"];
 export const TENANTS = ["Family", "Bachelor", "Anyone"];
