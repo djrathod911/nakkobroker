@@ -4,7 +4,6 @@ import {
   areaRate,
   areasForCity,
   canonicalCity,
-  defaultAreaFor,
   withinCity,
 } from "@/lib/cities";
 
