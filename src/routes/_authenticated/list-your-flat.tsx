@@ -25,7 +25,6 @@ import {
 import { createListing, fetchVerifiedPhones } from "@/lib/listings.api";
 import {
   AMENITIES,
-  AREAS,
   AVAILABILITY,
   AVAILABILITY_STATUS_OPTIONS,
   AVAILABLE_SOON_OPTIONS,
