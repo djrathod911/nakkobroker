@@ -57,7 +57,7 @@ import { Switch } from "@/components/ui/switch";
 import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
-import { areasForCity, cityLabel, defaultAreaFor } from "@/lib/cities";
+import { areasForCity, defaultAreaFor } from "@/lib/cities";
 
 const TITLE = "List your flat free — NakkoBroker";
 const DESCRIPTION =
