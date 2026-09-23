@@ -8,7 +8,7 @@ export default defineTool({
   description:
     "Search published owner-listed rental homes on NakkoBroker by city, area, home type, BHK and maximum rent.",
   inputSchema: {
-    city: z.string().describe("City name, e.g. Hyderabad.").nullable(),
+    city: z.string().describe("City name: Hyderabad, Bengaluru, Chennai, Pune or Visakhapatnam.").nullable(),
     area: z.string().describe("Locality / area name to match, e.g. Gachibowli.").nullable(),
     house_type: z.enum(["Flat", "Villa"]).describe("Type of home.").nullable(),
     bhk: z.number().int().describe("Exact number of bedrooms.").nullable(),

@@ -14,6 +14,7 @@ import {
   type MyListingRow,
 } from "@/lib/listings.api";
 import { HOUSE_TYPES } from "@/lib/list-flat";
+import { CITIES } from "@/lib/cities";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

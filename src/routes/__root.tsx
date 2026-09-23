@@ -22,7 +22,7 @@ function NotFoundComponent() {
       <meta name="robots" content="noindex, follow" />
       <meta
         name="description"
-        content="This NakkoBroker page doesn't exist. Head back to the map to browse zero-brokerage rentals in Hyderabad."
+        content="This NakkoBroker page doesn't exist. Head back to the map to browse zero-brokerage rentals across Hyderabad, Bengaluru, Chennai, Pune and Vizag."
       />
       <div className="max-w-md text-center">
         <h1 className="text-7xl font-bold text-foreground">404</h1>
@@ -132,7 +132,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
               name: "NakkoBroker",
               url: "https://nakkobroker.com",
               description:
-                "Community-driven, zero-brokerage rental discovery platform for Hyderabad.",
+                "Community-driven, zero-brokerage rental discovery platform for Hyderabad, Bengaluru, Chennai, Pune and Visakhapatnam.",
             },
             {
               "@type": "WebSite",
