@@ -92,6 +92,13 @@
       "when": 1790138580919,
       "tag": "0012_canonical_city_names_for_listings",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1790139405483,
+      "tag": "0013_listing_photos_require_signin",
+      "breakpoints": true
     }
   ]
 }
