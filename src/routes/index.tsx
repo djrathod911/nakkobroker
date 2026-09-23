@@ -559,10 +559,10 @@ function Discover() {
 
             {/* Quick filters */}
             <div className="mt-3 flex flex-wrap gap-1.5">
-              {CITIES.slice(0, 2).map((c) => (
+              {CITIES.map((c) => (
                 <QuickChip
                   key={c}
-                  label={c}
+                  label={cityLabel(c)}
                   active={filters.city === c}
                   onClick={() => setFilters((f) => ({ ...f, city: c }))}
                 />
