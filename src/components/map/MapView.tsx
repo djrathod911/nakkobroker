@@ -163,6 +163,14 @@ export function MapView({ listings, activeId, onSelect, onClose, showHeatmap, ba
     });
   }, [ready, listings, activeId]);
 
+  // Recentre on the chosen city when there is nothing to fit yet
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!ready || !map || !center || listings.length > 0 || activeId) return;
+    map.flyTo({ center, zoom: 11, speed: 1.2 });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready, center?.[0], center?.[1], listings.length]);
+
   // Keep every result in view when the list changes
   useEffect(() => {
     const map = mapRef.current;
