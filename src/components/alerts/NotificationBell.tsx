@@ -101,7 +101,9 @@ export function NotificationBell({ userId }: { userId: string }) {
                         ? "Tour visit"
                         : n.kind === "repair"
                           ? "Repair"
-                          : "Instant match"}{" "}
+                          : n.kind === "rent"
+                            ? "Rent"
+                            : "Instant match"}{" "}
                     ·{" "}
                     {formatDistanceToNow(new Date(n.createdAt), { addSuffix: true })}
                   </p>
