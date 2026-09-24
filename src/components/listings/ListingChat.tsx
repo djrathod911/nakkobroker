@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { MessagesSquare, Send } from "lucide-react";
+import { BadgeCheck, MessagesSquare, Send } from "lucide-react";
+import { RenterBadge, useRenterReputation } from "@/components/reputation/RenterBadge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -44,6 +45,8 @@ export function ListingChat({ listingId, ownerId, userId, listingTitle }: Props)
   });
 
   const conversationId = isOwner ? (activeId ?? threads[0]?.id ?? null) : (myConversationId ?? null);
+  const activeThread = isOwner ? threads.find((t) => t.id === conversationId) : undefined;
+  const reputation = useRenterReputation(isOwner ? threads.map((t) => t.tenant_id) : []);
 
   const { data: messages = [] } = useQuery({
     queryKey: ["messages", conversationId],
@@ -155,7 +158,7 @@ export function ListingChat({ listingId, ownerId, userId, listingTitle }: Props)
               type="button"
               onClick={() => setActiveId(t.id)}
               aria-pressed={t.id === conversationId}
-              className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${
+              className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs transition-colors ${
                 t.id === conversationId
                   ? "border-brand bg-brand text-brand-foreground"
                   : "border-border bg-secondary/60 text-muted-foreground hover:text-foreground"
@@ -163,8 +166,18 @@ export function ListingChat({ listingId, ownerId, userId, listingTitle }: Props)
             >
               {t.tenantName}
               {t.unread ? ` · ${t.unread} new` : ""}
+              {reputation.data?.get(t.tenant_id)?.good_renter && (
+                <BadgeCheck className="size-3.5" aria-label="Good renter" />
+              )}
             </button>
           ))}
+        </div>
+      )}
+
+      {isOwner && activeThread && (
+        <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+          <span>Chatting with {activeThread.tenantName}</span>
+          <RenterBadge rep={reputation.data?.get(activeThread.tenant_id)} />
         </div>
       )}
 

@@ -583,6 +583,62 @@ export type Database = {
         }
         Relationships: []
       }
+      rent_payments: {
+        Row: {
+          amount: number
+          confirmed_at: string | null
+          created_at: string
+          id: string
+          listing_id: string
+          month: string
+          note: string
+          owner_id: string | null
+          paid_on: string
+          receipt_path: string | null
+          status: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          confirmed_at?: string | null
+          created_at?: string
+          id?: string
+          listing_id: string
+          month: string
+          note?: string
+          owner_id?: string | null
+          paid_on?: string
+          receipt_path?: string | null
+          status?: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          confirmed_at?: string | null
+          created_at?: string
+          id?: string
+          listing_id?: string
+          month?: string
+          note?: string
+          owner_id?: string | null
+          paid_on?: string
+          receipt_path?: string | null
+          status?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rent_payments_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       saved_alerts: {
         Row: {
           amenities: string[]
@@ -941,6 +997,16 @@ export type Database = {
           avatar_url: string
           display_name: string
           id: string
+        }[]
+      }
+      get_renter_reputation: {
+        Args: { _ids: string[] }
+        Returns: {
+          good_renter: boolean
+          late_last_year: number
+          late_months: number
+          on_time_months: number
+          user_id: string
         }[]
       }
       normalize_in_phone: { Args: { _phone: string }; Returns: string }

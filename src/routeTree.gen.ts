@@ -21,6 +21,7 @@ import { Route as AuthenticatedListYourFlatRouteImport } from './routes/_authent
 import { Route as AuthenticatedMaintenanceRouteImport } from './routes/_authenticated/maintenance'
 import { Route as AuthenticatedMoveInRouteImport } from './routes/_authenticated/move-in'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
+import { Route as AuthenticatedRentRouteImport } from './routes/_authenticated/rent'
 import { Route as AuthenticatedSpotABoardRouteImport } from './routes/_authenticated/spot-a-board'
 import { Route as ListingIdRouteImport } from './routes/listing.$id'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
@@ -91,6 +92,11 @@ const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
   path: '/profile',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedRentRoute = AuthenticatedRentRouteImport.update({
+  id: '/rent',
+  path: '/rent',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedSpotABoardRoute = AuthenticatedSpotABoardRouteImport.update({
   id: '/spot-a-board',
   path: '/spot-a-board',
@@ -136,6 +142,7 @@ export interface FileRoutesByFullPath {
   '/maintenance': typeof AuthenticatedMaintenanceRoute
   '/move-in': typeof AuthenticatedMoveInRoute
   '/profile': typeof AuthenticatedProfileRoute
+  '/rent': typeof AuthenticatedRentRoute
   '/spot-a-board': typeof AuthenticatedSpotABoardRoute
   '/listing/$id': typeof ListingIdRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
@@ -155,6 +162,7 @@ export interface FileRoutesByTo {
   '/maintenance': typeof AuthenticatedMaintenanceRoute
   '/move-in': typeof AuthenticatedMoveInRoute
   '/profile': typeof AuthenticatedProfileRoute
+  '/rent': typeof AuthenticatedRentRoute
   '/spot-a-board': typeof AuthenticatedSpotABoardRoute
   '/listing/$id': typeof ListingIdRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
@@ -176,6 +184,7 @@ export interface FileRoutesById {
   '/_authenticated/maintenance': typeof AuthenticatedMaintenanceRoute
   '/_authenticated/move-in': typeof AuthenticatedMoveInRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
+  '/_authenticated/rent': typeof AuthenticatedRentRoute
   '/_authenticated/spot-a-board': typeof AuthenticatedSpotABoardRoute
   '/listing/$id': typeof ListingIdRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
@@ -197,6 +206,7 @@ export interface FileRouteTypes {
     | '/maintenance'
     | '/move-in'
     | '/profile'
+    | '/rent'
     | '/spot-a-board'
     | '/listing/$id'
     | '/.lovable/oauth/consent'
@@ -216,6 +226,7 @@ export interface FileRouteTypes {
     | '/maintenance'
     | '/move-in'
     | '/profile'
+    | '/rent'
     | '/spot-a-board'
     | '/listing/$id'
     | '/.lovable/oauth/consent'
@@ -236,6 +247,7 @@ export interface FileRouteTypes {
     | '/_authenticated/maintenance'
     | '/_authenticated/move-in'
     | '/_authenticated/profile'
+    | '/_authenticated/rent'
     | '/_authenticated/spot-a-board'
     | '/listing/$id'
     | '/.lovable/oauth/consent'
@@ -343,6 +355,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProfileRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/rent': {
+      id: '/_authenticated/rent'
+      path: '/rent'
+      fullPath: '/rent'
+      preLoaderRoute: typeof AuthenticatedRentRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/spot-a-board': {
       id: '/_authenticated/spot-a-board'
       path: '/spot-a-board'
@@ -394,6 +413,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedMaintenanceRoute: typeof AuthenticatedMaintenanceRoute
   AuthenticatedMoveInRoute: typeof AuthenticatedMoveInRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
+  AuthenticatedRentRoute: typeof AuthenticatedRentRoute
   AuthenticatedSpotABoardRoute: typeof AuthenticatedSpotABoardRoute
   AuthenticatedMessagesIdRoute: typeof AuthenticatedMessagesIdRoute
   AuthenticatedMessagesIndexRoute: typeof AuthenticatedMessagesIndexRoute
@@ -405,6 +425,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedMaintenanceRoute: AuthenticatedMaintenanceRoute,
   AuthenticatedMoveInRoute: AuthenticatedMoveInRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
+  AuthenticatedRentRoute: AuthenticatedRentRoute,
   AuthenticatedSpotABoardRoute: AuthenticatedSpotABoardRoute,
   AuthenticatedMessagesIdRoute: AuthenticatedMessagesIdRoute,
   AuthenticatedMessagesIndexRoute: AuthenticatedMessagesIndexRoute,

@@ -3,6 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft,
+  BadgeCheck,
   Bell,
   BellPlus,
   CalendarCheck,
@@ -223,6 +224,20 @@ function DashboardPage() {
             <span className="block text-xs text-muted-foreground">
               Log repairs, message the owner about them, and build a dated record of how the home
               was cared for.
+            </span>
+          </span>
+        </Link>
+
+        <Link
+          to="/rent"
+          className="glass mt-3 flex items-center gap-3 rounded-2xl p-4 transition-colors hover:bg-secondary/50"
+        >
+          <BadgeCheck className="size-5 shrink-0 text-brand" aria-hidden />
+          <span className="min-w-0 flex-1">
+            <span className="block text-sm font-semibold">Rent record & Good renter badge</span>
+            <span className="block text-xs text-muted-foreground">
+              Log monthly rent, get it confirmed by your owner, and earn a badge owners see when you
+              message them.
             </span>
           </span>
         </Link>
