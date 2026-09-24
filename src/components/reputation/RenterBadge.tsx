@@ -15,7 +15,7 @@ export function useRenterReputation(ids: string[]) {
   });
 }
 
-export function RenterBadge({ rep, compact }: { rep?: RenterReputation; compact?: boolean }) {
+export function RenterBadge({ rep, compact }: { rep?: RenterReputation | undefined; compact?: boolean }) {
   if (!rep) return null;
   if (rep.good_renter) {
     return (
