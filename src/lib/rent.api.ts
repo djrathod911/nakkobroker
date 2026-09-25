@@ -91,3 +91,42 @@ export async function receiptUrl(path: string) {
 export function monthLabel(iso: string) {
   return new Date(iso + "T00:00:00").toLocaleDateString("en-IN", { month: "long", year: "numeric" });
 }
+
+/** Rent is due on the 5th of every month for everyone. */
+export const DUE_DAY = 5;
+
+export function dueDateOf(monthIso: string) {
+  return `${monthIso.slice(0, 7)}-0${DUE_DAY}`;
+}
+
+export function wouldBeOnTime(monthIso: string, paidOn: string) {
+  return paidOn <= dueDateOf(monthIso);
+}
+
+function ymd(d: Date) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+/** Next due date (today or later) as YYYY-MM-DD, plus whole days until it. */
+export function nextDue(today = new Date()) {
+  const d = new Date(today.getFullYear(), today.getMonth(), DUE_DAY);
+  if (today.getDate() > DUE_DAY) d.setMonth(d.getMonth() + 1);
+  const start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  return { date: ymd(d), days: Math.round((d.getTime() - start.getTime()) / 86_400_000) };
+}
+
+/** First-of-month ISO dates for the last `n` months that are already due, newest first. */
+export function recentDueMonths(n: number, today = new Date()) {
+  const out: string[] = [];
+  const d = new Date(today.getFullYear(), today.getMonth(), 1);
+  if (today.getDate() < DUE_DAY) d.setMonth(d.getMonth() - 1);
+  for (let i = 0; i < n; i++) {
+    out.push(ymd(d));
+    d.setMonth(d.getMonth() - 1);
+  }
+  return out;
+}
+
+export function dayLabel(iso: string) {
+  return new Date(iso + "T00:00:00").toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+}

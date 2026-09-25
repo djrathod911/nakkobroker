@@ -10,16 +10,53 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/useAuth";
 import { fetchLinkableHomes } from "@/lib/maintenance.api";
 import {
+  DUE_DAY,
   GOOD_RENTER_MONTHS,
   RENT_STATUS_LABEL,
   confirmRentPayment,
+  dayLabel,
   deleteRentPayment,
+  dueDateOf,
   fetchRentPayments,
   logRentPayment,
   monthLabel,
+  nextDue,
   receiptUrl,
+  recentDueMonths,
+  wouldBeOnTime,
   type RentPayment,
 } from "@/lib/rent.api";
+
+function DueDates({ mine }: { mine: RentPayment[] }) {
+  const next = nextDue();
+  const logged = new Set(mine.map((p) => p.month.slice(0, 7)));
+  const started = mine.length ? mine.map((p) => p.month).sort()[0]! : null;
+  const missing = started
+    ? recentDueMonths(6).filter((m) => m >= started && !logged.has(m.slice(0, 7)))
+    : [];
+  return (
+    <section className="glass mt-6 rounded-2xl p-4">
+      <h2 className="text-lg font-semibold">Due dates</h2>
+      <p className="mt-1 text-sm">
+        Next rent due <span className="font-semibold">{dayLabel(next.date)}</span>
+        <span className="text-muted-foreground">
+          {" "}· {next.days === 0 ? "today" : `in ${next.days} ${next.days === 1 ? "day" : "days"}`}
+        </span>
+      </p>
+      <p className="mt-1 text-xs text-muted-foreground">
+        Rent is due on the {DUE_DAY}th of every month. Paid on or before then counts as on time.
+      </p>
+      {missing.length > 0 && (
+        <div className="mt-3 rounded-xl bg-destructive/10 p-3 text-sm">
+          <p className="font-medium text-destructive">Not logged yet</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            {missing.map(monthLabel).join(", ")} — log these below so they count.
+          </p>
+        </div>
+      )}
+    </section>
+  );
+}
 import { RenterBadge, useRenterReputation } from "@/components/reputation/RenterBadge";
 
 const TITLE = "Rent record & Good renter badge — NakkoBroker";
@@ -111,20 +148,41 @@ function RentPage() {
         </section>
       )}
 
+      <DueDates mine={mine} />
+
       <LogForm userId={userId} onDone={refresh} />
 
       <section className="mt-6">
-        <h2 className="text-lg font-semibold">Your payments</h2>
+        <h2 className="text-lg font-semibold">Payment history</h2>
         {payments.isLoading ? (
           <Skeleton className="mt-3 h-20 rounded-2xl" />
         ) : mine.length === 0 ? (
           <p className="mt-2 text-sm text-muted-foreground">No payments logged yet.</p>
         ) : (
-          <ul className="mt-3 space-y-3">
-            {mine.map((p) => (
-              <PaymentRow key={p.id} p={p} onChange={refresh} />
+          <>
+            <div className="mt-3 grid grid-cols-3 gap-2 text-center">
+              {[
+                ["On time", mine.filter((p) => p.status === "on_time").length],
+                ["Late", mine.filter((p) => p.status === "late").length],
+                ["Waiting", mine.filter((p) => p.status === "pending").length],
+              ].map(([l, n]) => (
+                <div key={l} className="glass rounded-xl p-2">
+                  <p className="text-lg font-bold">{n}</p>
+                  <p className="text-[11px] text-muted-foreground">{l}</p>
+                </div>
+              ))}
+            </div>
+            {[...new Set(mine.map((p) => p.month.slice(0, 4)))].map((year) => (
+              <div key={year} className="mt-4">
+                <h3 className="text-sm font-semibold text-muted-foreground">{year}</h3>
+                <ul className="mt-2 space-y-3">
+                  {mine.filter((p) => p.month.startsWith(year)).map((p) => (
+                    <PaymentRow key={p.id} p={p} onChange={refresh} />
+                  ))}
+                </ul>
+              </div>
             ))}
-          </ul>
+          </>
         )}
       </section>
     </main>
@@ -269,15 +327,15 @@ function PaymentRow({ p, asOwner, onChange }: { p: RentPayment; asOwner?: boolea
         )}
         {asOwner && (
           <>
-            <Button size="sm" className="rounded-xl bg-brand text-brand-foreground hover:bg-brand/90" disabled={act.isPending} onClick={() => act.mutate("on_time")}>
-              On time
-            </Button>
-            <Button size="sm" variant="secondary" className="rounded-xl" disabled={act.isPending} onClick={() => act.mutate("late")}>
-              Late
+            <Button size="sm" className="rounded-xl bg-brand text-brand-foreground hover:bg-brand/90" disabled={act.isPending} onClick={() => act.mutate(wouldBeOnTime(p.month, p.paid_on) ? "on_time" : "late")}>
+              Mark received
             </Button>
             <Button size="sm" variant="ghost" className="rounded-xl" disabled={act.isPending} onClick={() => act.mutate("rejected")}>
               Not received
             </Button>
+            <span className="self-center text-[11px] text-muted-foreground">
+              Due {dayLabel(dueDateOf(p.month))} · {wouldBeOnTime(p.month, p.paid_on) ? "counts as on time" : "counts as late"}
+            </span>
           </>
         )}
         {!asOwner && p.status === "pending" && (
