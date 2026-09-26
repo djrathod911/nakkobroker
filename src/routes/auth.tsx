@@ -6,10 +6,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { ArrowLeft, Loader2, Mail, ShieldCheck } from "lucide-react";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 
-const TITLE = "Sign in with your email — NakkoBroker zero-brokerage rentals";
+const TITLE = "Sign in with an email code — NakkoBroker rentals";
 const DESCRIPTION =
-  "Sign in or create your account with just your email address. No passwords, no brokers — list your flat or contact owners directly on NakkoBroker.";
+  "Sign in or create your account with a one-time code sent to your email. No passwords, no brokers — list your flat or contact owners directly.";
 
 /** Only same-origin app paths may be used as a post-login destination. */
 function safeNext(value: unknown): string {
@@ -32,45 +33,76 @@ export const Route = createFileRoute("/auth")({
   component: AuthPage,
 });
 
+const RESEND_SECONDS = 45;
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
 function AuthPage() {
   const navigate = useNavigate();
   const { next } = Route.useSearch();
 
-  const [stage, setStage] = useState<"email" | "sent">("email");
+  const [stage, setStage] = useState<"email" | "code">("email");
   const [email, setEmail] = useState("");
+  const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [cooldown, setCooldown] = useState(0);
 
-  async function sendMagicLink(e: React.FormEvent) {
-    e.preventDefault();
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const t = setTimeout(() => setCooldown((c) => c - 1), 1000);
+    return () => clearTimeout(t);
+  }, [cooldown]);
+
+  const cleanEmail = email.trim().toLowerCase();
+
+  async function sendCode(e?: React.FormEvent) {
+    e?.preventDefault();
     if (busy) return;
+    if (!EMAIL_RE.test(cleanEmail)) {
+      setError("Enter a valid email address");
+      return;
+    }
     setBusy(true);
+    setError(null);
     try {
       const redirectTo = `${window.location.origin}${next === "/" ? "" : next}`;
       const { error } = await supabase.auth.signInWithOtp({
-        email: email.trim().toLowerCase(),
-        options: {
-          emailRedirectTo: redirectTo,
-          shouldCreateUser: true,
-        },
+        email: cleanEmail,
+        options: { emailRedirectTo: redirectTo, shouldCreateUser: true },
       });
       if (error) throw error;
-      setStage("sent");
+      setStage("code");
+      setCode("");
+      setCooldown(RESEND_SECONDS);
+      toast.success(`Code sent to ${cleanEmail}`);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Could not send the sign-in link");
+      const msg = err instanceof Error ? err.message : "Could not send the code";
+      setError(/rate|seconds/i.test(msg) ? "Please wait a moment before requesting another code." : msg);
     } finally {
       setBusy(false);
     }
   }
 
-  // After Supabase redirects back with the token in the URL hash,
-  // onAuthStateChange fires automatically and the session is established.
-  // Subscribe once on mount (never during render) and clean up on unmount so
-  // repeated renders don't stack listeners or navigate twice.
+  async function verify(token: string) {
+    if (busy || token.length !== 6) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const { error } = await supabase.auth.verifyOtp({ email: cleanEmail, token, type: "email" });
+      if (error) throw error;
+      toast.success("You're signed in");
+    } catch {
+      setError("That code is incorrect or has expired. Try again or resend.");
+      setCode("");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  // Covers both the typed code and the email link fallback.
   useEffect(() => {
     const { data } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "SIGNED_IN") {
-        navigate({ to: next, replace: true });
-      }
+      if (event === "SIGNED_IN") navigate({ to: next, replace: true });
     });
     return () => data.subscription.unsubscribe();
   }, [navigate, next]);
@@ -92,12 +124,12 @@ function AuthPage() {
 
           {stage === "email" ? (
             <>
-              <h1 className="mt-4 text-xl font-semibold tracking-tight">Sign in to NakkoBroker</h1>
+              <h1 className="mt-4 text-xl font-semibold tracking-tight">Sign in or create an account</h1>
               <p className="mt-1 text-sm text-muted-foreground">
-                Enter your email and we'll send you a magic sign-in link. No password needed.
+                We'll email you a 6-digit code. No password needed.
               </p>
 
-              <form onSubmit={sendMagicLink} className="mt-5 space-y-3">
+              <form onSubmit={sendCode} className="mt-5 space-y-3" noValidate>
                 <div className="space-y-1.5">
                   <Label htmlFor="email">Email address</Label>
                   <Input
@@ -105,43 +137,109 @@ function AuthPage() {
                     type="email"
                     inputMode="email"
                     autoComplete="email"
+                    autoFocus
                     placeholder="you@example.com"
                     required
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    aria-invalid={!!error}
+                    aria-describedby={error ? "auth-error" : undefined}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      setError(null);
+                    }}
                   />
                 </div>
-
+                {error && (
+                  <p id="auth-error" role="alert" className="text-xs text-destructive">
+                    {error}
+                  </p>
+                )}
                 <Button
                   type="submit"
-                  disabled={busy}
+                  disabled={busy || !cleanEmail}
                   className="w-full rounded-xl bg-brand text-brand-foreground hover:bg-brand/90"
                 >
                   {busy ? <Loader2 className="size-4 animate-spin" /> : <Mail className="size-4" />}
-                  Send sign-in link
+                  Continue with email
                 </Button>
               </form>
             </>
           ) : (
             <>
-              <h1 className="mt-4 text-xl font-semibold tracking-tight">Check your inbox</h1>
+              <h1 className="mt-4 text-xl font-semibold tracking-tight">Enter your code</h1>
               <p className="mt-1 text-sm text-muted-foreground">
-                We sent a sign-in link to <span className="font-medium text-foreground">{email}</span>. Click it to
-                continue — the link expires in 1 hour.
+                We sent a 6-digit code to <span className="font-medium text-foreground">{cleanEmail}</span>.{" "}
+                <button
+                  type="button"
+                  className="font-medium text-brand underline-offset-2 hover:underline"
+                  onClick={() => {
+                    setStage("email");
+                    setError(null);
+                  }}
+                >
+                  Change
+                </button>
               </p>
 
-              <div className="mt-5 rounded-2xl border border-border bg-secondary/30 p-4 text-sm text-muted-foreground">
-                <p>
-                  Didn't get it? Check your spam folder, or{" "}
+              <form
+                className="mt-5 space-y-3"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  verify(code);
+                }}
+              >
+                <div className="flex justify-center">
+                  <InputOTP
+                    maxLength={6}
+                    value={code}
+                    autoFocus
+                    disabled={busy}
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    pattern="^[0-9]*$"
+                    aria-label="6-digit code"
+                    onChange={(v) => {
+                      setCode(v);
+                      setError(null);
+                    }}
+                    onComplete={verify}
+                  >
+                    <InputOTPGroup>
+                      {Array.from({ length: 6 }, (_, i) => (
+                        <InputOTPSlot key={i} index={i} className="size-11 text-lg" />
+                      ))}
+                    </InputOTPGroup>
+                  </InputOTP>
+                </div>
+                {error && (
+                  <p role="alert" className="text-center text-xs text-destructive">
+                    {error}
+                  </p>
+                )}
+                <Button
+                  type="submit"
+                  disabled={busy || code.length !== 6}
+                  className="w-full rounded-xl bg-brand text-brand-foreground hover:bg-brand/90"
+                >
+                  {busy && <Loader2 className="size-4 animate-spin" />}
+                  Verify and continue
+                </Button>
+              </form>
+
+              <div className="mt-4 text-center text-xs text-muted-foreground">
+                {cooldown > 0 ? (
+                  <span>Resend code in {cooldown}s</span>
+                ) : (
                   <button
                     type="button"
+                    disabled={busy}
                     className="font-medium text-brand underline-offset-2 hover:underline"
-                    onClick={() => setStage("email")}
+                    onClick={() => sendCode()}
                   >
-                    try a different email
+                    Resend code
                   </button>
-                  .
-                </p>
+                )}
+                <p className="mt-2">Can't find it? Check spam or promotions. You can also tap the link in the email.</p>
               </div>
             </>
           )}
