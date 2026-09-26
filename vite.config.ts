@@ -13,7 +13,7 @@ import { mcpPlugin } from "@lovable.dev/mcp-js/stacks/tanstack/vite";
 // SUPABASE_SERVICE_ROLE_KEY, which has no VITE_ prefix). Never add these to
 // the client envDefine block — that would leak secrets into the bundle.
 const serverEnv = loadEnv(
-  process.env.NODE_ENV === "production" ? "production" : "development",
+  process.env["NODE_ENV"] === "production" ? "production" : "development",
   process.cwd(),
   "",
 );
