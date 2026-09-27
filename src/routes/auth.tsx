@@ -88,7 +88,13 @@ function AuthPage() {
     setBusy(true);
     setError(null);
     try {
-      const { error } = await supabase.auth.verifyOtp({ email: cleanEmail, token, type: "email" });
+      // Codes can arrive as a sign-in ("email") code or a recovery code —
+      // accept both so a valid code is never rejected.
+      let { error } = await supabase.auth.verifyOtp({ email: cleanEmail, token, type: "email" });
+      if (error) {
+        const retry = await supabase.auth.verifyOtp({ email: cleanEmail, token, type: "recovery" });
+        error = retry.error;
+      }
       if (error) throw error;
       toast.success("You're signed in");
     } catch {
