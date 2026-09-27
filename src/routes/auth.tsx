@@ -74,6 +74,7 @@ function AuthPage() {
       if (error) throw error;
       setStage("code");
       setCode("");
+      verificationInFlight.current = false;
       setCooldown(RESEND_SECONDS);
       toast.success(`Code sent to ${cleanEmail}`);
     } catch (err) {
@@ -87,6 +88,7 @@ function AuthPage() {
   async function verify(token: string) {
     if (verificationInFlight.current || token.length !== 6) return;
     verificationInFlight.current = true;
+    let verified = false;
     setBusy(true);
     setError(null);
     try {
@@ -98,6 +100,7 @@ function AuthPage() {
         type: "email",
       });
       if (error) throw error;
+      verified = true;
       toast.success("You're signed in");
     } catch (err) {
       const message = err instanceof Error ? err.message : "";
@@ -108,8 +111,10 @@ function AuthPage() {
       );
       setCode("");
     } finally {
-      verificationInFlight.current = false;
-      setBusy(false);
+      if (!verified) {
+        verificationInFlight.current = false;
+        setBusy(false);
+      }
     }
   }
 
