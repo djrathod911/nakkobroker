@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -46,6 +46,7 @@ function AuthPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [cooldown, setCooldown] = useState(0);
+  const verificationInFlight = useRef(false);
 
   useEffect(() => {
     if (cooldown <= 0) return;
@@ -73,6 +74,7 @@ function AuthPage() {
       if (error) throw error;
       setStage("code");
       setCode("");
+      verificationInFlight.current = false;
       setCooldown(RESEND_SECONDS);
       toast.success(`Code sent to ${cleanEmail}`);
     } catch (err) {
@@ -84,24 +86,35 @@ function AuthPage() {
   }
 
   async function verify(token: string) {
-    if (busy || token.length !== 6) return;
+    if (verificationInFlight.current || token.length !== 6) return;
+    verificationInFlight.current = true;
+    let verified = false;
     setBusy(true);
     setError(null);
     try {
-      // Codes can arrive as a sign-in ("email") code or a recovery code —
-      // accept both so a valid code is never rejected.
-      let { error } = await supabase.auth.verifyOtp({ email: cleanEmail, token, type: "email" });
-      if (error) {
-        const retry = await supabase.auth.verifyOtp({ email: cleanEmail, token, type: "recovery" });
-        error = retry.error;
-      }
+      // This page only requests sign-in codes. Trying a second OTP purpose with
+      // the same token can invalidate an otherwise valid one.
+      const { error } = await supabase.auth.verifyOtp({
+        email: cleanEmail,
+        token,
+        type: "email",
+      });
       if (error) throw error;
+      verified = true;
       toast.success("You're signed in");
-    } catch {
-      setError("That code is incorrect or has expired. Try again or resend.");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "";
+      setError(
+        /expired|invalid/i.test(message)
+          ? "This code is no longer valid. Tap Resend code, then use only the newest email."
+          : "We couldn't verify that code. Please resend and try the newest code.",
+      );
       setCode("");
     } finally {
-      setBusy(false);
+      if (!verified) {
+        verificationInFlight.current = false;
+        setBusy(false);
+      }
     }
   }
 
