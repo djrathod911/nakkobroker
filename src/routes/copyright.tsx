@@ -21,7 +21,7 @@ export const Route = createFileRoute("/copyright")({
   component: CopyrightPage,
 });
 
-function Detail({ label, value }: { label: string; value?: string }) {
+function Detail({ label, value }: { label: string; value?: string | undefined }) {
   return (
     <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5 py-1.5">
       <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</dt>
