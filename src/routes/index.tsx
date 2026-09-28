@@ -21,6 +21,7 @@ import {
   Moon,
 } from "lucide-react";
 import { ListingCard } from "@/components/listings/ListingCard";
+import { SiteFooter } from "@/components/SiteFooter";
 import { NotificationBell } from "@/components/alerts/NotificationBell";
 import { SaveAlertPanel } from "@/components/alerts/SaveAlertPanel";
 import {

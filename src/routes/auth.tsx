@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { ArrowLeft, Loader2, Mail, ShieldCheck } from "lucide-react";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import { SiteFooter } from "@/components/SiteFooter";
 
 const TITLE = "Sign in with an email code — NakkoBroker rentals";
 const DESCRIPTION =
