@@ -21,6 +21,7 @@ import {
   Moon,
 } from "lucide-react";
 import { ListingCard } from "@/components/listings/ListingCard";
+import { SiteFooter } from "@/components/SiteFooter";
 import { NotificationBell } from "@/components/alerts/NotificationBell";
 import { SaveAlertPanel } from "@/components/alerts/SaveAlertPanel";
 import {
@@ -684,6 +685,7 @@ function Discover() {
               ))
             )}
           </div>
+          <SiteFooter className="shrink-0 border-t border-border/60 px-4 py-1.5 text-[10px]" />
         </div>
       </section>
 
