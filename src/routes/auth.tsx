@@ -46,6 +46,7 @@ function AuthPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [cooldown, setCooldown] = useState(0);
+  const [adult, setAdult] = useState(false);
   const verificationInFlight = useRef(false);
 
   useEffect(() => {
@@ -61,6 +62,10 @@ function AuthPage() {
     if (busy) return;
     if (!EMAIL_RE.test(cleanEmail)) {
       setError("Enter a valid email address");
+      return;
+    }
+    if (!adult) {
+      setError("You must be 18 or older to use NakkoBroker.");
       return;
     }
     setBusy(true);
@@ -168,6 +173,18 @@ function AuthPage() {
                     }}
                   />
                 </div>
+                <label className="flex items-start gap-2 text-xs text-muted-foreground">
+                  <input
+                    type="checkbox"
+                    className="mt-0.5 size-4 accent-[var(--color-brand)]"
+                    checked={adult}
+                    onChange={(e) => {
+                      setAdult(e.target.checked);
+                      setError(null);
+                    }}
+                  />
+                  <span>I confirm I am 18 years or older and agree to use NakkoBroker for genuine rentals.</span>
+                </label>
                 {error && (
                   <p id="auth-error" role="alert" className="text-xs text-destructive">
                     {error}
@@ -175,7 +192,7 @@ function AuthPage() {
                 )}
                 <Button
                   type="submit"
-                  disabled={busy || !cleanEmail}
+                  disabled={busy || !cleanEmail || !adult}
                   className="w-full rounded-xl bg-brand text-brand-foreground hover:bg-brand/90"
                 >
                   {busy ? <Loader2 className="size-4 animate-spin" /> : <Mail className="size-4" />}
