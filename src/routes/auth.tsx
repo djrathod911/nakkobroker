@@ -285,6 +285,7 @@ function AuthPage() {
             One account per email. No brokers, no spam — just direct owner-to-tenant connections on NakkoBroker.
           </p>
         </div>
+        <SiteFooter className="mt-6" />
       </div>
     </main>
   );
