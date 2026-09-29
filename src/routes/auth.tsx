@@ -184,7 +184,17 @@ function AuthPage() {
                       setError(null);
                     }}
                   />
-                  <span>I confirm I am 18 years or older and agree to use NakkoBroker for genuine rentals.</span>
+                  <span>
+                    I confirm I am 18 years or older and agree to the{" "}
+                    <Link to="/terms" className="text-brand underline-offset-2 hover:underline">
+                      Terms of Service
+                    </Link>{" "}
+                    and{" "}
+                    <Link to="/privacy" className="text-brand underline-offset-2 hover:underline">
+                      Privacy Policy
+                    </Link>
+                    , and will use NakkoBroker for genuine rentals.
+                  </span>
                 </label>
                 {error && (
                   <p id="auth-error" role="alert" className="text-xs text-destructive">
