@@ -1,8 +1,14 @@
 import { Link } from "@tanstack/react-router";
 
+const LEGAL_LINKS = [
+  { to: "/privacy", label: "Privacy Policy" },
+  { to: "/terms", label: "Terms of Service" },
+  { to: "/copyright", label: "Copyright / Takedown" },
+] as const;
+
 /**
- * Slim site footer — legal links. Used on the home results panel and
- * the sign-in page; content pages can import it as well.
+ * Slim site footer — legal links. Used on the home results panel,
+ * the sign-in page, and the legal content pages.
  */
 export function SiteFooter({ className }: { className?: string }) {
   return (
@@ -13,15 +19,19 @@ export function SiteFooter({ className }: { className?: string }) {
       }
     >
       <span>© {new Date().getFullYear()} NakkoBroker</span>
-      <span aria-hidden className="opacity-50">
-        ·
-      </span>
-      <Link
-        to="/copyright"
-        className="underline-offset-2 transition-colors hover:text-foreground hover:underline"
-      >
-        Copyright / Takedown
-      </Link>
+      {LEGAL_LINKS.map(({ to, label }) => (
+        <span key={to} className="flex items-center gap-3">
+          <span aria-hidden className="opacity-50">
+            ·
+          </span>
+          <Link
+            to={to}
+            className="underline-offset-2 transition-colors hover:text-foreground hover:underline"
+          >
+            {label}
+          </Link>
+        </span>
+      ))}
     </footer>
   );
 }
