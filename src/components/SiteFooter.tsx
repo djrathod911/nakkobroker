@@ -7,7 +7,8 @@ const LEGAL_LINKS = [
 ] as const;
 
 /**
- * Slim site footer — legal links. Used on the home results panel,
+ * Slim site footer — legal links styled as small tappable chips so they read
+ * as real navigation, not placeholder text. Used on the home results panel,
  * the sign-in page, and the legal content pages.
  */
 export function SiteFooter({ className }: { className?: string }) {
@@ -15,22 +16,18 @@ export function SiteFooter({ className }: { className?: string }) {
     <footer
       className={
         className ??
-        "flex flex-wrap items-center justify-center gap-x-3 gap-y-1 px-4 py-2.5 text-[11px] text-muted-foreground"
+        "flex flex-wrap items-center justify-center gap-2 px-4 py-3 text-[11px] text-muted-foreground"
       }
     >
-      <span>© {new Date().getFullYear()} NakkoBroker</span>
+      <span className="mr-1">© {new Date().getFullYear()} NakkoBroker</span>
       {LEGAL_LINKS.map(({ to, label }) => (
-        <span key={to} className="flex items-center gap-3">
-          <span aria-hidden className="opacity-50">
-            ·
-          </span>
-          <Link
-            to={to}
-            className="underline-offset-2 transition-colors hover:text-foreground hover:underline"
-          >
-            {label}
-          </Link>
-        </span>
+        <Link
+          key={to}
+          to={to}
+          className="rounded-full border border-border/70 bg-card/50 px-2.5 py-1 font-medium text-foreground/85 transition-colors hover:border-brand/60 hover:bg-card hover:text-foreground"
+        >
+          {label}
+        </Link>
       ))}
     </footer>
   );
