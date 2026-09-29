@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { cn } from "@/lib/utils";
 
 const LEGAL_LINKS = [
   { to: "/privacy", label: "Privacy Policy" },
@@ -14,10 +15,10 @@ const LEGAL_LINKS = [
 export function SiteFooter({ className }: { className?: string }) {
   return (
     <footer
-      className={
-        className ??
-        "flex flex-wrap items-center justify-center gap-2 px-4 py-3 text-[11px] text-muted-foreground"
-      }
+      className={cn(
+        "flex flex-wrap items-center justify-center gap-x-2 gap-y-1.5 px-4 py-3 text-[11px] text-muted-foreground",
+        className,
+      )}
     >
       <span className="mr-1">© {new Date().getFullYear()} NakkoBroker</span>
       {LEGAL_LINKS.map(({ to, label }) => (
