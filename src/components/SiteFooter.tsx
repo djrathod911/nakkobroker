@@ -24,7 +24,7 @@ export function SiteFooter({ className }: { className?: string }) {
         <Link
           key={to}
           to={to}
-          className="rounded-full border border-border/70 bg-card/50 px-2.5 py-1 font-medium text-foreground/85 transition-colors hover:border-brand/60 hover:bg-card hover:text-foreground"
+          className="whitespace-nowrap rounded-full border border-border/70 bg-card/50 px-2.5 py-1 font-medium text-foreground/85 transition-colors hover:border-brand/60 hover:bg-card hover:text-foreground"
         >
           {label}
         </Link>
