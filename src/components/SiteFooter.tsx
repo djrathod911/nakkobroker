@@ -16,16 +16,16 @@ export function SiteFooter({ className }: { className?: string }) {
   return (
     <footer
       className={cn(
-        "flex flex-wrap items-center justify-center gap-x-2 gap-y-1.5 px-4 py-3 text-[11px] text-muted-foreground",
+        "flex flex-nowrap items-center justify-center gap-x-1.5 px-3 py-2.5 text-[10px] text-muted-foreground",
         className,
       )}
     >
-      <span className="mr-1">© {new Date().getFullYear()} NakkoBroker</span>
+      <span className="mr-0.5 shrink-0">© {new Date().getFullYear()}</span>
       {LEGAL_LINKS.map(({ to, label }) => (
         <Link
           key={to}
           to={to}
-          className="whitespace-nowrap rounded-full border border-border/70 bg-card/50 px-2.5 py-1 font-medium text-foreground/85 transition-colors hover:border-brand/60 hover:bg-card hover:text-foreground"
+          className="shrink-0 whitespace-nowrap rounded-full border border-border/70 bg-card/50 px-1.5 py-0.5 font-medium text-foreground/85 transition-colors hover:border-brand/60 hover:bg-card hover:text-foreground"
         >
           {label}
         </Link>
