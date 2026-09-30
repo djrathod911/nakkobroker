@@ -20,7 +20,7 @@ export function SiteFooter({ className }: { className?: string }) {
         className,
       )}
     >
-      <span className="mr-0.5 shrink-0">© {new Date().getFullYear()} NakkoBroker</span>
+      <span className="mr-0.5 shrink-0">© {new Date().getFullYear()}</span>
       {LEGAL_LINKS.map(({ to, label }) => (
         <Link
           key={to}
