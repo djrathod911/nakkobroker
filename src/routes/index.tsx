@@ -685,7 +685,7 @@ function Discover() {
               ))
             )}
           </div>
-          <SiteFooter className="shrink-0 border-t border-border/60 px-3 py-2.5 text-[11px]" />
+          <SiteFooter className="shrink-0 border-t border-border/60 px-2 py-2" />
         </div>
       </section>
 
