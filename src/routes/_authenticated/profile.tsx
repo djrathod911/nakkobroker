@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ArrowLeft, BadgeCheck, Building2, Loader2, LogOut, Phone, ShieldCheck, Trash2, Plus } from "lucide-react";
+import { ArrowLeft, BadgeCheck, Building2, CalendarClock, IndianRupee, Loader2, LogOut, MessageCircle, Phone, ShieldCheck, ThumbsUp, Trash2, Plus, Wrench } from "lucide-react";
+import { emptyTracking, fetchOwnerTracking, type ListingTracking } from "@/lib/owner-tracking.api";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import {
@@ -39,6 +40,43 @@ export const Route = createFileRoute("/_authenticated/profile")({
 
 const inr = (n: number) => `₹${n.toLocaleString("en-IN")}`;
 
+function statusOf(row: MyListingRow) {
+  if (row.status !== "published") return { label: "Hidden", cls: "border-border text-muted-foreground" };
+  if (row.lifecycle_state === "delisted") return { label: "Hidden — relist", cls: "border-destructive/40 text-destructive" };
+  if (row.lifecycle_state === "warned") return { label: "Needs confirming", cls: "border-warning/40 text-warning" };
+  return { label: "Live", cls: "border-teal/40 text-teal" };
+}
+
+function ListingStats({ row, t }: { row: MyListingRow; t: ListingTracking }) {
+  const s = statusOf(row);
+  const tour = t.nextTourAt
+    ? new Date(t.nextTourAt).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" })
+    : null;
+  const items = [
+    { icon: MessageCircle, label: "Enquiries", value: `${t.chats}${t.unread ? ` · ${t.unread} unread` : ""}`, to: "/messages" as const },
+    { icon: CalendarClock, label: "Tours", value: `${t.upcomingTours} upcoming · ${t.pastTours} past`, sub: tour ? `Next ${tour}` : undefined, to: "/dashboard" as const },
+    { icon: IndianRupee, label: "Rent", value: `${inr(t.rentReceived)} received`, sub: t.rentPending ? `${t.rentPending} to confirm` : undefined, to: "/rent" as const },
+    { icon: Wrench, label: "Repairs", value: `${t.openRepairs} open`, to: "/maintenance" as const },
+  ];
+  return (
+    <div className="mt-3 space-y-2">
+      <div className="flex flex-wrap items-center gap-2 text-[11px]">
+        <span className={`rounded-full border px-2 py-0.5 font-medium ${s.cls}`}>{s.label}</span>
+        <span className="flex items-center gap-1 text-muted-foreground"><ThumbsUp className="size-3" /> {row.votes} upvotes</span>
+      </div>
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+        {items.map(({ icon: Icon, label, value, sub, to }) => (
+          <Link key={label} to={to} className="rounded-xl border border-border bg-secondary/30 p-2.5 transition-colors hover:border-brand/60">
+            <p className="flex items-center gap-1 text-[10px] uppercase tracking-wide text-muted-foreground"><Icon className="size-3" /> {label}</p>
+            <p className="mt-1 text-xs font-medium">{value}</p>
+            {sub && <p className="text-[10px] text-brand">{sub}</p>}
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function ProfilePage() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -55,6 +93,12 @@ function ProfilePage() {
   const listings = useQuery({
     queryKey: ["my-listings", user?.id],
     queryFn: () => fetchMyListings(user!.id),
+    enabled: !!user,
+  });
+
+  const tracking = useQuery({
+    queryKey: ["owner-tracking", user?.id],
+    queryFn: () => fetchOwnerTracking(user!.id),
     enabled: !!user,
   });
 
@@ -233,6 +277,8 @@ function ProfilePage() {
                     </Button>
                   </div>
                   </div>
+
+                  <ListingStats row={row} t={tracking.data?.[row.id] ?? emptyTracking()} />
 
                   {(row.lifecycle_state === "warned" || row.lifecycle_state === "delisted") && (
                     <div className="mt-3 rounded-xl border border-warning/40 bg-warning/10 p-3">
