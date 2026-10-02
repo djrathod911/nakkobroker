@@ -54,6 +54,7 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
     // pointing at a route chunk that no longer exists. Reload once so the
     // browser receives the current module graph instead of showing a blank page.
     if (
+      error instanceof Error &&
       error.message.includes("Failed to fetch dynamically imported module") &&
       sessionStorage.getItem("nakkobroker:route-chunk-reload") !== "pending"
     ) {
