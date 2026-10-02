@@ -113,7 +113,7 @@ export function RequestViewingButton({
 
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label>Preferred time</Label>
+            <Label htmlFor="viewing-time">Preferred time</Label>
             <div className="flex flex-wrap gap-2">
               {SLOTS.map((s) => (
                 <button
@@ -132,6 +132,7 @@ export function RequestViewingButton({
               ))}
             </div>
             <Input
+              id="viewing-time"
               value={slot}
               onChange={(e) => setSlot(e.target.value)}
               placeholder="Or type a time that suits you"
