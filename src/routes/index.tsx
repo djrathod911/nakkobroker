@@ -73,7 +73,7 @@ const DESCRIPTION =
 
 export const Route = createFileRoute("/")({
   validateSearch: (search: Record<string, unknown>): { city?: string } => ({
-    city: typeof search.city === "string" ? search.city : undefined,
+    city: typeof search["city"] === "string" ? (search["city"] as string) : undefined,
   }),
   // Prefetch listings on the server so the results panel is populated on first paint
   // — eliminates the client waterfall (server renders → sends HTML → browser hydrates
