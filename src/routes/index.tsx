@@ -72,9 +72,8 @@ const DESCRIPTION =
   "Find flats from owners on a live map in Hyderabad, Bengaluru, Chennai, Pune and Vizag. No brokers, no brokerage, community-verified.";
 
 export const Route = createFileRoute("/")({
-  validateSearch: (search: Record<string, unknown>): { city?: string } => ({
-    city: typeof search["city"] === "string" ? (search["city"] as string) : undefined,
-  }),
+  validateSearch: (search: Record<string, unknown>): { city?: string } =>
+    typeof search["city"] === "string" ? { city: search["city"] } : {},
   // Prefetch listings on the server so the results panel is populated on first paint
   // — eliminates the client waterfall (server renders → sends HTML → browser hydrates
   // with data already in the QueryClient cache).
