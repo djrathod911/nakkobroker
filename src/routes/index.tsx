@@ -51,7 +51,7 @@ import { fetchSavedListingIds } from "@/lib/saved.api";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
-import { CITIES, areaNames, cityLabel, cityOf } from "@/lib/cities";
+import { CITIES, areaNames, canonicalCity, cityLabel, cityOf } from "@/lib/cities";
 
 // Lazy-load the map — defers Google Maps SDK (~300kB) from the initial bundle.
 // The map is visually below the results panel on mobile, so deferring it
