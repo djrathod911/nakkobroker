@@ -189,7 +189,7 @@ function CopyrightPage() {
         </section>
 
         <div className="mt-12 border-t border-border/60 pt-2">
-          <SiteFooter />
+          <SiteFooter showCities />
         </div>
       </main>
     </div>

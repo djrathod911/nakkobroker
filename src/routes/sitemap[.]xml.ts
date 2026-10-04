@@ -20,6 +20,11 @@ export const Route = createFileRoute("/sitemap.xml")({
           { path: "/privacy", changefreq: "yearly", priority: "0.3" },
           { path: "/terms", changefreq: "yearly", priority: "0.3" },
           { path: "/copyright", changefreq: "yearly", priority: "0.3" },
+          { path: "/rentals/hyderabad", changefreq: "daily", priority: "0.9" },
+          { path: "/rentals/bengaluru", changefreq: "daily", priority: "0.9" },
+          { path: "/rentals/chennai", changefreq: "daily", priority: "0.9" },
+          { path: "/rentals/pune", changefreq: "daily", priority: "0.9" },
+          { path: "/rentals/visakhapatnam", changefreq: "daily", priority: "0.9" },
         ];
 
         try {

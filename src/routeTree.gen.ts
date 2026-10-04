@@ -27,6 +27,7 @@ import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedRentRouteImport } from './routes/_authenticated/rent'
 import { Route as AuthenticatedSpotABoardRouteImport } from './routes/_authenticated/spot-a-board'
 import { Route as ListingIdRouteImport } from './routes/listing.$id'
+import { Route as RentalsCityRouteImport } from './routes/rentals.$city'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as AuthenticatedMessagesIndexRouteImport } from './routes/_authenticated/messages.index'
@@ -127,6 +128,11 @@ const ListingIdRoute = ListingIdRouteImport.update({
   path: '/listing/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RentalsCityRoute = RentalsCityRouteImport.update({
+  id: '/rentals/$city',
+  path: '/rentals/$city',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
   id: '/.lovable/oauth/consent',
   path: '/.lovable/oauth/consent',
@@ -178,6 +184,7 @@ export interface FileRoutesByFullPath {
   '/rent': typeof AuthenticatedRentRoute
   '/spot-a-board': typeof AuthenticatedSpotABoardRoute
   '/listing/$id': typeof ListingIdRoute
+  '/rentals/$city': typeof RentalsCityRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/messages/$id': typeof AuthenticatedMessagesIdRoute
@@ -203,6 +210,7 @@ export interface FileRoutesByTo {
   '/rent': typeof AuthenticatedRentRoute
   '/spot-a-board': typeof AuthenticatedSpotABoardRoute
   '/listing/$id': typeof ListingIdRoute
+  '/rentals/$city': typeof RentalsCityRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/messages/$id': typeof AuthenticatedMessagesIdRoute
@@ -230,6 +238,7 @@ export interface FileRoutesById {
   '/_authenticated/rent': typeof AuthenticatedRentRoute
   '/_authenticated/spot-a-board': typeof AuthenticatedSpotABoardRoute
   '/listing/$id': typeof ListingIdRoute
+  '/rentals/$city': typeof RentalsCityRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/_authenticated/messages/$id': typeof AuthenticatedMessagesIdRoute
@@ -257,6 +266,7 @@ export interface FileRouteTypes {
     | '/rent'
     | '/spot-a-board'
     | '/listing/$id'
+    | '/rentals/$city'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/messages/$id'
@@ -282,6 +292,7 @@ export interface FileRouteTypes {
     | '/rent'
     | '/spot-a-board'
     | '/listing/$id'
+    | '/rentals/$city'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/messages/$id'
@@ -308,6 +319,7 @@ export interface FileRouteTypes {
     | '/_authenticated/rent'
     | '/_authenticated/spot-a-board'
     | '/listing/$id'
+    | '/rentals/$city'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/_authenticated/messages/$id'
@@ -328,6 +340,7 @@ export interface RootRouteChildren {
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   ListingIdRoute: typeof ListingIdRoute
+  RentalsCityRoute: typeof RentalsCityRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
@@ -462,6 +475,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ListingIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/rentals/$city': {
+      id: '/rentals/$city'
+      path: '/rentals/$city'
+      fullPath: '/rentals/$city'
+      preLoaderRoute: typeof RentalsCityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/.lovable/oauth/consent': {
       id: '/.lovable/oauth/consent'
       path: '/.lovable/oauth/consent'
@@ -547,6 +567,7 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
   ListingIdRoute: ListingIdRoute,
+  RentalsCityRoute: RentalsCityRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,

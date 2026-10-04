@@ -51,7 +51,7 @@ import { fetchSavedListingIds } from "@/lib/saved.api";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
-import { CITIES, areaNames, cityLabel, cityOf } from "@/lib/cities";
+import { CITIES, areaNames, canonicalCity, cityLabel, cityOf } from "@/lib/cities";
 
 // Lazy-load the map — defers Google Maps SDK (~300kB) from the initial bundle.
 // The map is visually below the results panel on mobile, so deferring it
@@ -72,6 +72,8 @@ const DESCRIPTION =
   "Find flats from owners on a live map in Hyderabad, Bengaluru, Chennai, Pune and Vizag. No brokers, no brokerage, community-verified.";
 
 export const Route = createFileRoute("/")({
+  validateSearch: (search: Record<string, unknown>): { city?: string } =>
+    typeof search["city"] === "string" ? { city: search["city"] } : {},
   // Prefetch listings on the server so the results panel is populated on first paint
   // — eliminates the client waterfall (server renders → sends HTML → browser hydrates
   // with data already in the QueryClient cache).
@@ -94,8 +96,11 @@ export const Route = createFileRoute("/")({
 
 function Discover() {
   const initialListings = Route.useLoaderData();
+  const search = Route.useSearch();
   const [query, setQuery] = useState("");
-  const [filters, setFilters] = useState<Filters>(defaultFilters);
+  const [filters, setFilters] = useState<Filters>(() =>
+    search.city ? { ...defaultFilters, city: canonicalCity(search.city) } : defaultFilters,
+  );
   const [activeId, setActiveId] = useState<string | null>(null);
   const [heatmap, setHeatmap] = useState(false);
   const [basemap, setBasemap] = useState<Basemap>("map");
