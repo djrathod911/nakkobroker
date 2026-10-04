@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
+import { CITIES, cityLabel } from "@/lib/cities";
 
 const LEGAL_LINKS = [
   { to: "/privacy", label: "Privacy Policy" },
