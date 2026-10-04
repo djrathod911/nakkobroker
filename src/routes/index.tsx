@@ -72,6 +72,9 @@ const DESCRIPTION =
   "Find flats from owners on a live map in Hyderabad, Bengaluru, Chennai, Pune and Vizag. No brokers, no brokerage, community-verified.";
 
 export const Route = createFileRoute("/")({
+  validateSearch: (search: Record<string, unknown>): { city?: string } => ({
+    city: typeof search.city === "string" ? search.city : undefined,
+  }),
   // Prefetch listings on the server so the results panel is populated on first paint
   // — eliminates the client waterfall (server renders → sends HTML → browser hydrates
   // with data already in the QueryClient cache).
@@ -94,8 +97,11 @@ export const Route = createFileRoute("/")({
 
 function Discover() {
   const initialListings = Route.useLoaderData();
+  const search = Route.useSearch();
   const [query, setQuery] = useState("");
-  const [filters, setFilters] = useState<Filters>(defaultFilters);
+  const [filters, setFilters] = useState<Filters>(() =>
+    search.city ? { ...defaultFilters, city: canonicalCity(search.city) } : defaultFilters,
+  );
   const [activeId, setActiveId] = useState<string | null>(null);
   const [heatmap, setHeatmap] = useState(false);
   const [basemap, setBasemap] = useState<Basemap>("map");
