@@ -9,15 +9,15 @@ export const DMCA_AGENT = {
   /** Set to true after the agent registration is accepted. */
   registered: false,
   /** Full legal name of the designated agent, e.g. "Jeevan Rathod". */
-  name: "",
+  name: "Jeevan Rathod",
   /** Company the agent acts for. */
   company: "NakkoBroker",
   /** Postal address of the agent (street, city, state, PIN/ZIP, country). */
-  address: "",
+  address: "Hyderabad, Telangana, India",
   /** Contact phone number with country code. */
   phone: "",
   /** Contact email for takedown notices. */
-  email: "",
+  email: "jeevan.rathod911@gmail.com",
   /** Optional: alternate email or form URL. */
   alternateContact: "",
 } as const;
