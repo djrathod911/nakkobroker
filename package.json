@@ -93,7 +93,7 @@
     "ip-address": "^10.7.3",
     "qs": "^6.16.0",
     "proxy-addr": "^2.0.8",
-    "js-yaml": "^5.4.3",
+    "js-yaml": "^4.3.2",
     "source-map-js": "^1.2.2",
     "seroval": "^1.6.8"
   },
