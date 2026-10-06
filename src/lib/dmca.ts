@@ -17,7 +17,7 @@ export const DMCA_AGENT = {
   /** Contact phone number with country code. */
   phone: "",
   /** Contact email for takedown notices. */
-  email: "jeevan.rathod911@gmail.com",
+  email: "legal@nakkobroker.com",
   /** Optional: alternate email or form URL. */
   alternateContact: "",
 } as const;
