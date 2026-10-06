@@ -71,9 +71,9 @@ function CopyrightPage() {
             className="mt-6 rounded-2xl border border-border bg-card/60 px-4 py-3 text-sm text-muted-foreground"
           >
             <span className="font-medium text-foreground">Agent registration in progress.</span> The
-            designated-agent details below are being completed — once our DMCA agent is registered,
-            the exact name, postal address and email will appear here. Until then, takedown requests
-            are still accepted through the notice process on this page.
+            designated agent listed below is the correct contact for takedown notices and
+            counter-notices. The formal registration with the U.S. Copyright Office is still being
+            completed; notices sent to the details below are handled in the meantime.
           </div>
         )}
 
@@ -91,7 +91,7 @@ function CopyrightPage() {
             <Detail label="Agent" value={DMCA_AGENT.name || undefined} />
             <Detail label="Service provider" value={DMCA_AGENT.company} />
             <Detail label="Mailing address" value={DMCA_AGENT.address || undefined} />
-            <Detail label="Phone" value={DMCA_AGENT.phone || undefined} />
+            {DMCA_AGENT.phone ? <Detail label="Phone" value={DMCA_AGENT.phone} /> : null}
             <Detail label="Email" value={DMCA_AGENT.email || undefined} />
             {DMCA_AGENT.alternateContact ? (
               <Detail label="Alternate contact" value={DMCA_AGENT.alternateContact} />
