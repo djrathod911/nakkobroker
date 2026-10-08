@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { Logo } from "@/components/brand/Logo";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -278,12 +279,7 @@ function Discover() {
         <div className="pointer-events-auto mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
           <div className="relative min-w-0">
             <div className="glass flex min-w-0 items-center gap-2 rounded-2xl px-3 py-2">
-              <span className="hidden shrink-0 items-center gap-2 pr-2 sm:flex">
-                <span className="grid size-7 shrink-0 place-items-center rounded-lg bg-brand text-xs font-black text-brand-foreground">
-                  N
-                </span>
-                <span className="text-sm font-semibold tracking-tight">NakkoBroker</span>
-              </span>
+              <Logo className="hidden shrink-0 pr-2 sm:inline-flex" />
               <div className="hidden h-6 w-px shrink-0 bg-border sm:block" />
               <Search className="size-4 shrink-0 text-muted-foreground" aria-hidden />
               <Input
