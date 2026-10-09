@@ -54,7 +54,7 @@ export function SaveListingButton({ listingId, variant = "icon", className }: Sa
       <Button
         type="button"
         variant="secondary"
-        className={cn("rounded-2xl", className)}
+        className={cn("min-h-11 rounded-2xl", className)}
         aria-pressed={saved}
         onClick={onClick}
         disabled={toggle.isPending}
@@ -70,7 +70,7 @@ export function SaveListingButton({ listingId, variant = "icon", className }: Sa
       type="button"
       size="icon"
       variant="ghost"
-      className={cn("size-8 rounded-full", saved && "bg-brand/15 text-brand", className)}
+      className={cn("size-11 rounded-full sm:size-8", saved && "bg-brand/15 text-brand", className)}
       aria-label={saved ? "Remove from saved homes" : "Save this home"}
       aria-pressed={saved}
       onClick={onClick}

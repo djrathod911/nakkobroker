@@ -43,6 +43,11 @@ export const Route = createFileRoute("/listing/$id")({
       return {
         meta: [
           { title: "Listing unavailable — NakkoBroker" },
+          { name: "description", content: "This NakkoBroker rental is no longer available. Browse zero-brokerage homes from owners." },
+          { property: "og:title", content: "Listing unavailable — NakkoBroker" },
+          { property: "og:description", content: "Browse available zero-brokerage homes from owners on NakkoBroker." },
+          { property: "og:type", content: "website" },
+          { name: "twitter:card", content: "summary" },
           { name: "robots", content: "noindex" },
         ],
       };
@@ -278,7 +283,7 @@ function ListingDetailPage() {
               {availabilityLabel(listing)}
             </p>
           )}
-          <h1 className="mt-3 text-3xl font-bold tracking-tight">{listing.title}</h1>
+          <h1 className="mt-3 break-words text-2xl font-bold sm:text-3xl">{listing.title}</h1>
           <p className="mt-1 text-muted-foreground">
             {listing.area}, {listing.city ?? "Hyderabad"} · {listing.sqft} sqft · posted{" "}
             {listing.postedDaysAgo}d ago
