@@ -1,6 +1,6 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { MapPin, ArrowRight } from "lucide-react";
-import { CITIES, CITY_INFO, areaNames, areaRate, cityLabel } from "@/lib/cities";
+import { CITIES, areaNames, areaRate, cityLabel } from "@/lib/cities";
 import { SiteFooter } from "@/components/SiteFooter";
 import { CityExplorer } from "@/components/listings/CityExplorer";
 import { fetchListings } from "@/lib/listings.api";
@@ -66,7 +66,7 @@ function CityPage() {
   return (
     <div className="min-h-dvh bg-background">
       <main className="mx-auto w-full max-w-5xl px-3 py-6 sm:px-6 sm:py-10">
-        <Button asChild className="mt-5 h-auto min-h-11 max-w-full whitespace-normal rounded-full bg-brand px-4 py-2 text-sm font-medium text-brand-foreground hover:bg-brand/90"><Link
+        <Link
           to="/"
           className="mb-6 inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground"
         >
@@ -82,7 +82,7 @@ function CityPage() {
           a viewing in a tap.
         </p>
 
-        <Link
+        <Button asChild className="mt-5 h-auto min-h-11 max-w-full whitespace-normal rounded-full bg-brand px-4 py-2 text-sm font-medium text-brand-foreground hover:bg-brand/90"><Link
           to="/"
           search={{ city }}
         >

@@ -8,3 +8,5 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- City rental pages reuse the shared listing query, filters, listing cards, and MapLibre renderer; this keeps discovery consistent without duplicating city data or booking logic.

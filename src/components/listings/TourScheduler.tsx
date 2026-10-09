@@ -82,7 +82,7 @@ export function TourScheduler({
   if (!ownerId) return null;
 
   return (
-    <div className="mt-4 border-t border-border pt-4">
+    <div className="mt-4 min-w-0 border-t border-border pt-4">
       <h3 className="flex items-center gap-2 text-sm font-semibold">
         <CalendarCheck className="size-4 text-brand" aria-hidden /> Tour calendar
       </h3>
@@ -171,19 +171,19 @@ function OwnerCalendar({
           {days.map((d) => {
             const active = d.toDateString() === day.toDateString();
             return (
-              <button
+              <Button variant="outline"
                 key={d.toISOString()}
                 type="button"
                 onClick={() => setDay(d)}
                 aria-pressed={active}
-                className={`shrink-0 rounded-2xl border px-3 py-2 text-xs transition-colors ${
+                className={`h-auto min-h-11 shrink-0 rounded-2xl border px-3 py-2 text-xs transition-colors ${
                   active
                     ? "border-brand bg-brand text-brand-foreground"
                     : "border-border bg-secondary/60 text-muted-foreground hover:text-foreground"
                 }`}
               >
                 {tourDayLabel(d.toISOString())}
-              </button>
+              </Button>
             );
           })}
         </div>
@@ -198,7 +198,7 @@ function OwnerCalendar({
             const past = when.getTime() < Date.now();
             const active = times.includes(t);
             return (
-              <button
+              <Button variant="outline"
                 key={t}
                 type="button"
                 disabled={already || past}
@@ -206,7 +206,7 @@ function OwnerCalendar({
                   setTimes((prev) => (prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]))
                 }
                 aria-pressed={active}
-                className={`rounded-full border px-3 py-1.5 text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
+                className={`h-auto min-h-11 rounded-full border px-3 py-1.5 text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
                   active
                     ? "border-brand bg-brand text-brand-foreground"
                     : "border-border bg-secondary/60 text-muted-foreground hover:text-foreground"
@@ -214,7 +214,7 @@ function OwnerCalendar({
               >
                 {tourTimeLabel(when.toISOString())}
                 {already ? " · added" : ""}
-              </button>
+              </Button>
             );
           })}
         </div>
@@ -242,9 +242,9 @@ function OwnerCalendar({
             {slots.map((s) => (
               <li
                 key={s.id}
-                className="flex items-center justify-between rounded-xl border border-border bg-secondary/40 px-3 py-2 text-sm"
+                className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-xl border border-border bg-secondary/40 px-3 py-2 text-sm"
               >
-                <span>
+                <span className="min-w-0 break-words">
                   {tourDayLabel(s.starts_at)} · {tourTimeLabel(s.starts_at)}
                   {s.status === "booked" && (
                     <span className="ml-2 rounded-full bg-success/15 px-2 py-0.5 text-xs text-success">
@@ -256,7 +256,7 @@ function OwnerCalendar({
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="size-8 rounded-xl"
+                    className="size-11 shrink-0 rounded-xl"
                     aria-label={`Remove ${tourDayLabel(s.starts_at)} ${tourTimeLabel(s.starts_at)}`}
                     disabled={remove.isPending}
                     onClick={() => remove.mutate(s.id)}
@@ -340,7 +340,7 @@ function TenantCalendar({
         </p>
         <Button
           variant="ghost"
-          className="mt-2 rounded-2xl text-destructive hover:text-destructive"
+          className="mt-2 min-h-11 w-full rounded-2xl text-destructive hover:text-destructive"
           disabled={cancel.isPending}
           onClick={() => cancel.mutate(booking.id)}
         >
@@ -356,7 +356,7 @@ function TenantCalendar({
         <p className="text-sm text-muted-foreground">
           Sign in to pick a tour time straight from the owner&apos;s calendar.
         </p>
-        <Button asChild variant="secondary" className="mt-3 rounded-2xl">
+        <Button asChild variant="secondary" className="mt-3 h-auto min-h-11 w-full whitespace-normal rounded-2xl text-center">
           <Link to="/auth" search={{ next: `/listing/${listingId}` }}>
             <CalendarCheck className="size-4" /> Sign in to book a tour
           </Link>
@@ -389,15 +389,15 @@ function TenantCalendar({
           </p>
           <div className="mt-2 flex flex-wrap gap-2">
             {daySlots.map((s) => (
-              <button
+              <Button variant="outline"
                 key={s.id}
                 type="button"
                 disabled={book.isPending}
                 onClick={() => book.mutate(s.id)}
-                className="rounded-full border border-border bg-secondary/60 px-3 py-2 text-xs text-foreground transition-colors hover:border-brand hover:bg-brand hover:text-brand-foreground disabled:opacity-50"
+                className="h-auto min-h-11 rounded-full border border-border bg-secondary/60 px-3 py-2 text-xs text-foreground transition-colors hover:border-brand hover:bg-brand hover:text-brand-foreground disabled:opacity-50"
               >
                 {tourTimeLabel(s.starts_at)}
-              </button>
+              </Button>
             ))}
           </div>
         </div>

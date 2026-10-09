@@ -44,7 +44,7 @@ export function ListingCard({ listing, active, onHover, onSelect, voted, onVote 
         listing.availabilityStatus === "occupied" && "opacity-75",
       )}
     >
-      <div className="flex items-start justify-between gap-3">
+      <div className="grid min-w-0 grid-cols-1 items-start gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-1.5">
             <Badge className="rounded-full bg-accent text-accent-foreground">{listing.bhk} BHK</Badge>
@@ -74,7 +74,7 @@ export function ListingCard({ listing, active, onHover, onSelect, voted, onVote 
               </span>
             )}
           </div>
-          <h2 className="mt-2 truncate text-base font-semibold tracking-tight">
+          <h2 className="mt-2 break-words text-base font-semibold">
             <Link
               to="/listing/$id"
               params={{ id: listing.id }}
@@ -85,12 +85,12 @@ export function ListingCard({ listing, active, onHover, onSelect, voted, onVote 
               {listing.title}
             </Link>
           </h2>
-          <p className="truncate text-sm text-muted-foreground">
+          <p className="break-words text-sm text-muted-foreground">
             {listing.area} · {listing.sqft} sqft · {listing.tenant}
           </p>
         </div>
-        <div className="flex shrink-0 flex-col items-end gap-1">
-          <div className="text-right">
+        <div className="flex min-w-0 items-center justify-between gap-2 sm:flex-col sm:items-end">
+          <div className="min-w-0 sm:text-right">
             <p className="text-lg font-bold tracking-tight">{formatRent(listing.rent)}</p>
             <p className="text-xs text-muted-foreground">
               {listing.negotiable ? "Negotiable" : "Fixed"} · {formatRent(listing.deposit)} dep
@@ -120,7 +120,7 @@ export function ListingCard({ listing, active, onHover, onSelect, voted, onVote 
         </p>
       )}
 
-      <div className="mt-3 flex items-center justify-between gap-2">
+      <div className="mt-3 grid grid-cols-1 items-center gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
         <div className="flex min-w-0 flex-wrap items-center gap-1.5">
           {listing.ownerVerified && (
             <span className="inline-flex items-center gap-1 rounded-full bg-success/15 px-2 py-0.5 text-xs text-success">
@@ -138,12 +138,12 @@ export function ListingCard({ listing, active, onHover, onSelect, voted, onVote 
             </span>
           )}
         </div>
-        <div className="relative z-10 flex shrink-0 items-center gap-1 opacity-70 transition-opacity group-hover:opacity-100">
+        <div className="relative z-10 flex shrink-0 items-center justify-end gap-1 opacity-100 transition-opacity sm:opacity-70 sm:group-hover:opacity-100">
           <SaveListingButton listingId={listing.id} />
           <Button
             size="icon"
             variant="ghost"
-            className={cn("size-8 rounded-full", voted && "bg-brand/15 text-brand")}
+            className={cn("size-11 rounded-full sm:size-8", voted && "bg-brand/15 text-brand")}
             aria-label={voted ? "Remove upvote" : "Upvote listing"}
             aria-pressed={!!voted}
             onClick={(e) => {
@@ -157,7 +157,7 @@ export function ListingCard({ listing, active, onHover, onSelect, voted, onVote 
             asChild
             size="sm"
             variant="ghost"
-            className="h-8 rounded-full px-3 text-xs"
+            className="h-11 rounded-full px-3 text-xs sm:h-8"
             onClick={(e) => e.stopPropagation()}
           >
             <Link to="/listing/$id" params={{ id: listing.id }}>
