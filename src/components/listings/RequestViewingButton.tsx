@@ -78,7 +78,7 @@ export function RequestViewingButton({
 
   if (!userId) {
     return (
-      <Button asChild variant="secondary" className="mt-3 rounded-2xl">
+      <Button asChild variant="secondary" className="mt-3 h-auto min-h-11 w-full whitespace-normal rounded-2xl text-center">
         <Link to="/auth" search={{ next: `/listing/${listingId}` }}>
           <CalendarClock className="size-4" /> Sign in to request a viewing
         </Link>
@@ -88,7 +88,7 @@ export function RequestViewingButton({
 
   if (existingId) {
     return (
-      <Button asChild variant="secondary" className="mt-3 rounded-2xl">
+      <Button asChild variant="secondary" className="mt-3 h-auto min-h-11 w-full whitespace-normal rounded-2xl text-center">
         <Link to="/messages/$id" params={{ id: existingId }}>
           <MessagesSquare className="size-4" /> Open your chat with the owner
         </Link>
@@ -99,11 +99,11 @@ export function RequestViewingButton({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="secondary" className="mt-3 rounded-2xl">
+        <Button variant="secondary" className="mt-3 min-h-11 w-full rounded-2xl">
           <CalendarClock className="size-4" /> Request a viewing
         </Button>
       </DialogTrigger>
-      <DialogContent className="rounded-2xl sm:max-w-md">
+      <DialogContent className="max-h-[calc(100dvh-2rem)] w-[calc(100%-1.5rem)] overflow-y-auto overscroll-contain rounded-2xl p-4 sm:max-w-md sm:p-6">
         <DialogHeader>
           <DialogTitle>Request a viewing</DialogTitle>
           <DialogDescription>
@@ -116,19 +116,19 @@ export function RequestViewingButton({
             <Label htmlFor="viewing-time">Preferred time</Label>
             <div className="flex flex-wrap gap-2">
               {SLOTS.map((s) => (
-                <button
+                <Button variant="outline"
                   key={s}
                   type="button"
                   onClick={() => setSlot(s)}
                   aria-pressed={slot === s}
-                  className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${
+                  className={`h-auto min-h-11 rounded-full border px-3 py-1.5 text-xs transition-colors ${
                     slot === s
                       ? "border-brand bg-brand text-brand-foreground"
                       : "border-border bg-secondary/60 text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   {s}
-                </button>
+                </Button>
               ))}
             </div>
             <Input
@@ -136,7 +136,7 @@ export function RequestViewingButton({
               value={slot}
               onChange={(e) => setSlot(e.target.value)}
               placeholder="Or type a time that suits you"
-              className="rounded-xl"
+              className="h-11 rounded-xl text-base sm:text-sm"
               maxLength={80}
             />
           </div>
@@ -150,14 +150,14 @@ export function RequestViewingButton({
               rows={4}
               maxLength={600}
               placeholder={`Hi! I'd like to see ${listingTitle}. Would ${slot.toLowerCase()} work?`}
-              className="rounded-xl"
+              className="rounded-xl text-base sm:text-sm"
             />
           </div>
         </div>
 
         <DialogFooter>
           <Button
-            className="w-full rounded-2xl bg-brand text-brand-foreground hover:bg-brand/90"
+            className="min-h-11 w-full rounded-2xl bg-brand text-brand-foreground hover:bg-brand/90"
             disabled={mutation.isPending || !slot.trim()}
             onClick={() => mutation.mutate()}
           >

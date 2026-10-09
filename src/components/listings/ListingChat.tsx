@@ -88,7 +88,7 @@ export function ListingChat({ listingId, ownerId, userId, listingTitle }: Props)
         <p className="mt-1 text-sm text-muted-foreground">
           Ask about the rent, availability or a viewing — directly, no brokers.
         </p>
-        <Button asChild variant="secondary" className="mt-3 rounded-2xl">
+        <Button asChild variant="secondary" className="mt-3 h-auto min-h-11 w-full whitespace-normal rounded-2xl text-center">
           <Link to="/auth" search={{ next: `/listing/${listingId}` }}>
             <MessagesSquare className="size-4" /> Sign in to message the owner
           </Link>
@@ -202,7 +202,7 @@ export function ListingChat({ listingId, ownerId, userId, listingTitle }: Props)
                       mine ? "bg-brand text-brand-foreground" : "glass text-foreground"
                     }`}
                   >
-                    <p className="whitespace-pre-line">{m.body}</p>
+                    <p className="break-words whitespace-pre-line">{m.body}</p>
                     <p
                       className={`mt-1 text-[10px] ${mine ? "opacity-70" : "text-muted-foreground"}`}
                     >
@@ -223,7 +223,7 @@ export function ListingChat({ listingId, ownerId, userId, listingTitle }: Props)
       )}
 
       {(!isOwner || conversationId) && (
-        <div className="mt-3 flex items-end gap-2">
+        <div className="mt-3 grid grid-cols-[minmax(0,1fr)_auto] items-end gap-2">
           <Textarea
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
@@ -236,10 +236,10 @@ export function ListingChat({ listingId, ownerId, userId, listingTitle }: Props)
             rows={2}
             maxLength={1000}
             placeholder={isOwner ? "Write a reply…" : "Is this still available?"}
-            className="rounded-2xl"
+            className="min-w-0 rounded-2xl text-base sm:text-sm"
           />
           <Button
-            className="rounded-2xl bg-brand text-brand-foreground hover:bg-brand/90"
+            className="size-11 shrink-0 rounded-2xl bg-brand p-0 text-brand-foreground hover:bg-brand/90"
             onClick={() => void onSend()}
             disabled={sending || !draft.trim()}
             aria-label="Send message"

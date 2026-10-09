@@ -43,6 +43,11 @@ export const Route = createFileRoute("/listing/$id")({
       return {
         meta: [
           { title: "Listing unavailable — NakkoBroker" },
+          { name: "description", content: "This NakkoBroker rental is no longer available. Browse zero-brokerage homes from owners." },
+          { property: "og:title", content: "Listing unavailable — NakkoBroker" },
+          { property: "og:description", content: "Browse available zero-brokerage homes from owners on NakkoBroker." },
+          { property: "og:type", content: "website" },
+          { name: "twitter:card", content: "summary" },
           { name: "robots", content: "noindex" },
         ],
       };
@@ -197,7 +202,7 @@ function ListingDetailPage() {
   return (
     <main className="min-h-dvh bg-background">
       <div className="mx-auto w-full max-w-5xl px-4 pb-16 pt-6">
-        <div className="flex items-center justify-between gap-3">
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
           <Button asChild variant="ghost" className="rounded-2xl">
             <Link to="/">
               <ArrowLeft className="size-4" /> Back to map
@@ -278,7 +283,7 @@ function ListingDetailPage() {
               {availabilityLabel(listing)}
             </p>
           )}
-          <h1 className="mt-3 text-3xl font-bold tracking-tight">{listing.title}</h1>
+          <h1 className="mt-3 break-words text-2xl font-bold sm:text-3xl">{listing.title}</h1>
           <p className="mt-1 text-muted-foreground">
             {listing.area}, {listing.city ?? "Hyderabad"} · {listing.sqft} sqft · posted{" "}
             {listing.postedDaysAgo}d ago
@@ -352,7 +357,7 @@ function ListingDetailPage() {
 
 
         <section className="mt-6 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-          <div className="space-y-5">
+          <div className="min-w-0 space-y-5">
             <div>
               <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
                 Amenities
@@ -383,7 +388,7 @@ function ListingDetailPage() {
               <span>Preferred tenant: {listing.tenant}</span>
             </div>
 
-            <div className="glass rounded-2xl p-4">
+            <div className="glass min-w-0 rounded-2xl p-3 sm:p-4">
               <h2 className="text-sm font-semibold">Contact the owner</h2>
               <p className="mt-1 text-sm text-muted-foreground">
                 Zero brokerage — you talk to the owner directly.
@@ -451,7 +456,7 @@ function ListingDetailPage() {
             </div>
           </div>
 
-          <div className="h-80 overflow-hidden rounded-2xl border border-border lg:h-full">
+          <div className="h-80 min-w-0 overflow-hidden rounded-2xl border border-border lg:h-full">
             <MapView
               listings={[listing]}
               activeId={listing.id}

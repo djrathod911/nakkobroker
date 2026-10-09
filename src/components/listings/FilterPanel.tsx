@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { formatRent } from "@/data/listings";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
 
 export interface Filters {
   city: string;
@@ -52,19 +53,19 @@ function Chip({
   onClick: () => void;
 }) {
   return (
-    <button
+    <Button variant="outline"
       type="button"
       onClick={onClick}
       aria-pressed={selected}
       className={cn(
-        "rounded-full border px-3 py-1.5 text-xs font-medium transition-all duration-200",
+        "h-auto min-h-11 rounded-full border px-3 py-1.5 text-xs font-medium transition-all duration-200 sm:min-h-8",
         selected
           ? "border-transparent bg-brand text-brand-foreground glow-ring"
           : "border-border bg-secondary/60 text-muted-foreground hover:text-foreground",
       )}
     >
       {label}
-    </button>
+    </Button>
   );
 }
 
@@ -178,8 +179,8 @@ function BudgetInputs({
   };
 
   return (
-    <div className="flex items-center gap-2">
-      <div className="relative flex-1">
+    <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2">
+      <div className="relative min-w-0">
         <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">₹</span>
         <Input
           type="text"
@@ -195,12 +196,12 @@ function BudgetInputs({
             if (e.key === "Enter") commit(minText, maxText);
           }}
           aria-label="Minimum rent"
-          className="h-9 rounded-lg border-border bg-secondary/40 pl-7 pr-2 text-right text-sm tabular-nums focus-visible:bg-background"
+          className="h-11 min-w-0 rounded-lg border-border bg-secondary/40 pl-7 pr-2 text-right text-base tabular-nums focus-visible:bg-background sm:h-9 sm:text-sm"
           placeholder={String(RENT_MIN)}
         />
       </div>
       <span className="text-xs text-muted-foreground">–</span>
-      <div className="relative flex-1">
+      <div className="relative min-w-0">
         <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">₹</span>
         <Input
           type="text"
@@ -216,7 +217,7 @@ function BudgetInputs({
             if (e.key === "Enter") commit(minText, maxText);
           }}
           aria-label="Maximum rent"
-          className="h-9 rounded-lg border-border bg-secondary/40 pl-7 pr-2 text-right text-sm tabular-nums focus-visible:bg-background"
+          className="h-11 min-w-0 rounded-lg border-border bg-secondary/40 pl-7 pr-2 text-right text-base tabular-nums focus-visible:bg-background sm:h-9 sm:text-sm"
           placeholder={String(RENT_MAX)}
         />
       </div>
