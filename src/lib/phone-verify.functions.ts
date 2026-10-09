@@ -29,15 +29,36 @@ export const requestPhoneOtp = createServerFn({ method: "POST" })
     const phone = normalizePhone(data.phone);
     if (!phone) throw new Error("Enter a valid 10-digit Indian mobile number");
 
-    // simple throttle: max 3 codes per phone per 15 minutes
+    // A number already verified by another account cannot be claimed again.
+    const { data: claimed } = await supabaseAdmin
+      .from("verified_phones")
+      .select("user_id")
+      .eq("phone", phone)
+      .neq("user_id", context.userId)
+      .limit(1);
+    if (claimed && claimed.length > 0) {
+      throw new Error("This number is already verified on another account.");
+    }
+
     const since = new Date(Date.now() - 15 * 60_000).toISOString();
-    const { count } = await supabaseAdmin
+
+    // Throttle per phone across ALL users, so one account cannot spam
+    // someone else's phone with unsolicited texts.
+    const { count: phoneCount } = await supabaseAdmin
+      .from("phone_otps")
+      .select("id", { count: "exact", head: true })
+      .eq("phone", phone)
+      .gte("created_at", since);
+    if ((phoneCount ?? 0) >= 3) throw new Error("Too many codes requested for this number. Try again in a few minutes.");
+
+    // Throttle per user across all numbers, so one account cannot cycle
+    // through many different phones.
+    const { count: userCount } = await supabaseAdmin
       .from("phone_otps")
       .select("id", { count: "exact", head: true })
       .eq("user_id", context.userId)
-      .eq("phone", phone)
       .gte("created_at", since);
-    if ((count ?? 0) >= 3) throw new Error("Too many codes requested. Try again in a few minutes.");
+    if ((userCount ?? 0) >= 5) throw new Error("Too many codes requested. Try again in a few minutes.");
 
     const code = generateCode();
     const { error } = await supabaseAdmin.from("phone_otps").insert({
