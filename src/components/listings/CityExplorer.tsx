@@ -1,17 +1,31 @@
 import { lazy, Suspense, useState } from "react";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
+import { toast } from "sonner";
 import { SlidersHorizontal, Map, List } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { FilterPanel, activeFilterChips, defaultFilters } from "./FilterPanel";
 import { ListingCard } from "./ListingCard";
-import { fetchListings } from "@/lib/listings.api";
+import { fetchListings, fetchMyVotedIds, toggleVote } from "@/lib/listings.api";
 import { cityOf } from "@/lib/cities";
+import { useAuth } from "@/hooks/useAuth";
 
 const MapView = lazy(() => import("@/components/map/MapView").then((m) => ({ default: m.MapView })));
 
 export function CityExplorer({ city }: { city: string }) {
   const { data: listings } = useSuspenseQuery({ queryKey: ["listings"], queryFn: fetchListings });
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { data: votedIds = [] } = useQuery({ queryKey: ["my-votes", user?.id], queryFn: () => user ? fetchMyVotedIds(user.id) : Promise.resolve([]), enabled: !!user });
+  async function onVote(id: string) {
+    if (!user) { await navigate({ to: "/auth", search: { next: `/rentals/${city.toLowerCase()}` } }); return; }
+    try {
+      await toggleVote(id, user.id, votedIds.includes(id));
+      await Promise.all([queryClient.invalidateQueries({ queryKey: ["listings"] }), queryClient.invalidateQueries({ queryKey: ["my-votes", user.id] })]);
+    } catch { toast.error("Could not register your vote"); }
+  }
   const [filters, setFilters] = useState({ ...defaultFilters, city });
   const [activeId, setActiveId] = useState<string | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -48,7 +62,7 @@ export function CityExplorer({ city }: { city: string }) {
         </div>
         <div className={view === "list" ? "min-w-0 space-y-3" : "hidden min-w-0 space-y-3 lg:block"}>
           {results.length ? results.map((listing) => (
-            <ListingCard key={listing.id} listing={listing} active={activeId === listing.id} onHover={setActiveId} onSelect={setActiveId} />
+            <ListingCard key={listing.id} listing={listing} active={activeId === listing.id} onHover={setActiveId} onSelect={setActiveId} voted={votedIds.includes(listing.id)} onVote={onVote} />
           )) : <div className="py-8 text-center"><p className="text-sm text-muted-foreground">No homes match in {filters.city}.</p><Button variant="ghost" className="mt-2" onClick={() => setFilters({ ...defaultFilters, city: filters.city })}>Reset filters</Button></div>}
         </div>
       </div>
