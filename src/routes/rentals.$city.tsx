@@ -2,6 +2,9 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { MapPin, ArrowRight } from "lucide-react";
 import { CITIES, CITY_INFO, areaNames, areaRate, cityLabel } from "@/lib/cities";
 import { SiteFooter } from "@/components/SiteFooter";
+import { CityExplorer } from "@/components/listings/CityExplorer";
+import { fetchListings } from "@/lib/listings.api";
+import { Button } from "@/components/ui/button";
 
 const BASE = "https://nakkobroker.com";
 
@@ -16,7 +19,11 @@ export const Route = createFileRoute("/rentals/$city")({
     if (!city) throw notFound();
     return { city };
   },
-  loader: ({ context }) => ({ city: context.city }),
+  loader: async ({ context }) => {
+    await context.queryClient.ensureQueryData({ queryKey: ["listings"], queryFn: fetchListings });
+    return { city: context.city };
+  },
+  errorComponent: () => <div className="p-6 text-center text-muted-foreground" role="alert">City homes couldn't load. Please refresh to try again.</div>,
   head: ({ loaderData }) => {
     const city = loaderData?.city ?? "Hyderabad";
     const title = `Zero-brokerage rentals in ${city} — NakkoBroker`;
@@ -53,14 +60,13 @@ export const Route = createFileRoute("/rentals/$city")({
 
 function CityPage() {
   const { city } = Route.useLoaderData();
-  const info = CITY_INFO[city]!;
   const areas = areaNames(city);
   const others = CITIES.filter((c) => c !== city);
 
   return (
     <div className="min-h-dvh bg-background">
-      <main className="mx-auto w-full max-w-2xl px-4 py-10 sm:py-14">
-        <Link
+      <main className="mx-auto w-full max-w-5xl px-3 py-6 sm:px-6 sm:py-10">
+        <Button asChild className="mt-5 h-auto min-h-11 max-w-full whitespace-normal rounded-full bg-brand px-4 py-2 text-sm font-medium text-brand-foreground hover:bg-brand/90"><Link
           to="/"
           className="mb-6 inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground"
         >
@@ -79,11 +85,12 @@ function CityPage() {
         <Link
           to="/"
           search={{ city }}
-          className="mt-5 inline-flex items-center gap-2 rounded-full bg-brand px-4 py-2 text-sm font-medium text-brand-foreground hover:opacity-90"
         >
           Browse {cityLabel(city)} homes on the map
           <ArrowRight className="size-4" aria-hidden />
-        </Link>
+        </Link></Button>
+
+        <CityExplorer key={city} city={city} />
 
         <section aria-labelledby="areas" className="mt-10">
           <h2 id="areas" className="text-lg font-semibold text-foreground">
@@ -93,13 +100,13 @@ function CityPage() {
             {areas.map((area) => (
               <li
                 key={area}
-                className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-card/60 px-4 py-2.5"
+                className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-lg border border-border bg-card/60 px-3 py-2.5"
               >
-                <span className="flex items-center gap-2 text-sm text-foreground">
-                  <MapPin className="size-3.5 text-brand" aria-hidden />
+                <span className="flex min-w-0 items-center gap-2 text-sm text-foreground">
+                  <MapPin className="size-3.5 shrink-0 text-brand" aria-hidden />
                   {area}
                 </span>
-                <span className="text-xs text-muted-foreground">
+                <span className="shrink-0 whitespace-nowrap text-xs text-muted-foreground">
                   ~₹{areaRate(city, area)}/sqft
                 </span>
               </li>
