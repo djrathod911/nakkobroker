@@ -265,7 +265,7 @@ function Discover() {
       </div>
 
       {/* Persistent page heading */}
-      <div className="pointer-events-none absolute inset-x-0 top-28 z-20 px-3 sm:top-24 sm:px-5">
+      <div className="pointer-events-none absolute inset-x-0 top-32 z-20 px-3 sm:top-24 sm:px-5">
         <div className="mx-auto max-w-6xl">
           <h1 className="glass inline-block max-w-full rounded-2xl px-3 py-1.5 text-sm font-semibold sm:text-lg">
             Zero-brokerage rentals in {filters.city}
