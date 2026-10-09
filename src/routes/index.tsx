@@ -265,9 +265,9 @@ function Discover() {
       </div>
 
       {/* Persistent page heading */}
-      <div className="pointer-events-none absolute inset-x-0 top-16 z-20 px-3 sm:top-24 sm:px-5">
+      <div className="pointer-events-none absolute inset-x-0 top-28 z-20 px-3 sm:top-24 sm:px-5">
         <div className="mx-auto max-w-6xl">
-          <h1 className="glass inline-block rounded-2xl px-3 py-1.5 text-base font-semibold tracking-tight sm:text-lg">
+          <h1 className="glass inline-block max-w-full rounded-2xl px-3 py-1.5 text-sm font-semibold sm:text-lg">
             Zero-brokerage rentals in {filters.city}
 
           </h1>
@@ -277,7 +277,8 @@ function Discover() {
       {/* Top bar */}
       <header className="pointer-events-none absolute inset-x-0 top-0 z-30 p-3 sm:p-5">
         <div className="pointer-events-auto mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
-          <div className="relative min-w-0">
+          <Logo className="min-w-0 sm:hidden" />
+          <div className="relative order-2 col-span-2 min-w-0 sm:order-none sm:col-span-1">
             <div className="glass flex min-w-0 items-center gap-2 rounded-2xl px-3 py-2">
               <Logo className="hidden shrink-0 pr-2 sm:inline-flex" />
               <div className="hidden h-6 w-px shrink-0 bg-border sm:block" />
@@ -352,10 +353,10 @@ function Discover() {
             )}
           </div>
 
-          <div className="flex shrink-0 items-center gap-2">
+          <div className="flex shrink-0 items-center gap-1 sm:gap-2">
             <Sheet open={filtersOpen} onOpenChange={setFiltersOpen}>
               <SheetTrigger asChild>
-                <Button variant="secondary" aria-label="Filters" className="glass rounded-2xl border-0">
+                <Button variant="secondary" aria-label="Filters" className="glass size-10 rounded-2xl border-0 p-0 sm:h-10 sm:w-auto sm:px-4">
                   <SlidersHorizontal className="size-4" />
                   <span className="hidden sm:inline">Filters</span>
                   {activeFilterCount > 0 && (
@@ -399,7 +400,7 @@ function Discover() {
                 </div>
               </SheetContent>
             </Sheet>
-            <Button asChild className="rounded-2xl bg-brand text-brand-foreground hover:bg-brand/90">
+            <Button asChild className="size-10 rounded-2xl bg-brand p-0 text-brand-foreground hover:bg-brand/90 sm:h-10 sm:w-auto sm:px-4">
               {user ? (
                 <Link
                   to="/list-your-flat"
@@ -430,7 +431,7 @@ function Discover() {
             {user ? (
               <>
                 <NotificationBell userId={user.id} />
-                <Button asChild variant="secondary" size="icon" className="glass relative rounded-2xl border-0">
+                <Button asChild variant="secondary" size="icon" className="glass relative hidden rounded-2xl border-0 sm:inline-flex">
                   <Link
                     to="/dashboard"
                     aria-label={savedIds.length ? `Your dashboard (${savedIds.length} saved homes)` : "Your dashboard"}
@@ -443,7 +444,7 @@ function Discover() {
                     )}
                   </Link>
                 </Button>
-                <Button asChild variant="secondary" size="icon" className="glass rounded-2xl border-0">
+                <Button asChild variant="secondary" size="icon" className="glass hidden rounded-2xl border-0 sm:inline-flex">
                   <Link to="/messages" aria-label="Your chats">
                     <MessagesSquare className="size-4" />
                   </Link>
@@ -498,8 +499,8 @@ function Discover() {
       </header>
 
       {/* Map layer controls */}
-      <div className="absolute left-3 top-1/2 z-20 -translate-y-1/2">
-        <div className="glass flex flex-col gap-1 rounded-2xl p-1.5">
+      <div className={cn("absolute left-3 z-20 sm:top-1/2 sm:-translate-y-1/2", resultsOpen ? "bottom-[calc(52dvh+12px)]" : "bottom-5", "sm:bottom-auto")}>
+        <div className="glass flex gap-1 rounded-2xl p-1.5 sm:flex-col">
           <LayerButton
             icon={Map}
             label="Streets map"
@@ -518,7 +519,7 @@ function Discover() {
             active={basemap === "satellite"}
             onClick={() => setBasemap("satellite")}
           />
-          <div className="mx-1 h-px bg-border/60" />
+          <div className="mx-1 w-px bg-border/60 sm:h-px sm:w-auto" />
           <LayerButton icon={Flame} label="Price heatmap" active={heatmap} onClick={() => setHeatmap((v) => !v)} />
           <LayerButton
             icon={Camera}
@@ -533,15 +534,15 @@ function Discover() {
       <section
         aria-label="Search results"
         className={cn(
-          "pointer-events-none absolute inset-x-0 bottom-0 z-20 max-h-[52dvh] transition-all duration-300 ease-out",
-          "sm:inset-y-0 sm:left-auto sm:right-0 sm:max-h-none sm:w-[400px] sm:p-5 sm:pt-24",
+          "pointer-events-none absolute inset-x-0 bottom-0 z-20 h-[52dvh] transition-all duration-300 ease-out",
+          "sm:inset-y-0 sm:left-auto sm:right-0 sm:h-auto sm:max-h-none sm:w-[400px] sm:p-5 sm:pt-24",
           resultsOpen ? "translate-y-0 opacity-100 sm:translate-x-0" : "translate-y-full opacity-0 sm:translate-x-full sm:translate-y-0",
         )}
       >
-        <div className="glass pointer-events-auto flex h-full flex-col rounded-t-3xl sm:rounded-3xl">
+        <div className="glass pointer-events-auto flex h-full min-h-0 flex-col rounded-t-3xl sm:rounded-3xl">
           <div className="shrink-0 border-b border-border/60 px-4 py-3">
-            <div className="flex items-start justify-between gap-2">
-              <div>
+            <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2">
+              <div className="min-w-0">
                 <h2 className="text-sm font-semibold tracking-tight">
                   {isInitialLoading
                     ? `Finding homes in ${filters.city}…`
@@ -561,7 +562,7 @@ function Discover() {
             </div>
 
             {/* Quick filters */}
-            <div className="mt-3 flex flex-wrap gap-1.5">
+            <div className="mt-3 flex gap-1.5 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible sm:pb-0">
               {CITIES.map((c) => (
                 <QuickChip
                   key={c}
@@ -622,7 +623,7 @@ function Discover() {
           </div>
 
 
-          <div ref={listRef} className="flex-1 space-y-3 overflow-y-auto p-3">
+          <div ref={listRef} className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain p-3">
             {isInitialLoading ? (
               <div className="space-y-3" role="status" aria-busy="true" aria-label="Loading listings">
                 {[0, 1, 2, 3].map((i) => (
@@ -751,7 +752,7 @@ function QuickChip({
       onClick={onClick}
       aria-pressed={active}
       className={cn(
-        "rounded-full border px-2.5 py-1 text-[11px] font-medium transition-all duration-200",
+        "min-h-9 shrink-0 whitespace-nowrap rounded-full border px-2.5 py-1 text-[11px] font-medium transition-all duration-200 sm:min-h-0",
         active
           ? "border-transparent bg-brand text-brand-foreground"
           : "border-border bg-secondary/60 text-muted-foreground hover:text-foreground",
