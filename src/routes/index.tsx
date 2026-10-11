@@ -68,9 +68,9 @@ const POPULAR_AREAS: Record<string, string[]> = Object.fromEntries(
   CITIES.map((c) => [c, areaNames(c)]),
 );
 
-const TITLE = "NakkoBroker — Zero-brokerage rentals in Hyderabad + 4 cities";
+const TITLE = "NakkoBroker | Zero-Brokerage Rentals in Hyderabad & Beyond";
 const DESCRIPTION =
-  "Find flats from owners on a live map in Hyderabad, Bengaluru, Chennai, Pune and Vizag. No brokers, no brokerage, community-verified.";
+  "Find rental homes directly from owners in Hyderabad, Bengaluru, Chennai, Pune and Vizag. Explore the map, message owners and book viewings with zero brokerage.";
 
 export const Route = createFileRoute("/")({
   validateSearch: (search: Record<string, unknown>): { city?: string } =>
@@ -89,6 +89,8 @@ export const Route = createFileRoute("/")({
       { property: "og:type", content: "website" },
       { property: "og:url", content: "https://nakkobroker.com/" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: TITLE },
+      { name: "twitter:description", content: DESCRIPTION },
     ],
     links: [{ rel: "canonical", href: "https://nakkobroker.com/" }],
   }),
