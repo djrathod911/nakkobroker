@@ -6,7 +6,16 @@ import reactRefresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  { ignores: ["dist", ".output", ".vinxi"] },
+  {
+    ignores: [
+      "dist",
+      ".output",
+      ".vinxi",
+      "src/routeTree.gen.ts",
+      "src/integrations/supabase/**",
+      "src/routes/lovable/**",
+    ],
+  },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ["**/*.{ts,tsx}"],
@@ -37,4 +46,6 @@ export default tseslint.config(
     },
   },
   eslintPluginPrettier,
+  // Formatting is handled by `bun run format`; style drift should not fail CI.
+  { rules: { "prettier/prettier": "warn" } },
 );

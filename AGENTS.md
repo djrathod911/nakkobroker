@@ -10,3 +10,4 @@
 <!-- LOVABLE:END -->
 
 - City rental pages reuse the shared listing query, filters, listing cards, and MapLibre renderer; this keeps discovery consistent without duplicating city data or booking logic.
+- CI runs only the Bun workflow (`.github/workflows/deno.yml`: install, lint, build); the app is Vite-based, so webpack/Node-matrix templates must not be re-added. Prettier issues are warnings so formatting drift never fails CI.
