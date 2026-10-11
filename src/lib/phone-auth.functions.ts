@@ -60,7 +60,7 @@ export const requestLoginOtp = createServerFn({ method: "POST" })
 export const verifyLoginOtp = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => VerifyInput.parse(data))
   .handler(async ({ data }): Promise<LoginSession> => {
-    const { normalizePhone, hashCode, hashesMatch, MAX_ATTEMPTS } = await import("./phone-verify.server");
+    const { normalizePhone, hashCode, hashesMatch } = await import("./phone-verify.server");
     const { syntheticEmail, derivedPassword, createAuthClient } = await import("./phone-auth.server");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
