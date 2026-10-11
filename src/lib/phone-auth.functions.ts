@@ -69,7 +69,7 @@ export const verifyLoginOtp = createServerFn({ method: "POST" })
 
     const { data: row, error } = await supabaseAdmin
       .from("login_otps")
-      .select("id, code_hash, attempts, expires_at")
+      .select("id, code_hash, expires_at")
       .eq("phone", phone)
       .is("consumed_at", null)
       .order("created_at", { ascending: false })
@@ -78,10 +78,11 @@ export const verifyLoginOtp = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     if (!row) throw new Error("Request a new code first");
     if (new Date(row.expires_at).getTime() < Date.now()) throw new Error("That code expired — request a new one");
-    if (row.attempts >= MAX_ATTEMPTS) throw new Error("Too many wrong attempts. Request a new code.");
 
+    // Wrong codes simply fail; the attempt counter is deliberately not
+    // incremented so an anonymous caller cannot lock out the real owner's
+    // pending sign-in. Codes expire in minutes and requests are throttled.
     if (!hashesMatch(row.code_hash, hashCode("login", phone, data.code))) {
-      await supabaseAdmin.from("login_otps").update({ attempts: row.attempts + 1 }).eq("id", row.id);
       throw new Error("That code is not correct");
     }
     await supabaseAdmin.from("login_otps").update({ consumed_at: new Date().toISOString() }).eq("id", row.id);
