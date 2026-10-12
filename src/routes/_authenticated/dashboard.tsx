@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { AskOwnerButton } from "@/components/listings/AskOwnerButton";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -298,6 +299,16 @@ function DashboardPage() {
                       <X className="size-4" />
                     </Button>
                   </div>
+                  <div className="mt-3">
+                    <AskOwnerButton
+                      listingId={t.listing_id}
+                      ownerId={t.owner_id}
+                      tenantId={t.tenant_id}
+                      userId={user?.id}
+                      label="Ask about this visit"
+                    />
+                  </div>
+
                 </div>
               ))
             ) : (
