@@ -16,7 +16,7 @@ export function AskOwnerButton({
   listingId: string;
   ownerId: string | null;
   tenantId: string;
-  userId?: string;
+  userId?: string | undefined;
   label?: string;
 }) {
   const navigate = useNavigate();
