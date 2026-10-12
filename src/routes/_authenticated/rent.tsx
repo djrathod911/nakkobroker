@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/useAuth";
+import { AskOwnerButton } from "@/components/listings/AskOwnerButton";
 import { fetchLinkableHomes } from "@/lib/maintenance.api";
 import {
   DUE_DAY,
@@ -280,6 +281,7 @@ function LogForm({ userId, onDone }: { userId: string; onDone: () => void }) {
 }
 
 function PaymentRow({ p, asOwner, onChange }: { p: RentPayment; asOwner?: boolean; onChange: () => void }) {
+  const { user } = useAuth();
   const act = useMutation({
     mutationFn: (s: "on_time" | "late" | "rejected") => confirmRentPayment(p.id, s),
     onSuccess: () => {
@@ -309,6 +311,7 @@ function PaymentRow({ p, asOwner, onChange }: { p: RentPayment; asOwner?: boolea
         </span>
       </div>
       <div className="mt-3 flex flex-wrap gap-2">
+        <AskOwnerButton listingId={p.listing_id} ownerId={p.owner_id} tenantId={p.tenant_id} userId={user?.id} label="Ask about this payment" />
         {p.receipt_path && (
           <Button
             size="sm"
