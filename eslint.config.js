@@ -48,4 +48,9 @@ export default tseslint.config(
   eslintPluginPrettier,
   // Formatting is handled by `bun run format`; style drift should not fail CI.
   { rules: { "prettier/prettier": "warn" } },
+  // Scaffolded email templates take free-form template data by design.
+  {
+    files: ["src/lib/email-templates/**/*.{ts,tsx}"],
+    rules: { "@typescript-eslint/no-explicit-any": "off" },
+  },
 );
