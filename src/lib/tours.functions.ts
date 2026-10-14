@@ -50,7 +50,7 @@ export const bookTourSlotFn = createServerFn({ method: "POST" })
       if (slot && listing && tenantEmail) {
         const { data: ownerProfile } = await supabaseAdmin
           .from("profiles")
-          .select("full_name")
+          .select("display_name")
           .eq("id", listing.owner_id)
           .maybeSingle();
 
@@ -72,13 +72,13 @@ export const bookTourSlotFn = createServerFn({ method: "POST" })
         await sendTemplateEmail("tour-confirmation", tenantEmail, {
           templateData: {
             tenantName:
-              (tenantUser.user?.user_metadata?.full_name as string | undefined) ?? undefined,
+              (tenantUser.user?.user_metadata?.["full_name"] as string | undefined) ?? undefined,
             listingTitle: listing.title,
             listingArea: listing.area ?? undefined,
             listingCity: listing.city ?? undefined,
             tourDay: dayFmt.format(starts),
             tourTime: timeFmt.format(starts),
-            ownerName: (ownerProfile?.full_name as string | undefined) ?? undefined,
+            ownerName: (ownerProfile?.display_name as string | undefined) ?? undefined,
             ownerPhone: listing.contact_phone ?? undefined,
             listingUrl: `https://nakkobroker.com/listing/${listing.id}`,
           },
