@@ -178,7 +178,7 @@ function TermsPage() {
                   LEGAL_CONTACT.email
                 ) : (
                   <span className="rounded-full border border-dashed border-border px-2 py-0.5 text-xs text-muted-foreground">
-                    To be added
+                    Available on request
                   </span>
                 )}
               </dd>
@@ -190,7 +190,7 @@ function TermsPage() {
                   LEGAL_CONTACT.address
                 ) : (
                   <span className="rounded-full border border-dashed border-border px-2 py-0.5 text-xs text-muted-foreground">
-                    To be added
+                    Available on request
                   </span>
                 )}
               </dd>
