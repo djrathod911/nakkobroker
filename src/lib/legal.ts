@@ -4,7 +4,7 @@
 //
 // Contact details are live: email is the public legal contact address,
 // address is city level only by choice — no street number is published.
-// Clearing a value restores the "To be added" placeholder on the pages.
+// Clearing a value restores the "Available on request" fallback on the pages.
 
 export const LEGAL_CONTACT = {
   company: "NakkoBroker",
