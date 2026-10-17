@@ -19,6 +19,14 @@ export const bookTourSlotFn = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => BookInput.parse(data))
   .handler(async ({ data, context }): Promise<{ bookingId: string }> => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    // Only slots on published homes can be booked (also enforced in book_tour_slot).
+    const { data: slotCheck } = await supabaseAdmin
+      .from("tour_slots")
+      .select("id,listings!inner(status)")
+      .eq("id", data.slotId)
+      .eq("listings.status", "published")
+      .maybeSingle();
+    if (!slotCheck) throw new Error("This slot is no longer available");
     const { data: id, error } = await supabaseAdmin.rpc("book_tour_slot", {
       _slot_id: data.slotId,
       _actor: context.userId,
