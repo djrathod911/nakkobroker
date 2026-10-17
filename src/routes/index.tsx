@@ -688,6 +688,30 @@ function Discover() {
                 />
               ))
             )}
+            <div className="flex items-center gap-3 rounded-2xl border border-border bg-card p-4">
+              <img
+                alt="NakkoBroker on Product Hunt"
+                src="https://ph-files.imgix.net/968d2920-6315-4401-9a77-22b3810423ce.svg?auto=compress,format&codec=mozjpeg&cs=strip&fit=crop&h=80&w=80"
+                width={48}
+                height={48}
+                loading="lazy"
+                className="size-12 shrink-0 rounded-lg object-cover"
+              />
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-semibold text-foreground">NakkoBroker</p>
+                <p className="line-clamp-2 text-xs text-muted-foreground">
+                  Zero-brokerage rental discovery across Indian tech hubs
+                </p>
+                <a
+                  href="https://www.producthunt.com/products/nakkobroker?embed=true&utm_source=embed&utm_medium=post_embed"
+                  target="_blank"
+                  rel="noopener"
+                  className="mt-2 inline-flex min-h-9 items-center rounded-full bg-brand px-3 text-xs font-semibold text-brand-foreground transition-colors hover:bg-brand/85"
+                >
+                  Check it out on Product Hunt →
+                </a>
+              </div>
+            </div>
           </div>
           <SiteFooter className="shrink-0 border-t border-border/60 px-2 py-2" />
         </div>
