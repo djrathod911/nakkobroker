@@ -23,6 +23,14 @@ export function SiteFooter({
 }) {
   const legalRow = (
     <div className="flex min-w-0 flex-nowrap items-center justify-center gap-x-0.5 sm:gap-x-1.5">
+      <a
+        href="https://www.producthunt.com/products/nakkobroker?embed=true&utm_source=embed&utm_medium=post_embed"
+        target="_blank"
+        rel="noopener"
+        className="shrink-0 whitespace-nowrap rounded-full border border-brand/60 bg-brand/15 px-1 py-1.5 font-semibold text-foreground transition-colors hover:bg-brand/30 sm:px-1.5 sm:py-0.5"
+      >
+        Product Hunt →
+      </a>
       <span className="mr-0.5 shrink-0">© {new Date().getFullYear()}</span>
       {LEGAL_LINKS.map(({ to, label }) => (
         <Link
