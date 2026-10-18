@@ -11,24 +11,12 @@ import {
 } from "@/data/listings";
 import { cn } from "@/lib/utils";
 import { ensureMaplibreWorker } from "@/lib/maplibre-worker";
+import { SATELLITE_STYLE } from "@/lib/satellite-style";
 
 // Keyless live vector tiles — work on every domain, no API key required.
 const STYLES = {
   map: "https://tiles.openfreemap.org/styles/bright",
   dark: "https://tiles.openfreemap.org/styles/dark",
-} as const;
-
-const SATELLITE_STYLE = {
-  version: 8,
-  sources: {
-    esri: {
-      type: "raster",
-      tiles: ["https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"],
-      tileSize: 256,
-      attribution: "Imagery © Esri",
-    },
-  },
-  layers: [{ id: "esri", type: "raster", source: "esri" }],
 } as const;
 
 export type Basemap = "map" | "dark" | "satellite";
@@ -133,7 +121,7 @@ export function MapView({ listings, activeId, onSelect, onClose, showHeatmap, ba
   useEffect(() => {
     const map = mapRef.current;
     if (!ready || !map) return;
-    map.setStyle(basemap === "satellite" ? (SATELLITE_STYLE as never) : STYLES[basemap]);
+    map.setStyle(basemap === "satellite" ? SATELLITE_STYLE : STYLES[basemap]);
   }, [ready, basemap]);
 
   // Render listing markers
