@@ -134,6 +134,13 @@
       "when": 1792733518920,
       "tag": "0018_accommodation_creator_write_access",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1792733590381,
+      "tag": "0019_accommodation_private_projection",
+      "breakpoints": true
     }
   ]
 }
