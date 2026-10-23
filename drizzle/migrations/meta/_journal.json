@@ -141,6 +141,13 @@
       "when": 1792733590381,
       "tag": "0019_accommodation_private_projection",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1792734035491,
+      "tag": "0020_accommodation_property_reuse_and_validation",
+      "breakpoints": true
     }
   ]
 }
