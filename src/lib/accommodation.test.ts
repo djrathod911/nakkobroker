@@ -38,4 +38,10 @@ describe("shared accommodation rules", () => {
       }).success,
     ).toBe(false);
   });
+  it("rejects negative recurring expenses", () => {
+    expect(sharedDraftSchema.safeParse({ ...emptySharedDraft, title: "Private room available", permission: "confirmed", declaration: true, details: { electricity: -100 } }).success).toBe(false);
+  });
+  it("requires a date for future accommodation", () => {
+    expect(sharedDraftSchema.safeParse({ ...emptySharedDraft, title: "Private room available", permission: "confirmed", declaration: true, availability: "available_soon", availableDate: "" }).success).toBe(false);
+  });
 });
