@@ -5,6 +5,10 @@ import { DEFAULT_RULE, type LifecycleRule } from "./relevance";
 import type { AvailabilityStatus, Furnishing, Listing, Tenant } from "@/data/listings";
 
 export interface DbListingRow {
+  listing_category?: string;
+  accommodation_type?: Listing["accommodationType"];
+  creator_relationship?: string;
+  shared_details?: Listing["sharedDetails"];
   id: string;
   owner_id: string | null;
   title: string;
@@ -47,14 +51,18 @@ export interface DbListingRow {
 }
 
 // contact_phone is intentionally excluded: it is not readable by signed-out visitors.
-const PUBLIC_COLUMNS =
-  "id,owner_id,title,city,house_type,description,bathrooms,balconies,floor,total_floors,parking,facing,area,bhk,rent,deposit,maintenance,negotiable,furnishing,tenant,owner_verified,community_verified,suspicious_price,metro_km,it_corridor_km,sqft,available_from,availability_status,available_from_date,map_visible,amenities,photos,lng,lat,source,votes,created_at,last_confirmed_at,lifecycle_state";
+export const PUBLIC_COLUMNS =
+  "listing_category,accommodation_type,creator_relationship,shared_details,property_group_id,id,owner_id,title,city,house_type,description,bathrooms,balconies,floor,total_floors,parking,facing,area,bhk,rent,deposit,maintenance,negotiable,furnishing,tenant,owner_verified,community_verified,suspicious_price,metro_km,it_corridor_km,sqft,available_from,availability_status,available_from_date,map_visible,amenities,photos,lng,lat,source,votes,created_at,last_confirmed_at,lifecycle_state";
 
 const daysAgo = (iso: string) =>
   Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 86_400_000));
 
 export function toListing(row: DbListingRow): Listing {
   return {
+    listingCategory: row.listing_category ?? "entire_property",
+    accommodationType: row.accommodation_type ?? "entire_property",
+    creatorRelationship: row.creator_relationship ?? "owner",
+    sharedDetails: row.shared_details ?? {},
     id: row.id,
     title: row.title,
     city: row.city ?? "Hyderabad",
@@ -74,7 +82,7 @@ export function toListing(row: DbListingRow): Listing {
     negotiable: row.negotiable,
     furnishing: row.furnishing as Furnishing,
     tenant: row.tenant as Tenant,
-    ownerVerified: row.owner_verified,
+    ownerVerified: row.creator_relationship === "tenant" || row.creator_relationship === "provider" ? false : row.owner_verified,
     communityVerified: row.community_verified,
     suspiciousPrice: row.suspicious_price,
     metroKm: Number(row.metro_km),
@@ -251,6 +259,10 @@ export async function fetchVerifiedPhones(userId: string): Promise<string[]> {
 }
 
 export interface MyListingRow {
+  listing_category: string;
+  accommodation_type: string;
+  creator_relationship: string;
+  availability_status: string;
   id: string;
   title: string;
   area: string;
@@ -271,7 +283,7 @@ export interface MyListingRow {
 export async function fetchMyListings(userId: string): Promise<MyListingRow[]> {
   const { data, error } = await supabase
     .from("listings")
-    .select("id,title,area,city,house_type,bhk,rent,status,votes,owner_verified,photos,created_at,last_confirmed_at,lifecycle_state,warned_at")
+    .select("listing_category,accommodation_type,creator_relationship,availability_status,id,title,area,city,house_type,bhk,rent,status,votes,owner_verified,photos,created_at,last_confirmed_at,lifecycle_state,warned_at")
     .eq("owner_id", userId)
     .order("created_at", { ascending: false });
   if (error) throw error;

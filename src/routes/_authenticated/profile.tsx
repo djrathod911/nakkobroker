@@ -3,6 +3,8 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { ArrowLeft, BadgeCheck, Building2, CalendarClock, IndianRupee, Loader2, LogOut, MessageCircle, Phone, ShieldCheck, ThumbsUp, Trash2, Plus, Wrench } from "lucide-react";
+import { setAccommodationState } from "@/lib/accommodation.api";
+import { accommodationTypes } from "@/lib/accommodation";
 import { emptyTracking, fetchOwnerTracking, type ListingTracking } from "@/lib/owner-tracking.api";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -134,6 +136,10 @@ function ProfilePage() {
     }
   }
 
+  async function updateState(row: MyListingRow, patch: { status?: string; availability_status?: string }) {
+    try { await setAccommodationState(row.id, patch); await Promise.all([queryClient.invalidateQueries({ queryKey: ["my-listings"] }), queryClient.invalidateQueries({ queryKey: ["listings"] }), queryClient.invalidateQueries({ queryKey: ["listing", row.id] })]); toast.success("Listing updated"); } catch (e) { toast.error(e instanceof Error ? e.message : "Could not update listing"); }
+  }
+
   async function remove(row: MyListingRow) {
     if (!user) return;
     if (!window.confirm(`Remove "${row.title}"? This frees the slot for this city and home type.`)) return;
@@ -164,7 +170,7 @@ function ProfilePage() {
 
         <h1 className="text-2xl font-semibold tracking-tight">Your profile</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          NakkoBroker is owner-to-tenant only. No agents, no brokerage, no listing fees.
+          Find a flat. Find a flatmate. Split the rent. Zero brokerage.
         </p>
 
         <section className="glass mt-6 space-y-4 rounded-3xl p-5">
@@ -252,11 +258,11 @@ function ProfilePage() {
             <ul className="mt-4 space-y-2">
               {rows.map((row) => (
                 <li key={row.id} className="glass gap-3 rounded-2xl p-4">
-                  <div className="flex items-center justify-between gap-3">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
                   <div className="min-w-0">
                     <p className="truncate text-sm font-medium">{row.title}</p>
                     <p className="text-xs text-muted-foreground">
-                      {row.bhk} BHK {row.house_type} · {row.area}, {row.city} · {inr(row.rent)}/mo · {row.votes} upvotes
+                      {row.listing_category !== "entire_property" ? accommodationTypes[row.accommodation_type as keyof typeof accommodationTypes] : `${row.bhk} BHK ${row.house_type}`} · {row.area}, {row.city} · {inr(row.rent)}/mo · {row.votes} upvotes
                       {row.owner_verified ? " · Owner verified" : ""}
                     </p>
                   </div>
@@ -278,6 +284,7 @@ function ProfilePage() {
                   </div>
                   </div>
 
+                  {row.listing_category !== "entire_property" && <div className="mt-3 flex flex-wrap gap-2"><span className="w-full text-xs text-muted-foreground">{row.listing_category === "flatmate" ? "Looking for a Flatmate" : "Shared accommodation"} · {row.creator_relationship === "tenant" ? "Tenant-created" : "Advertiser-created"} · {row.availability_status === "occupied" ? "Occupied" : "Available"}</span><Button asChild size="sm" variant="outline"><Link to="/list-accommodation" search={{ category: row.listing_category === "flatmate" ? "flatmate" : "room_bed", edit: row.id }}>Edit</Link></Button><Button size="sm" variant="secondary" onClick={() => void updateState(row, { availability_status: row.availability_status === "occupied" ? "available" : "occupied" })}>{row.availability_status === "occupied" ? "Mark available" : "Mark occupied"}</Button><Button size="sm" variant="outline" onClick={() => void updateState(row, { status: row.status === "published" ? "delisted" : "published" })}>{row.status === "published" ? "Deactivate" : "Reactivate"}</Button></div>}
                   <ListingStats row={row} t={tracking.data?.[row.id] ?? emptyTracking()} />
 
                   {(row.lifecycle_state === "warned" || row.lifecycle_state === "delisted") && (

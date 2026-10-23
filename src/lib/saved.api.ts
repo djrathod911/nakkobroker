@@ -1,9 +1,8 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Listing } from "@/data/listings";
-import { toListing, type DbListingRow } from "@/lib/listings.api";
+import { PUBLIC_COLUMNS, toListing, type DbListingRow } from "@/lib/listings.api";
 
-const LISTING_COLUMNS =
-  "id,owner_id,title,city,house_type,description,bathrooms,balconies,floor,total_floors,parking,facing,area,bhk,rent,deposit,maintenance,negotiable,furnishing,tenant,owner_verified,community_verified,suspicious_price,metro_km,it_corridor_km,sqft,available_from,availability_status,available_from_date,map_visible,amenities,photos,lng,lat,source,votes,created_at";
+const LISTING_COLUMNS = PUBLIC_COLUMNS;
 
 /** Ids of the homes the signed-in tenant has hearted. */
 export async function fetchSavedListingIds(userId: string): Promise<string[]> {

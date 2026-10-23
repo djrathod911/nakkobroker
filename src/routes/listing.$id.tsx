@@ -1,3 +1,6 @@
+import { SharedAccommodationDetails } from "@/components/listings/SharedAccommodationDetails";
+import { AskOwnerButton } from "@/components/listings/AskOwnerButton";
+import { accommodationTypes, isShared } from "@/lib/accommodation";
 import { useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -55,8 +58,8 @@ export const Route = createFileRoute("/listing/$id")({
     const l = loaderData;
     const city = l.city ?? "Hyderabad";
     const kind = l.houseType ?? "Flat";
-    const title = `${l.bhk} BHK ${kind} in ${l.area}, ${city} — ₹${l.rent.toLocaleString("en-IN")}/mo`;
-    const description = `${l.title} in ${l.area}, ${city}. ${l.sqft} sqft, ${l.furnishing}, deposit ₹${l.deposit.toLocaleString("en-IN")}. Zero brokerage, listed directly by the owner.`;
+    const title = `${isShared(l) ? accommodationTypes[l.accommodationType ?? "private_room"] : `${l.bhk} BHK ${kind}`} in ${l.area}, ${city} — ₹${l.rent.toLocaleString("en-IN")}/mo`;
+    const description = `${l.title} in ${l.area}, ${city}. ${l.sqft} sqft, ${l.furnishing}, deposit ₹${l.deposit.toLocaleString("en-IN")}. Zero brokerage, listed directly by ${l.creatorRelationship === "tenant" ? "an existing tenant" : "the advertiser"}.`;
 
     return {
       meta: [
@@ -92,7 +95,7 @@ export const Route = createFileRoute("/listing/$id")({
               "@type": "Offer",
               price: l.rent,
               priceCurrency: "INR",
-              availability: "https://schema.org/InStock",
+              availability: l.availabilityStatus === "occupied" ? "https://schema.org/OutOfStock" : "https://schema.org/InStock",
             },
           }),
         },
@@ -237,7 +240,7 @@ function ListingDetailPage() {
           className="mt-4"
         >
           <div className="flex flex-wrap items-center gap-1.5">
-            <Badge className="rounded-full bg-accent text-accent-foreground">{listing.bhk} BHK</Badge>
+            <Badge className="rounded-full bg-accent text-accent-foreground">{isShared(listing) ? accommodationTypes[listing.accommodationType ?? "private_room"] : `${listing.bhk} BHK`}</Badge>
             <Badge variant="outline" className="rounded-full border-border text-muted-foreground">
               {listing.houseType ?? "Flat"}
             </Badge>
@@ -285,7 +288,7 @@ function ListingDetailPage() {
           )}
           <h1 className="mt-3 break-words text-2xl font-bold sm:text-3xl">{listing.title}</h1>
           <p className="mt-1 text-muted-foreground">
-            {listing.area}, {listing.city ?? "Hyderabad"} · {listing.sqft} sqft · posted{" "}
+            {listing.area}, {listing.city ?? "Hyderabad"} · {listing.sqft ? `${listing.sqft} sqft · ` : ""}posted{" "}
             {listing.postedDaysAgo}d ago
           </p>
         </motion.header>
@@ -324,12 +327,13 @@ function ListingDetailPage() {
         </section>
 
         <section className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <Stat label="Monthly rent" value={`${formatRent(listing.rent)}${listing.negotiable ? " · neg." : ""}`} />
+          <Stat label={isShared(listing) ? "Monthly contribution" : "Monthly rent"} value={`${formatRent(listing.rent)}${listing.negotiable ? " · neg." : ""}`} />
           <Stat label="Deposit" value={formatRent(listing.deposit)} />
           <Stat label="Maintenance" value={listing.maintenance ? formatRent(listing.maintenance) : "None"} />
           <Stat label="Availability" value={availabilityLabel(listing)} />
         </section>
 
+        {isShared(listing) && <SharedAccommodationDetails listing={listing} />}
         {listing.description ? (
           <section className="mt-6">
             <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
@@ -389,9 +393,9 @@ function ListingDetailPage() {
             </div>
 
             <div className="glass min-w-0 rounded-2xl p-3 sm:p-4">
-              <h2 className="text-sm font-semibold">Contact the owner</h2>
+              <h2 className="text-sm font-semibold">{isShared(listing) ? "Contact the advertiser" : "Contact the owner"}</h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                Zero brokerage — you talk to the owner directly.
+                Zero brokerage — connect directly through messages.
               </p>
               {!user ? (
                 <Button
@@ -422,15 +426,17 @@ function ListingDetailPage() {
                 )
               ) : (
                 <p className="mt-3 text-sm text-muted-foreground">
-                  No phone shared. Upvote so the community can request contact details.
+                  No phone shared. Use messages to connect privately.
                 </p>
               )}
 
+              {isShared(listing) && <AskOwnerButton listingId={listing.id} ownerId={listing.ownerId} tenantId={user?.id ?? ""} userId={user?.id} label="I’m Interested" />}
               <ListingChat
                 listingId={listing.id}
                 ownerId={listing.ownerId}
                 userId={user?.id ?? null}
                 listingTitle={listing.title}
+                sharedAccommodation={isShared(listing)}
               />
 
               <TourScheduler
