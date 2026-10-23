@@ -127,6 +127,13 @@
       "when": 1792733320867,
       "tag": "0017_accommodation_validation_hardening",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1792733518920,
+      "tag": "0018_accommodation_creator_write_access",
+      "breakpoints": true
     }
   ]
 }
