@@ -22,9 +22,16 @@ interface Props {
   ownerId: string | null;
   userId: string | null;
   listingTitle: string;
+  sharedAccommodation?: boolean | undefined;
 }
 
-export function ListingChat({ listingId, ownerId, userId, listingTitle }: Props) {
+export function ListingChat({
+  listingId,
+  ownerId,
+  userId,
+  listingTitle,
+  sharedAccommodation = false,
+}: Props) {
   const queryClient = useQueryClient();
   const isOwner = !!userId && userId === ownerId;
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -44,7 +51,9 @@ export function ListingChat({ listingId, ownerId, userId, listingTitle }: Props)
     enabled: isOwner,
   });
 
-  const conversationId = isOwner ? (activeId ?? threads[0]?.id ?? null) : (myConversationId ?? null);
+  const conversationId = isOwner
+    ? (activeId ?? threads[0]?.id ?? null)
+    : (myConversationId ?? null);
   const activeThread = isOwner ? threads.find((t) => t.id === conversationId) : undefined;
   const reputation = useRenterReputation(isOwner ? threads.map((t) => t.tenant_id) : []);
 
@@ -77,20 +86,32 @@ export function ListingChat({ listingId, ownerId, userId, listingTitle }: Props)
   }, [conversationId, queryClient]);
 
   useEffect(() => {
-    if (conversationId && userId && messages.length) void markConversationRead(conversationId, userId);
+    if (conversationId && userId && messages.length)
+      void markConversationRead(conversationId, userId);
     if (messages.length) bottomRef.current?.scrollIntoView({ block: "nearest" });
   }, [messages, conversationId, userId]);
 
   if (!userId) {
     return (
       <div className="mt-4 border-t border-border pt-4">
-        <h3 className="text-sm font-semibold">Chat with the owner</h3>
+        <h3 className="text-sm font-semibold">
+          {sharedAccommodation
+            ? "Chat with the advertiser"
+            : sharedAccommodation
+              ? "Chat with the advertiser"
+              : "Chat with the owner"}
+        </h3>
         <p className="mt-1 text-sm text-muted-foreground">
           Ask about the rent, availability or a viewing — directly, no brokers.
         </p>
-        <Button asChild variant="secondary" className="mt-3 h-auto min-h-11 w-full whitespace-normal rounded-2xl text-center">
+        <Button
+          asChild
+          variant="secondary"
+          className="mt-3 h-auto min-h-11 w-full whitespace-normal rounded-2xl text-center"
+        >
           <Link to="/auth" search={{ next: `/listing/${listingId}` }}>
-            <MessagesSquare className="size-4" /> Sign in to message the owner
+            <MessagesSquare className="size-4" />{" "}
+            {sharedAccommodation ? "Sign in to enquire" : "Sign in to message the owner"}
           </Link>
         </Button>
       </div>
@@ -115,7 +136,7 @@ export function ListingChat({ listingId, ownerId, userId, listingTitle }: Props)
       if (!conversationId) {
         const newId = await requestViewing({
           listingId,
-          ownerId: ownerId!,
+          ownerId: ownerId ?? "",
           tenantId: userId,
           preferredTime: "",
           message: body,
@@ -124,7 +145,7 @@ export function ListingChat({ listingId, ownerId, userId, listingTitle }: Props)
         await queryClient.invalidateQueries({ queryKey: ["my-conversation", listingId, userId] });
         await queryClient.invalidateQueries({ queryKey: ["messages", newId] });
         await queryClient.invalidateQueries({ queryKey: ["conversations"] });
-        toast.success("Message sent — the owner will reply here");
+        toast.success("Message sent — replies appear here");
       } else {
         await sendMessage(conversationId, userId, body);
         setDraft("");
@@ -142,7 +163,11 @@ export function ListingChat({ listingId, ownerId, userId, listingTitle }: Props)
   return (
     <div className="mt-4 border-t border-border pt-4">
       <h3 className="text-sm font-semibold">
-        {isOwner ? "Messages from tenants" : "Chat with the owner"}
+        {isOwner
+          ? "Messages from tenants"
+          : sharedAccommodation
+            ? "Chat with the advertiser"
+            : "Chat with the owner"}
       </h3>
       <p className="mt-1 text-sm text-muted-foreground">
         {isOwner

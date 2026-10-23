@@ -95,7 +95,7 @@ export const Route = createFileRoute("/listing/$id")({
               "@type": "Offer",
               price: l.rent,
               priceCurrency: "INR",
-              availability: "https://schema.org/InStock",
+              availability: l.availabilityStatus === "occupied" ? "https://schema.org/OutOfStock" : "https://schema.org/InStock",
             },
           }),
         },
@@ -288,7 +288,7 @@ function ListingDetailPage() {
           )}
           <h1 className="mt-3 break-words text-2xl font-bold sm:text-3xl">{listing.title}</h1>
           <p className="mt-1 text-muted-foreground">
-            {listing.area}, {listing.city ?? "Hyderabad"} · {listing.sqft} sqft · posted{" "}
+            {listing.area}, {listing.city ?? "Hyderabad"} · {listing.sqft ? `${listing.sqft} sqft · ` : ""}posted{" "}
             {listing.postedDaysAgo}d ago
           </p>
         </motion.header>
@@ -436,6 +436,7 @@ function ListingDetailPage() {
                 ownerId={listing.ownerId}
                 userId={user?.id ?? null}
                 listingTitle={listing.title}
+                sharedAccommodation={isShared(listing)}
               />
 
               <TourScheduler

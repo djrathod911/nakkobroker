@@ -21,7 +21,8 @@ export function AskOwnerButton({
 }) {
   const navigate = useNavigate();
   const [busy, setBusy] = useState(false);
-  if (!ownerId || !userId || (userId !== tenantId && userId !== ownerId)) return null;
+  if (!ownerId || !userId || ownerId === tenantId || (userId !== tenantId && userId !== ownerId))
+    return null;
   const isOwner = userId === ownerId;
 
   async function open() {
@@ -39,7 +40,12 @@ export function AskOwnerButton({
         if (isOwner) throw new Error("no-thread");
         const { data, error } = await supabase
           .from("conversations")
-          .insert({ listing_id: listingId, owner_id: ownerId ?? "", tenant_id: tenantId, preferred_time: "" })
+          .insert({
+            listing_id: listingId,
+            owner_id: ownerId ?? "",
+            tenant_id: tenantId,
+            preferred_time: "",
+          })
           .select("id")
           .single();
         if (error) throw error;
@@ -58,7 +64,13 @@ export function AskOwnerButton({
   }
 
   return (
-    <Button size="sm" variant="secondary" className="min-h-9 rounded-xl" disabled={busy} onClick={() => void open()}>
+    <Button
+      size="sm"
+      variant="secondary"
+      className="min-h-9 rounded-xl"
+      disabled={busy}
+      onClick={() => void open()}
+    >
       {busy ? <Loader2 className="size-4 animate-spin" /> : <MessageCircle className="size-4" />}
       {isOwner ? "Message tenant" : label}
     </Button>

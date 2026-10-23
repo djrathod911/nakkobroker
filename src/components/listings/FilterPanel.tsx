@@ -34,7 +34,11 @@ import { CITIES, cityLabel } from "@/lib/cities";
 export const HOUSE_TYPES = ["Flat", "Villa"];
 
 export const defaultFilters: Filters = {
-  accommodationTypes: [], locality: "", moveInBy: "", bathroomType: "", preference: "",
+  accommodationTypes: [],
+  locality: "",
+  moveInBy: "",
+  bathroomType: "",
+  preference: "",
   city: "Hyderabad",
   houseType: "Any",
   bhk: [],
@@ -49,7 +53,6 @@ export const defaultFilters: Filters = {
 const FURNISHING = ["Unfurnished", "Semi Furnished", "Fully Furnished"];
 const AMENITIES = ["Lift", "Power Backup", "Parking", "Gym", "Swimming Pool"];
 
-
 function Chip({
   label,
   selected,
@@ -60,7 +63,8 @@ function Chip({
   onClick: () => void;
 }) {
   return (
-    <Button variant="outline"
+    <Button
+      variant="outline"
       type="button"
       onClick={onClick}
       aria-pressed={selected}
@@ -121,14 +125,34 @@ function Section({
 }
 
 /** Removable summary of every filter that is currently narrowing results. */
-export function activeFilterChips(filters: Filters): { id: string; label: string; next: Filters }[] {
+export function activeFilterChips(
+  filters: Filters,
+): { id: string; label: string; next: Filters }[] {
   const chips: { id: string; label: string; next: Filters }[] = [];
-  for (const type of filters.accommodationTypes ?? []) chips.push({ id: `ac-${type}`, label: accommodationTypes[type as keyof typeof accommodationTypes] ?? type, next: { ...filters, accommodationTypes: (filters.accommodationTypes ?? []).filter((v) => v !== type) } });
-  for (const key of ["locality", "moveInBy", "bathroomType", "preference"] as const) if (filters[key]) chips.push({ id: key, label: filters[key] ?? "", next: { ...filters, [key]: "" } });
+  for (const type of filters.accommodationTypes ?? [])
+    chips.push({
+      id: `ac-${type}`,
+      label: accommodationTypes[type as keyof typeof accommodationTypes] ?? type,
+      next: {
+        ...filters,
+        accommodationTypes: (filters.accommodationTypes ?? []).filter((v) => v !== type),
+      },
+    });
+  for (const key of ["locality", "moveInBy", "bathroomType", "preference"] as const)
+    if (filters[key])
+      chips.push({ id: key, label: filters[key] ?? "", next: { ...filters, [key]: "" } });
   if (filters.houseType !== "Any")
-    chips.push({ id: "houseType", label: filters.houseType, next: { ...filters, houseType: "Any" } });
+    chips.push({
+      id: "houseType",
+      label: filters.houseType,
+      next: { ...filters, houseType: "Any" },
+    });
   for (const b of filters.bhk)
-    chips.push({ id: `bhk-${b}`, label: `${b} BHK`, next: { ...filters, bhk: filters.bhk.filter((v) => v !== b) } });
+    chips.push({
+      id: `bhk-${b}`,
+      label: `${b} BHK`,
+      next: { ...filters, bhk: filters.bhk.filter((v) => v !== b) },
+    });
   if (filters.minRent > RENT_MIN || filters.maxRent < RENT_MAX)
     chips.push({
       id: "budget",
@@ -136,16 +160,25 @@ export function activeFilterChips(filters: Filters): { id: string; label: string
       next: { ...filters, minRent: RENT_MIN, maxRent: RENT_MAX },
     });
   for (const f of filters.furnishing)
-    chips.push({ id: `fur-${f}`, label: f, next: { ...filters, furnishing: filters.furnishing.filter((v) => v !== f) } });
+    chips.push({
+      id: `fur-${f}`,
+      label: f,
+      next: { ...filters, furnishing: filters.furnishing.filter((v) => v !== f) },
+    });
   for (const a of filters.amenities)
-    chips.push({ id: `am-${a}`, label: a, next: { ...filters, amenities: filters.amenities.filter((v) => v !== a) } });
+    chips.push({
+      id: `am-${a}`,
+      label: a,
+      next: { ...filters, amenities: filters.amenities.filter((v) => v !== a) },
+    });
   for (const s of filters.availabilityStatus)
     chips.push({
       id: `av-${s}`,
       label: availabilityStatusLabel(s as AvailabilityStatus),
       next: { ...filters, availabilityStatus: filters.availabilityStatus.filter((v) => v !== s) },
     });
-  if (filters.ownerOnly) chips.push({ id: "owner", label: "Direct owners", next: { ...filters, ownerOnly: false } });
+  if (filters.ownerOnly)
+    chips.push({ id: "owner", label: "Direct owners", next: { ...filters, ownerOnly: false } });
   return chips;
 }
 
@@ -190,7 +223,9 @@ function BudgetInputs({
   return (
     <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2">
       <div className="relative min-w-0">
-        <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">₹</span>
+        <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+          ₹
+        </span>
         <Input
           type="text"
           inputMode="numeric"
@@ -211,7 +246,9 @@ function BudgetInputs({
       </div>
       <span className="text-xs text-muted-foreground">–</span>
       <div className="relative min-w-0">
-        <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">₹</span>
+        <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+          ₹
+        </span>
         <Input
           type="text"
           inputMode="numeric"
@@ -243,11 +280,59 @@ export function FilterPanel({
 }) {
   return (
     <div className="space-y-6">
-      <Section title="Accommodation type"><div className="flex flex-wrap gap-2">{Object.entries(accommodationTypes).map(([value, label]) => <Chip key={value} label={label} selected={(filters.accommodationTypes ?? []).includes(value)} onClick={() => onChange({ ...filters, accommodationTypes: toggle(filters.accommodationTypes ?? [], value) })} />)}</div></Section>
-      <Section title="Locality"><Input aria-label="Filter locality" value={filters.locality ?? ""} onChange={(e) => onChange({ ...filters, locality: e.target.value })} /></Section>
-      <Section title="Move in by"><Input aria-label="Move in by" type="date" value={filters.moveInBy ?? ""} onChange={(e) => onChange({ ...filters, moveInBy: e.target.value })} /></Section>
-      <Section title="Bathroom type"><div className="flex gap-2">{["Attached", "Shared"].map((value) => <Chip key={value} label={value} selected={filters.bathroomType === value} onClick={() => onChange({ ...filters, bathroomType: filters.bathroomType === value ? "" : value })} />)}</div></Section>
-      <Section title="Household preference"><Input aria-label="Household preference" value={filters.preference ?? ""} onChange={(e) => onChange({ ...filters, preference: e.target.value })} /></Section>
+      <Section title="Accommodation type">
+        <div className="flex flex-wrap gap-2">
+          {Object.entries(accommodationTypes).map(([value, label]) => (
+            <Chip
+              key={value}
+              label={label}
+              selected={(filters.accommodationTypes ?? []).includes(value)}
+              onClick={() =>
+                onChange({
+                  ...filters,
+                  accommodationTypes: toggle(filters.accommodationTypes ?? [], value),
+                })
+              }
+            />
+          ))}
+        </div>
+      </Section>
+      <Section title="Locality">
+        <Input
+          aria-label="Filter locality"
+          value={filters.locality ?? ""}
+          onChange={(e) => onChange({ ...filters, locality: e.target.value })}
+        />
+      </Section>
+      <Section title="Move in by">
+        <Input
+          aria-label="Move in by"
+          type="date"
+          value={filters.moveInBy ?? ""}
+          onChange={(e) => onChange({ ...filters, moveInBy: e.target.value })}
+        />
+      </Section>
+      <Section title="Bathroom type">
+        <div className="flex gap-2">
+          {["Attached", "Shared"].map((value) => (
+            <Chip
+              key={value}
+              label={value}
+              selected={filters.bathroomType === value}
+              onClick={() =>
+                onChange({ ...filters, bathroomType: filters.bathroomType === value ? "" : value })
+              }
+            />
+          ))}
+        </div>
+      </Section>
+      <Section title="Household preference">
+        <Input
+          aria-label="Household preference"
+          value={filters.preference ?? ""}
+          onChange={(e) => onChange({ ...filters, preference: e.target.value })}
+        />
+      </Section>
       <Section title="City">
         <div className="flex flex-wrap gap-2">
           {CITIES.map((c) => (
@@ -292,7 +377,9 @@ export function FilterPanel({
               onClick={() =>
                 onChange({
                   ...filters,
-                  bhk: filters.bhk.includes(n) ? filters.bhk.filter((b) => b !== n) : [...filters.bhk, n],
+                  bhk: filters.bhk.includes(n)
+                    ? filters.bhk.filter((b) => b !== n)
+                    : [...filters.bhk, n],
                 })
               }
             />
@@ -302,7 +389,9 @@ export function FilterPanel({
 
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Budget / month</p>
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Budget / month
+          </p>
           {(filters.minRent > RENT_MIN || filters.maxRent < RENT_MAX) && (
             <button
               type="button"
@@ -394,7 +483,10 @@ export function FilterPanel({
               label={availabilityStatusLabel(value)}
               selected={filters.availabilityStatus.includes(value)}
               onClick={() =>
-                onChange({ ...filters, availabilityStatus: toggle(filters.availabilityStatus, value) })
+                onChange({
+                  ...filters,
+                  availabilityStatus: toggle(filters.availabilityStatus, value),
+                })
               }
             />
           ))}

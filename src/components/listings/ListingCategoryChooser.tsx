@@ -3,9 +3,58 @@ import { Building2, Users, BedDouble, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function ListingCategoryChooser({ onOwner }: { onOwner: () => void }) {
-  return <main className="min-h-dvh bg-background px-4 py-10"><div className="mx-auto max-w-4xl"><Button asChild variant="ghost"><Link to="/">Back to discovery</Link></Button><h1 className="mt-7 text-2xl font-semibold sm:text-3xl">What would you like to list?</h1><p className="mt-3 text-muted-foreground">Choose the option that best describes your property or accommodation.</p><div className="mt-8 grid gap-4 md:grid-cols-3">
-    <article className="order-2 flex flex-col rounded-lg border border-border bg-card p-6 md:order-1"><Building2 className="size-8 text-muted-foreground" /><h2 className="mt-5 text-lg font-semibold">Rent Out My Property</h2><p className="mt-3 flex-1 text-sm leading-relaxed text-muted-foreground">I own or manage a property and want to rent it out.</p><Button className="mt-7" variant="outline" onClick={onOwner}>Continue<ArrowRight className="size-4" /></Button></article>
-    <article className="order-1 flex flex-col rounded-lg border border-brand bg-brand/5 p-6 md:order-2"><Users className="size-8 text-teal" /><h2 className="mt-5 text-lg font-semibold">Find a Flatmate</h2><p className="mt-3 flex-1 text-sm leading-relaxed text-muted-foreground">I’m already living in a rented flat and want someone to share the rent and living expenses.</p><Button asChild className="mt-7"><Link to="/list-accommodation" search={{ category: "flatmate" }}>Find a Flatmate<ArrowRight className="size-4" /></Link></Button></article>
-    <article className="order-3 flex flex-col rounded-lg border border-border bg-card p-6"><BedDouble className="size-8 text-muted-foreground" /><h2 className="mt-5 text-lg font-semibold">Offer a Room or Bed</h2><p className="mt-3 flex-1 text-sm leading-relaxed text-muted-foreground">I have a room or bed available in an existing property and want to find someone to occupy it.</p><Button asChild variant="outline" className="mt-7"><Link to="/list-accommodation" search={{ category: "room_bed" }}>List Room or Bed<ArrowRight className="size-4" /></Link></Button></article>
-  </div></div></main>;
+  return (
+    <main className="min-h-dvh bg-background px-4 py-10">
+      <div className="mx-auto max-w-4xl">
+        <Button asChild variant="ghost">
+          <Link to="/">Back to discovery</Link>
+        </Button>
+        <h1 className="mt-7 text-2xl font-semibold sm:text-3xl">What would you like to list?</h1>
+        <p className="mt-3 text-muted-foreground">
+          Choose the option that best describes your property or accommodation.
+        </p>
+        <div className="mt-8 grid gap-4 md:grid-cols-3">
+          <article className="order-2 flex flex-col rounded-lg border border-border bg-card p-6 md:order-1">
+            <Building2 className="size-8 text-muted-foreground" />
+            <h2 className="mt-5 text-lg font-semibold">Rent Out My Property</h2>
+            <p className="mt-3 flex-1 text-sm leading-relaxed text-muted-foreground">
+              I own or manage a property and want to rent it out.
+            </p>
+            <Button className="mt-7" variant="outline" onClick={onOwner}>
+              Continue
+              <ArrowRight className="size-4" />
+            </Button>
+          </article>
+          <article className="order-1 flex flex-col rounded-lg border border-brand bg-brand/5 p-6 md:order-2">
+            <Users className="size-8 text-teal" />
+            <h2 className="mt-5 text-lg font-semibold">Find a Flatmate</h2>
+            <p className="mt-3 flex-1 text-sm leading-relaxed text-muted-foreground">
+              I’m already living in a rented flat and want someone to share the rent and living
+              expenses.
+            </p>
+            <Button asChild className="mt-7">
+              <Link to="/list-accommodation" search={{ category: "flatmate" }}>
+                Find a Flatmate
+                <ArrowRight className="size-4" />
+              </Link>
+            </Button>
+          </article>
+          <article className="order-3 flex flex-col rounded-lg border border-border bg-card p-6">
+            <BedDouble className="size-8 text-muted-foreground" />
+            <h2 className="mt-5 text-lg font-semibold">Offer a Room or Bed</h2>
+            <p className="mt-3 flex-1 text-sm leading-relaxed text-muted-foreground">
+              I have a room or bed available in an existing property and want to find someone to
+              occupy it.
+            </p>
+            <Button asChild variant="outline" className="mt-7">
+              <Link to="/list-accommodation" search={{ category: "room_bed" }}>
+                List Room or Bed
+                <ArrowRight className="size-4" />
+              </Link>
+            </Button>
+          </article>
+        </div>
+      </div>
+    </main>
+  );
 }
