@@ -1,3 +1,9 @@
+# Shared accommodation
+- [ ] Extend storage with explicit categories, property links, contribution pricing, private total rent, preferences and permission declarations.
+- [ ] Add category selection and tenant/room listing, draft, preview and edit flows.
+- [ ] Integrate shared discovery, filters, cards, detail, enquiries and availability management.
+- [ ] Test financial rules, access controls, persistence and desktop/phone flows; remove controlled test data.
+
 # Satellite zoom
 - [x] Fix unsupported satellite tile requests; deep zoom, wheel zoom and mode switching verified; publishing requested.
 

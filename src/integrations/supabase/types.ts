@@ -14,6 +14,73 @@ export type Database = {
   }
   public: {
     Tables: {
+      accommodation_private: {
+        Row: {
+          creator_id: string
+          disclose_total_rent: boolean
+          listing_id: string
+          permission_answer: string
+          permission_confirmed: boolean
+          total_flat_rent: number
+        }
+        Insert: {
+          creator_id: string
+          disclose_total_rent?: boolean
+          listing_id: string
+          permission_answer?: string
+          permission_confirmed?: boolean
+          total_flat_rent?: number
+        }
+        Update: {
+          creator_id?: string
+          disclose_total_rent?: boolean
+          listing_id?: string
+          permission_answer?: string
+          permission_confirmed?: boolean
+          total_flat_rent?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "accommodation_private_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: true
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      accommodation_properties: {
+        Row: {
+          created_at: string
+          creator_id: string
+          details: Json
+          existing_listing_id: string | null
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          details?: Json
+          existing_listing_id?: string | null
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          details?: Json
+          existing_listing_id?: string | null
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "accommodation_properties_existing_listing_id_fkey"
+            columns: ["existing_listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       conversations: {
         Row: {
           created_at: string
@@ -158,6 +225,7 @@ export type Database = {
       }
       listings: {
         Row: {
+          accommodation_type: string
           amenities: string[]
           area: string
           availability_status: string
@@ -170,6 +238,7 @@ export type Database = {
           community_verified: boolean
           contact_phone: string | null
           created_at: string
+          creator_relationship: string
           delisted_at: string | null
           deposit: number
           description: string
@@ -182,6 +251,7 @@ export type Database = {
           last_confirmed_at: string
           lat: number
           lifecycle_state: string
+          listing_category: string
           lng: number
           maintenance: number
           map_visible: boolean
@@ -192,7 +262,9 @@ export type Database = {
           owner_verified: boolean
           parking: string
           photos: string[]
+          property_group_id: string | null
           rent: number
+          shared_details: Json
           source: string
           sqft: number
           status: string
@@ -205,6 +277,7 @@ export type Database = {
           warned_at: string | null
         }
         Insert: {
+          accommodation_type?: string
           amenities?: string[]
           area: string
           availability_status?: string
@@ -217,6 +290,7 @@ export type Database = {
           community_verified?: boolean
           contact_phone?: string | null
           created_at?: string
+          creator_relationship?: string
           delisted_at?: string | null
           deposit?: number
           description?: string
@@ -229,6 +303,7 @@ export type Database = {
           last_confirmed_at?: string
           lat: number
           lifecycle_state?: string
+          listing_category?: string
           lng: number
           maintenance?: number
           map_visible?: boolean
@@ -239,7 +314,9 @@ export type Database = {
           owner_verified?: boolean
           parking?: string
           photos?: string[]
+          property_group_id?: string | null
           rent: number
+          shared_details?: Json
           source?: string
           sqft?: number
           status?: string
@@ -252,6 +329,7 @@ export type Database = {
           warned_at?: string | null
         }
         Update: {
+          accommodation_type?: string
           amenities?: string[]
           area?: string
           availability_status?: string
@@ -264,6 +342,7 @@ export type Database = {
           community_verified?: boolean
           contact_phone?: string | null
           created_at?: string
+          creator_relationship?: string
           delisted_at?: string | null
           deposit?: number
           description?: string
@@ -276,6 +355,7 @@ export type Database = {
           last_confirmed_at?: string
           lat?: number
           lifecycle_state?: string
+          listing_category?: string
           lng?: number
           maintenance?: number
           map_visible?: boolean
@@ -286,7 +366,9 @@ export type Database = {
           owner_verified?: boolean
           parking?: string
           photos?: string[]
+          property_group_id?: string | null
           rent?: number
+          shared_details?: Json
           source?: string
           sqft?: number
           status?: string
@@ -298,7 +380,15 @@ export type Database = {
           votes?: number
           warned_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "listings_property_group_fkey"
+            columns: ["property_group_id"]
+            isOneToOne: false
+            referencedRelation: "accommodation_properties"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       login_otps: {
         Row: {
@@ -1034,6 +1124,10 @@ export type Database = {
         }
       }
       run_listing_lifecycle: { Args: never; Returns: undefined }
+      save_accommodation: {
+        Args: { _id?: string; _listing: Json; _private: Json }
+        Returns: string
+      }
       send_daily_alert_digests: { Args: never; Returns: undefined }
     }
     Enums: {

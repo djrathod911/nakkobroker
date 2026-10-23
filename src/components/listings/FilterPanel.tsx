@@ -1,3 +1,4 @@
+import { accommodationTypes } from "@/lib/accommodation";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { availabilityStatusLabel, type AvailabilityStatus } from "@/data/listings";
@@ -9,6 +10,11 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 
 export interface Filters {
+  accommodationTypes?: string[];
+  locality?: string;
+  moveInBy?: string;
+  bathroomType?: string;
+  preference?: string;
   city: string;
   houseType: string;
   bhk: number[];
@@ -20,7 +26,7 @@ export interface Filters {
   availabilityStatus: string[]; // "available" | "occupied" | "available_soon"
 }
 
-export const RENT_MIN = 5000;
+export const RENT_MIN = 0;
 export const RENT_MAX = 130000;
 
 export { CITIES } from "@/lib/cities";
@@ -28,6 +34,7 @@ import { CITIES, cityLabel } from "@/lib/cities";
 export const HOUSE_TYPES = ["Flat", "Villa"];
 
 export const defaultFilters: Filters = {
+  accommodationTypes: [], locality: "", moveInBy: "", bathroomType: "", preference: "",
   city: "Hyderabad",
   houseType: "Any",
   bhk: [],
@@ -116,6 +123,8 @@ function Section({
 /** Removable summary of every filter that is currently narrowing results. */
 export function activeFilterChips(filters: Filters): { id: string; label: string; next: Filters }[] {
   const chips: { id: string; label: string; next: Filters }[] = [];
+  for (const type of filters.accommodationTypes ?? []) chips.push({ id: `ac-${type}`, label: accommodationTypes[type as keyof typeof accommodationTypes] ?? type, next: { ...filters, accommodationTypes: (filters.accommodationTypes ?? []).filter((v) => v !== type) } });
+  for (const key of ["locality", "moveInBy", "bathroomType", "preference"] as const) if (filters[key]) chips.push({ id: key, label: filters[key] ?? "", next: { ...filters, [key]: "" } });
   if (filters.houseType !== "Any")
     chips.push({ id: "houseType", label: filters.houseType, next: { ...filters, houseType: "Any" } });
   for (const b of filters.bhk)
@@ -234,6 +243,11 @@ export function FilterPanel({
 }) {
   return (
     <div className="space-y-6">
+      <Section title="Accommodation type"><div className="flex flex-wrap gap-2">{Object.entries(accommodationTypes).map(([value, label]) => <Chip key={value} label={label} selected={(filters.accommodationTypes ?? []).includes(value)} onClick={() => onChange({ ...filters, accommodationTypes: toggle(filters.accommodationTypes ?? [], value) })} />)}</div></Section>
+      <Section title="Locality"><Input aria-label="Filter locality" value={filters.locality ?? ""} onChange={(e) => onChange({ ...filters, locality: e.target.value })} /></Section>
+      <Section title="Move in by"><Input aria-label="Move in by" type="date" value={filters.moveInBy ?? ""} onChange={(e) => onChange({ ...filters, moveInBy: e.target.value })} /></Section>
+      <Section title="Bathroom type"><div className="flex gap-2">{["Attached", "Shared"].map((value) => <Chip key={value} label={value} selected={filters.bathroomType === value} onClick={() => onChange({ ...filters, bathroomType: filters.bathroomType === value ? "" : value })} />)}</div></Section>
+      <Section title="Household preference"><Input aria-label="Household preference" value={filters.preference ?? ""} onChange={(e) => onChange({ ...filters, preference: e.target.value })} /></Section>
       <Section title="City">
         <div className="flex flex-wrap gap-2">
           {CITIES.map((c) => (

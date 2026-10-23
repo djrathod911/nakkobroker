@@ -39,7 +39,7 @@ export function AskOwnerButton({
         if (isOwner) throw new Error("no-thread");
         const { data, error } = await supabase
           .from("conversations")
-          .insert({ listing_id: listingId, owner_id: ownerId!, tenant_id: tenantId, preferred_time: "" })
+          .insert({ listing_id: listingId, owner_id: ownerId ?? "", tenant_id: tenantId, preferred_time: "" })
           .select("id")
           .single();
         if (error) throw error;

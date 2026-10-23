@@ -22,6 +22,7 @@ import {
 
 
 } from "lucide-react";
+import { ListingCategoryChooser } from "@/components/listings/ListingCategoryChooser";
 import { createListing, fetchVerifiedPhones } from "@/lib/listings.api";
 import {
   AMENITIES,
@@ -86,6 +87,11 @@ interface Photo {
 const inr = (n: number) => `₹${n.toLocaleString("en-IN")}`;
 
 function ListYourFlat() {
+  const [ownerJourney, setOwnerJourney] = useState(false);
+  return ownerJourney ? <OwnerListingWizard /> : <ListingCategoryChooser onOwner={() => setOwnerJourney(true)} />;
+}
+
+function OwnerListingWizard() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 

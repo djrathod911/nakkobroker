@@ -1,3 +1,4 @@
+import { accommodationTypes, isShared } from "@/lib/accommodation";
 import { Link } from "@tanstack/react-router";
 import {
   BadgeCheck,
@@ -47,10 +48,11 @@ export function ListingCard({ listing, active, onHover, onSelect, voted, onVote 
       <div className="grid min-w-0 grid-cols-1 items-start gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-1.5">
-            <Badge className="rounded-full bg-accent text-accent-foreground">{listing.bhk} BHK</Badge>
+            <Badge className="rounded-full bg-accent text-accent-foreground">{isShared(listing) ? accommodationTypes[listing.accommodationType ?? "private_room"] : `${listing.bhk} BHK`}</Badge>
             <Badge variant="outline" className="rounded-full border-border text-muted-foreground">
               {listing.furnishing}
             </Badge>
+            {isShared(listing) && <span className="text-xs text-teal">{listing.listingCategory === "flatmate" ? "Looking for a Flatmate" : "Room or Bed"}</span>}
             {listing.source === "To-Let Board" && (
               <Badge className="rounded-full bg-teal/15 text-teal">Board spotted</Badge>
             )}
@@ -86,12 +88,13 @@ export function ListingCard({ listing, active, onHover, onSelect, voted, onVote 
             </Link>
           </h2>
           <p className="break-words text-sm text-muted-foreground">
-            {listing.area} · {listing.sqft} sqft · {listing.tenant}
+            {listing.area}{isShared(listing) ? ` · ${listing.sharedDetails?.bathroom_type ?? "Shared"} bathroom · ${listing.sharedDetails?.existing_occupants ?? 0} existing occupants` : ` · ${listing.sqft} sqft · ${listing.tenant}`}
           </p>
         </div>
         <div className="flex min-w-0 items-center justify-between gap-2 sm:flex-col sm:items-end">
           <div className="min-w-0 sm:text-right">
             <p className="text-lg font-bold tracking-tight">{formatRent(listing.rent)}</p>
+            <p className="text-xs text-muted-foreground">{isShared(listing) ? "Monthly contribution" : "Monthly rent"}</p>
             <p className="text-xs text-muted-foreground">
               {listing.negotiable ? "Negotiable" : "Fixed"} · {formatRent(listing.deposit)} dep
             </p>
@@ -122,6 +125,7 @@ export function ListingCard({ listing, active, onHover, onSelect, voted, onVote 
 
       <div className="mt-3 grid grid-cols-1 items-center gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
         <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+          {listing.creatorRelationship === "tenant" && <span className="text-xs text-muted-foreground">Tenant-created listing</span>}
           {listing.ownerVerified && (
             <span className="inline-flex items-center gap-1 rounded-full bg-success/15 px-2 py-0.5 text-xs text-success">
               <BadgeCheck className="size-3.5 shrink-0" aria-hidden /> Owner verified

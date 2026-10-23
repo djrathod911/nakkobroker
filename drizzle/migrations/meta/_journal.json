@@ -113,6 +113,20 @@
       "when": 1790313188047,
       "tag": "0015_rent_due_fifth_auto_status",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1792733141896,
+      "tag": "0016_shared_accommodation_listings",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1792733320867,
+      "tag": "0017_accommodation_validation_hardening",
+      "breakpoints": true
     }
   ]
 }

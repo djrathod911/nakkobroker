@@ -1,8 +1,14 @@
+import type { AccommodationType, SharedDetails } from "@/lib/accommodation";
+
 export type Furnishing = "Unfurnished" | "Semi Furnished" | "Fully Furnished";
 export type Tenant = "Family" | "Bachelor" | "Anyone";
 export type AvailabilityStatus = "available" | "occupied" | "available_soon";
 
 export interface Listing {
+  listingCategory?: string;
+  accommodationType?: AccommodationType;
+  creatorRelationship?: string;
+  sharedDetails?: SharedDetails;
   id: string;
   title: string;
   /** Optional on demo data; always present on database-backed listings. */

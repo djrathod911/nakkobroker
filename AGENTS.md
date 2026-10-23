@@ -12,3 +12,6 @@
 - City rental pages reuse the shared listing query, filters, listing cards, and MapLibre renderer; this keeps discovery consistent without duplicating city data or booking logic.
 - CI runs only the Bun workflow (`.github/workflows/deno.yml`: install, lint, build); the app is Vite-based, so webpack/Node-matrix templates must not be re-added. Prettier issues are warnings so formatting drift never fails CI.
 - Shared satellite style caps native imagery requests and lets MapLibre overzoom cached imagery, avoiding provider placeholder tiles at unsupported detail levels.
+- Shared accommodation retains listings as offer identities for existing messaging, with creator-scoped property groups and separate private finance; this preserves enquiries and prevents private rent disclosure.
+- Home, city and shared-room discovery use one filter predicate; price always represents the advertised offer and occupied listings require an explicit filter.
+- Shared listing drafts persist as creator-owned draft offers, including uploaded photo paths, and editing preserves the offer ID rather than duplicating it.

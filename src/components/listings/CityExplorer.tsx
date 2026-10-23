@@ -5,15 +5,16 @@ import { toast } from "sonner";
 import { SlidersHorizontal, Map, List } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { FilterPanel, activeFilterChips, defaultFilters } from "./FilterPanel";
+import { FilterPanel, activeFilterChips, defaultFilters, type Filters } from "./FilterPanel";
 import { ListingCard } from "./ListingCard";
 import { fetchListings, fetchMyVotedIds, toggleVote } from "@/lib/listings.api";
+import { matchesListing } from "@/lib/listing-filters";
 import { cityOf } from "@/lib/cities";
 import { useAuth } from "@/hooks/useAuth";
 
 const MapView = lazy(() => import("@/components/map/MapView").then((m) => ({ default: m.MapView })));
 
-export function CityExplorer({ city }: { city: string }) {
+export function CityExplorer({ city, sharedOnly = false }: { city: string; sharedOnly?: boolean }) {
   const { data: listings } = useSuspenseQuery({ queryKey: ["listings"], queryFn: fetchListings });
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -26,20 +27,11 @@ export function CityExplorer({ city }: { city: string }) {
       await Promise.all([queryClient.invalidateQueries({ queryKey: ["listings"] }), queryClient.invalidateQueries({ queryKey: ["my-votes", user.id] })]);
     } catch { toast.error("Could not register your vote"); }
   }
-  const [filters, setFilters] = useState({ ...defaultFilters, city });
+  const [filters, setFilters] = useState<Filters>({ ...defaultFilters, city, accommodationTypes: sharedOnly ? ["private_room", "shared_room", "bed"] : [] });
   const [activeId, setActiveId] = useState<string | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [view, setView] = useState<"list" | "map">("list");
-  const results = listings.filter((l) =>
-    (l.city ?? "Hyderabad") === filters.city &&
-    (filters.houseType === "Any" || (l.houseType ?? "Flat") === filters.houseType) &&
-    (!filters.bhk.length || filters.bhk.includes(l.bhk)) &&
-    l.rent >= filters.minRent && l.rent <= filters.maxRent &&
-    (!filters.ownerOnly || l.source === "Owner") &&
-    (!filters.furnishing.length || filters.furnishing.includes(l.furnishing)) &&
-    filters.amenities.every((a) => l.amenities.includes(a)) &&
-    (!filters.availabilityStatus.length || filters.availabilityStatus.includes(l.availabilityStatus)),
-  );
+  const results = listings.filter((l) => matchesListing(l, filters) && (!sharedOnly || l.listingCategory !== "entire_property"));
 
   return (
     <section aria-label={`Homes in ${city}`} className="mt-6 min-w-0">

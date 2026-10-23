@@ -13,12 +13,14 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CopyrightRouteImport } from './routes/copyright'
+import { Route as FlatmatesRouteImport } from './routes/flatmates'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedListAccommodationRouteImport } from './routes/_authenticated/list-accommodation'
 import { Route as AuthenticatedListYourFlatRouteImport } from './routes/_authenticated/list-your-flat'
 import { Route as AuthenticatedMaintenanceRouteImport } from './routes/_authenticated/maintenance'
 import { Route as AuthenticatedMoveInRouteImport } from './routes/_authenticated/move-in'
@@ -53,6 +55,11 @@ const CopyrightRoute = CopyrightRouteImport.update({
   path: '/copyright',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FlatmatesRoute = FlatmatesRouteImport.update({
+  id: '/flatmates',
+  path: '/flatmates',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const McpRoute = McpRouteImport.update({
   id: '/mcp',
   path: '/mcp',
@@ -84,6 +91,12 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedListAccommodationRoute =
+  AuthenticatedListAccommodationRouteImport.update({
+    id: '/list-accommodation',
+    path: '/list-accommodation',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedListYourFlatRoute =
   AuthenticatedListYourFlatRouteImport.update({
     id: '/list-your-flat',
@@ -163,12 +176,14 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/copyright': typeof CopyrightRoute
+  '/flatmates': typeof FlatmatesRoute
   '/mcp': typeof McpRoute
   '/privacy': typeof PrivacyRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/list-accommodation': typeof AuthenticatedListAccommodationRoute
   '/list-your-flat': typeof AuthenticatedListYourFlatRoute
   '/maintenance': typeof AuthenticatedMaintenanceRoute
   '/move-in': typeof AuthenticatedMoveInRoute
@@ -188,12 +203,14 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/copyright': typeof CopyrightRoute
+  '/flatmates': typeof FlatmatesRoute
   '/mcp': typeof McpRoute
   '/privacy': typeof PrivacyRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/list-accommodation': typeof AuthenticatedListAccommodationRoute
   '/list-your-flat': typeof AuthenticatedListYourFlatRoute
   '/maintenance': typeof AuthenticatedMaintenanceRoute
   '/move-in': typeof AuthenticatedMoveInRoute
@@ -215,12 +232,14 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/copyright': typeof CopyrightRoute
+  '/flatmates': typeof FlatmatesRoute
   '/mcp': typeof McpRoute
   '/privacy': typeof PrivacyRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/list-accommodation': typeof AuthenticatedListAccommodationRoute
   '/_authenticated/list-your-flat': typeof AuthenticatedListYourFlatRoute
   '/_authenticated/maintenance': typeof AuthenticatedMaintenanceRoute
   '/_authenticated/move-in': typeof AuthenticatedMoveInRoute
@@ -242,12 +261,14 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/copyright'
+    | '/flatmates'
     | '/mcp'
     | '/privacy'
     | '/sitemap.xml'
     | '/terms'
     | '/.well-known/oauth-protected-resource'
     | '/dashboard'
+    | '/list-accommodation'
     | '/list-your-flat'
     | '/maintenance'
     | '/move-in'
@@ -267,12 +288,14 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/copyright'
+    | '/flatmates'
     | '/mcp'
     | '/privacy'
     | '/sitemap.xml'
     | '/terms'
     | '/.well-known/oauth-protected-resource'
     | '/dashboard'
+    | '/list-accommodation'
     | '/list-your-flat'
     | '/maintenance'
     | '/move-in'
@@ -293,12 +316,14 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/copyright'
+    | '/flatmates'
     | '/mcp'
     | '/privacy'
     | '/sitemap.xml'
     | '/terms'
     | '/.well-known/oauth-protected-resource'
     | '/_authenticated/dashboard'
+    | '/_authenticated/list-accommodation'
     | '/_authenticated/list-your-flat'
     | '/_authenticated/maintenance'
     | '/_authenticated/move-in'
@@ -320,6 +345,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   CopyrightRoute: typeof CopyrightRoute
+  FlatmatesRoute: typeof FlatmatesRoute
   McpRoute: typeof McpRoute
   PrivacyRoute: typeof PrivacyRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
@@ -363,6 +389,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CopyrightRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/flatmates': {
+      id: '/flatmates'
+      path: '/flatmates'
+      fullPath: '/flatmates'
+      preLoaderRoute: typeof FlatmatesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/mcp': {
       id: '/mcp'
       path: '/mcp'
@@ -403,6 +436,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/list-accommodation': {
+      id: '/_authenticated/list-accommodation'
+      path: '/list-accommodation'
+      fullPath: '/list-accommodation'
+      preLoaderRoute: typeof AuthenticatedListAccommodationRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/list-your-flat': {
@@ -508,6 +548,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedListAccommodationRoute: typeof AuthenticatedListAccommodationRoute
   AuthenticatedListYourFlatRoute: typeof AuthenticatedListYourFlatRoute
   AuthenticatedMaintenanceRoute: typeof AuthenticatedMaintenanceRoute
   AuthenticatedMoveInRoute: typeof AuthenticatedMoveInRoute
@@ -520,6 +561,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedListAccommodationRoute: AuthenticatedListAccommodationRoute,
   AuthenticatedListYourFlatRoute: AuthenticatedListYourFlatRoute,
   AuthenticatedMaintenanceRoute: AuthenticatedMaintenanceRoute,
   AuthenticatedMoveInRoute: AuthenticatedMoveInRoute,
@@ -538,6 +580,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   CopyrightRoute: CopyrightRoute,
+  FlatmatesRoute: FlatmatesRoute,
   McpRoute: McpRoute,
   PrivacyRoute: PrivacyRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,

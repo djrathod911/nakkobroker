@@ -47,6 +47,7 @@ import {
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { formatRent } from "@/data/listings";
 import { fetchLifecycleRules, fetchListings, fetchMyVotedIds, toggleVote } from "@/lib/listings.api";
+import { matchesListing } from "@/lib/listing-filters";
 import { rankListings } from "@/lib/relevance";
 import { fetchSavedListingIds } from "@/lib/saved.api";
 import { useAuth } from "@/hooks/useAuth";
@@ -68,9 +69,9 @@ const POPULAR_AREAS: Record<string, string[]> = Object.fromEntries(
   CITIES.map((c) => [c, areaNames(c)]),
 );
 
-const TITLE = "NakkoBroker | Zero-Brokerage Rentals in Hyderabad & Beyond";
+const TITLE = "NakkoBroker | Find a Flat. Find a Flatmate. Zero Brokerage.";
 const DESCRIPTION =
-  "Find rental homes directly from owners in Hyderabad, Bengaluru, Chennai, Pune and Vizag. Explore the map, message owners and book viewings with zero brokerage.";
+  "Find a flat, private room or flatmate in Hyderabad, Bengaluru, Chennai, Pune and Vizag. Split the rent and connect directly with zero brokerage.";
 
 export const Route = createFileRoute("/")({
   validateSearch: (search: Record<string, unknown>): { city?: string } =>
@@ -172,18 +173,7 @@ function Discover() {
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
-    const matched = allListings.filter((l) => {
-      if ((l.city ?? "Hyderabad") !== filters.city) return false;
-      if (filters.houseType !== "Any" && (l.houseType ?? "Flat") !== filters.houseType) return false;
-      if (q && !`${l.area} ${l.title} ${l.bhk}bhk`.toLowerCase().includes(q)) return false;
-      if (filters.bhk.length && !filters.bhk.includes(l.bhk)) return false;
-      if (l.rent > filters.maxRent || l.rent < filters.minRent) return false;
-      if (filters.ownerOnly && l.source !== "Owner") return false;
-      if (filters.furnishing.length && !filters.furnishing.includes(l.furnishing)) return false;
-      if (filters.amenities.length && !filters.amenities.every((a) => l.amenities.includes(a))) return false;
-      if (filters.availabilityStatus.length && !filters.availabilityStatus.includes(l.availabilityStatus)) return false;
-      return true;
-    });
+    const matched = allListings.filter((l) => matchesListing(l, filters, q));
     // Freshly confirmed homes rank first; stale ones sink instead of vanishing.
     return rankListings(matched, lifecycleRules.data ?? []);
   }, [query, filters, allListings, lifecycleRules.data]);
@@ -270,7 +260,7 @@ function Discover() {
       <div className="pointer-events-none absolute inset-x-0 top-32 z-20 px-3 sm:top-24 sm:px-5">
         <div className="mx-auto max-w-6xl">
           <h1 className="glass inline-block max-w-full rounded-2xl px-3 py-1.5 text-sm font-semibold sm:text-lg">
-            Zero-brokerage rentals in {filters.city}
+            Find a Flat. Find a Flatmate.
 
           </h1>
         </div>
@@ -406,27 +396,27 @@ function Discover() {
               {user ? (
                 <Link
                   to="/list-your-flat"
-                  aria-label="List your flat"
+                  aria-label="List Property"
                   data-analytics-event="cta_click"
                   data-analytics-cta="list_your_flat"
                   data-analytics-location="home_header"
                   data-analytics-auth-state="signed_in"
                 >
                   <Plus className="size-4" />
-                  <span className="hidden sm:inline">List your flat</span>
+                  <span className="hidden sm:inline">List Property</span>
                 </Link>
               ) : (
                 <Link
                   to="/auth"
                   search={{ next: "/list-your-flat" }}
-                  aria-label="List your flat"
+                  aria-label="List Property"
                   data-analytics-event="cta_click"
                   data-analytics-cta="list_your_flat"
                   data-analytics-location="home_header"
                   data-analytics-auth-state="signed_out"
                 >
                   <Plus className="size-4" />
-                  <span className="hidden sm:inline">List your flat</span>
+                  <span className="hidden sm:inline">List Property</span>
                 </Link>
               )}
             </Button>
@@ -563,6 +553,7 @@ function Discover() {
               </button>
             </div>
 
+            <Button asChild variant="secondary" className="mt-3 h-auto min-h-9 w-full whitespace-normal text-xs"><Link to="/flatmates">Find a Flatmate or Shared Room →</Link></Button>
             {/* Quick filters */}
             <div className="mt-3 flex gap-1.5 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible sm:pb-0">
               {CITIES.map((c) => (
@@ -656,9 +647,9 @@ function Discover() {
                       </p>
                       <Button asChild className="mt-4 rounded-xl bg-brand text-brand-foreground hover:bg-brand/90">
                         {user ? (
-                          <Link to="/list-your-flat">List your flat</Link>
+                          <Link to="/list-your-flat">List Property</Link>
                         ) : (
-                          <Link to="/auth" search={{ next: "/list-your-flat" }}>List your flat</Link>
+                          <Link to="/auth" search={{ next: "/list-your-flat" }}>List Property</Link>
                         )}
                       </Button>
                     </>
