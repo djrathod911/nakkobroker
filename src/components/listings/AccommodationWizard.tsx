@@ -464,7 +464,8 @@ export function AccommodationWizard({
                           }
                         | undefined;
                       patch({
-                        propertyId: e.target.value,
+                  propertyId: p?.existingListingId ? "" : e.target.value,
+                  existingListingId: p?.existingListingId ?? "",
                         ...(d
                           ? {
                               city: d.city ?? draft.city,

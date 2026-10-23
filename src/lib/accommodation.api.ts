@@ -36,6 +36,7 @@ export async function saveAccommodation(
       accommodation_type: draft.accommodation,
       creator_relationship: draft.relationship,
       property_group_id: draft.propertyId,
+      existing_listing_id: draft.existingListingId,
       shared_details: draft.details as Json,
       status,
       available_from: draft.availableDate || "Immediate",
@@ -99,12 +100,19 @@ export async function loadAccommodation(id: string): Promise<SharedDraft> {
   };
 }
 export async function accommodationProperties() {
+  const { data: auth } = await supabase.auth.getUser();
+  if (!auth.user) throw new Error("Sign in to manage accommodation");
   const { data, error } = await supabase
     .from("accommodation_properties")
     .select("id,details")
     .order("created_at", { ascending: false });
   if (error) throw error;
-  return data;
+  const listings = await supabase.from("listings").select("id,city,area,bhk,bathrooms,shared_details,listing_category").eq("owner_id", auth.user.id).eq("listing_category", "entire_property");
+  if (listings.error) throw listings.error;
+  return [
+    ...data.map((p) => ({ ...p, existingListingId: "" })),
+    ...(listings.data ?? []).map((l) => ({ id: `listing:${l.id}`, existingListingId: l.id, details: { city: l.city, area: l.area, bhk: l.bhk, bathrooms: l.bathrooms, building_name: `Existing property · ${l.area}` } as Json })),
+  ];
 }
 export async function setAccommodationState(
   id: string,
