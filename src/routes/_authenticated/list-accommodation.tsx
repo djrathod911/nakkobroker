@@ -25,8 +25,10 @@ export const Route = createFileRoute("/_authenticated/list-accommodation")({
       { name: "twitter:card", content: "summary" },
     ],
   }),
-  component: () => {
-    const s = Route.useSearch();
-    return <AccommodationWizard key={s.edit ?? s.category} category={s.category} editId={s.edit} />;
-  },
+  component: ListAccommodationPage,
 });
+
+function ListAccommodationPage() {
+  const s = Route.useSearch();
+  return <AccommodationWizard key={s.edit ?? s.category} category={s.category} editId={s.edit} />;
+}
