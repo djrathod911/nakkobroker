@@ -68,7 +68,7 @@ export const sharedDraftSchema = z
       water: z.number().min(0).optional(), internet: z.number().min(0).optional(), other: z.number().min(0).optional(),
       photo_labels: z.array(z.string()).optional(), total_flat_rent: z.number().min(0).optional(),
       contact_preference: z.string().optional(),
-    }),
+    }).transform((value) => value as SharedDetails),
     permission: z.enum(["", "confirmed", "not_required", "pending"]),
     declaration: z.boolean(),
     photos: z.array(z.string()),
