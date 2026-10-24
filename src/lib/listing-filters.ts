@@ -16,7 +16,8 @@ export function matchesListing(l: Listing, f: Filters, query = "") {
     f.amenities.every((a) => l.amenities.includes(a)) &&
     (f.availabilityStatus.length
       ? f.availabilityStatus.includes(l.availabilityStatus)
-      : l.availabilityStatus !== "occupied") &&
+      : (l.listingCategory ?? "entire_property") === "entire_property" ||
+        l.availabilityStatus !== "occupied") &&
     (!f.moveInBy ||
       (l.availabilityStatus !== "occupied" &&
         (!l.availableFromDate || l.availableFromDate <= f.moveInBy))) &&

@@ -46,6 +46,40 @@ it("excludes occupied accommodation unless explicitly requested", () => {
     ),
   ).toBe(true);
 });
+it("keeps occupied whole flats discoverable by default", () => {
+  const flat: Listing = {
+    ...room,
+    listingCategory: "entire_property",
+    accommodationType: "entire_property",
+    creatorRelationship: "owner",
+    availabilityStatus: "occupied",
+  };
+  expect(matchesListing(flat, defaultFilters)).toBe(true);
+  const legacyFlat = { ...flat };
+  delete legacyFlat.listingCategory;
+  expect(matchesListing(legacyFlat, defaultFilters)).toBe(true);
+});
+it("respects explicit availability filters for occupied whole flats", () => {
+  const flat: Listing = {
+    ...room,
+    listingCategory: "entire_property",
+    availabilityStatus: "occupied",
+  };
+  expect(matchesListing(flat, { ...defaultFilters, availabilityStatus: ["available"] })).toBe(
+    false,
+  );
+  expect(matchesListing(flat, { ...defaultFilters, availabilityStatus: ["occupied"] })).toBe(true);
+});
+it("keeps occupied room and bed offers hidden by default", () => {
+  for (const accommodationType of ["private_room", "shared_room", "bed"] as const) {
+    expect(
+      matchesListing(
+        { ...room, listingCategory: "room_bed", accommodationType, availabilityStatus: "occupied" },
+        defaultFilters,
+      ),
+    ).toBe(false);
+  }
+});
 it("combines room, locality, bathroom, budget and move-in filters", () => {
   const f = {
     ...defaultFilters,
