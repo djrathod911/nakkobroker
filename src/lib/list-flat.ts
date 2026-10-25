@@ -188,8 +188,10 @@ export function sectionStatuses(draft: FlatDraft, photoCount: number) {
     if (section.key === "photos") return { label: section.label, complete: photoCount > 0, touched: photoCount > 0, errors: 0, optional: true };
     const fields = SECTION_FIELDS[index] ?? [];
     const parsed = stepSchemas[index]?.safeParse(draft);
-    const errors = parsed && !parsed.success ? new Set(parsed.error.issues.map((issue) => String(issue.path[0] ?? "form"))).size : 0;
+    const invalidFields = parsed && !parsed.success ? new Set(parsed.error.issues.map((issue) => String(issue.path[0] ?? "form"))) : new Set<string>();
     const confirmed = draft.confirmedSections?.includes(index) ?? false;
+    if (!confirmed) for (const field of fields) if (!entered.has(field)) invalidFields.add(field);
+    const errors = invalidFields.size;
     const touched = fields.some((field) => entered.has(field)) || confirmed;
     const complete = !!parsed?.success && (confirmed || fields.every((field) => entered.has(field)));
     return { label: section.label, complete, touched, errors, optional: false };
