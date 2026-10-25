@@ -1,3 +1,7 @@
+# Listing location consistency
+- [ ] Keep selected locality and coordinates together in owner and shared listing flows, including saved drafts and reused properties.
+- [ ] Test Boduppal, location changes, validation and saved-location readback.
+
 # Shared accommodation
 - [x] Extend storage with explicit categories, property links, contribution pricing, private total rent, preferences and permission declarations.
 - [x] Add category selection and tenant/room listing, draft, preview and edit flows.
