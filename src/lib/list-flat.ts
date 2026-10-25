@@ -43,6 +43,8 @@ export const PARKING = ["None", "Bike", "Car", "Bike + Car"];
 export const FACING = ["East", "West", "North", "South", "North-East", "South-East"];
 
 export interface FlatDraft {
+  enteredFields?: string[];
+  confirmedSections?: number[];
   title: string;
   description: string;
   city: string;
@@ -172,6 +174,33 @@ export const STEPS = [
   { key: "review", label: "Review", hint: "Check and publish" },
 ] as const;
 
+export const SECTION_FIELDS: readonly (readonly string[])[] = [
+  ["city", "house_type", "area", "lng", "lat"],
+  ["title", "description", "bhk", "bathrooms", "balconies", "floor", "total_floors", "parking", "facing", "sqft", "furnishing", "tenant", "available_from", "metro_km", "it_corridor_km"],
+  ["rent", "deposit", "maintenance"],
+  [],
+  ["contact_phone"],
+];
+
+export function sectionStatuses(draft: FlatDraft, photoCount: number) {
+  const entered = new Set(draft.enteredFields ?? []);
+  return STEPS.map((section, index) => {
+    if (section.key === "photos") return { label: section.label, complete: photoCount > 0, touched: photoCount > 0, errors: 0, optional: true };
+    const fields = SECTION_FIELDS[index] ?? [];
+    const parsed = stepSchemas[index]?.safeParse(draft);
+    const errors = parsed && !parsed.success ? new Set(parsed.error.issues.map((issue) => String(issue.path[0] ?? "form"))).size : 0;
+    const confirmed = draft.confirmedSections?.includes(index) ?? false;
+    const touched = fields.some((field) => entered.has(field)) || confirmed;
+    const complete = !!parsed?.success && (confirmed || fields.every((field) => entered.has(field)));
+    return { label: section.label, complete, touched, errors, optional: false };
+  });
+}
+
+/** Legacy drafts only confirm sections the owner already continued past. */
+export function restoreFlatDraft(draft: Partial<FlatDraft>, step: number): FlatDraft {
+  return { ...emptyDraft, ...draft, enteredFields: draft.enteredFields ?? [], confirmedSections: draft.confirmedSections ?? [0, 1, 2, 4].filter((index) => index < step) };
+}
+
 const DRAFT_KEY = "nakko:list-flat-draft";
 
 export interface DraftState {
@@ -190,7 +219,7 @@ export function loadDraftState(): DraftState | null {
     // Support the older shape where the draft itself was stored at the root.
     if (parsed && typeof parsed === "object" && "draft" in parsed && parsed.draft) {
       return {
-        draft: { ...emptyDraft, ...parsed.draft },
+        draft: restoreFlatDraft(parsed.draft, typeof parsed.step === "number" ? parsed.step : 0),
         step: typeof parsed.step === "number" ? parsed.step : 0,
         savedAt: typeof parsed.savedAt === "number" ? parsed.savedAt : Date.now(),
       };

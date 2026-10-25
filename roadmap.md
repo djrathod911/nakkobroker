@@ -1,3 +1,7 @@
+# Listing section completion
+- [ ] Mark sections complete only when their own details are valid and entered or explicitly confirmed; preserve status in saved drafts.
+- [ ] Test untouched pricing, partial entry, completed sections, invalid edits and restored drafts.
+
 # Listing location consistency
 - [x] Keep selected locality and coordinates together in owner and shared listing flows, including saved drafts and reused properties.
 - [x] Test Boduppal, pin changes, validation and signed-in saved-draft readback; correct the reported listing and verify its detail page.
