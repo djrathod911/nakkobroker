@@ -59,6 +59,7 @@ import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { areasForCity, defaultAreaFor } from "@/lib/cities";
+import { movedListingPin } from "@/lib/listing-location";
 
 const TITLE = "List your flat free — NakkoBroker";
 const DESCRIPTION =
@@ -772,15 +773,21 @@ function OwnerListingWizard() {
                       />
                     ))}
                   </div>
+                  <Input
+                    aria-label="Locality or neighbourhood"
+                    value={draft.area}
+                    placeholder="Enter the locality for your pin"
+                    onChange={(event) => set({ area: event.target.value })}
+                  />
                   <FieldError message={errors["area"]} />
                 </div>
                 <div className="space-y-2">
                   <FieldLabel>Search address</FieldLabel>
-                  <AddressSearch city={draft.city} onPick={(lng, lat) => set({ lng, lat })} />
+                  <AddressSearch key={`${draft.city}:${draft.area}:${draft.lng}:${draft.lat}`} city={draft.city} onPick={set} />
                 </div>
-                <PinPicker lng={draft.lng} lat={draft.lat} onChange={(lng, lat) => set({ lng, lat })} />
+                <PinPicker lng={draft.lng} lat={draft.lat} onChange={(lng, lat) => set(movedListingPin(lng, lat))} />
                 <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <MapPin className="size-3.5" /> Pin at {draft.lat.toFixed(4)}, {draft.lng.toFixed(4)}
+                  <MapPin className="size-3.5" /> {draft.area || "Confirm the locality for this pin"} · Pin at {draft.lat.toFixed(4)}, {draft.lng.toFixed(4)}
                 </p>
               </>
             )}

@@ -15,3 +15,4 @@
 - Shared accommodation retains listings as offer identities for existing messaging, with creator-scoped property groups and separate private finance; this preserves enquiries and prevents private rent disclosure.
 - Home, city and shared-room discovery use one filter predicate; price always represents the advertised offer, and only occupied shared-room/bed offers require an explicit availability filter so whole-flat advance listings remain discoverable.
 - Shared listing drafts persist as creator-owned draft offers, including uploaded photo paths, and editing preserves the offer ID rather than duplicating it.
+- Address selection updates locality and coordinates atomically in every listing journey; pin moves require fresh locality confirmation, and reused properties carry their coordinates, preventing stale locality labels from being published.

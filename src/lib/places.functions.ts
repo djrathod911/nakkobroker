@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { DEFAULT_CITY, placesBiasFor } from "@/lib/cities";
+import { localityFromAddress, type AddressComponent } from "@/lib/listing-location";
 
 const GATEWAY_URL = "https://connector-gateway.lovable.dev/google_maps";
 const GOOGLE_PLACES_URL = "https://places.googleapis.com";
@@ -79,6 +80,7 @@ export interface PlaceResult {
   lng: number;
   lat: number;
   label: string;
+  area: string;
 }
 
 export const getPlaceLocation = createServerFn({ method: "POST" })
@@ -90,7 +92,7 @@ export const getPlaceLocation = createServerFn({ method: "POST" })
     const res = await fetch(
       `${placesBase()}/v1/places/${encodeURIComponent(data.placeId)}?sessionToken=${data.sessionToken}`,
       {
-        headers: { ...gatewayHeaders(), "X-Goog-FieldMask": "location,formattedAddress,displayName" },
+        headers: { ...gatewayHeaders(), "X-Goog-FieldMask": "location,formattedAddress,displayName,addressComponents" },
       },
     );
     if (!res.ok) throw new Error(`Place details failed [${res.status}]: ${await res.text()}`);
@@ -98,11 +100,13 @@ export const getPlaceLocation = createServerFn({ method: "POST" })
       location?: { latitude: number; longitude: number };
       formattedAddress?: string;
       displayName?: { text?: string };
+      addressComponents?: AddressComponent[];
     };
     if (!json.location) throw new Error("Place has no location");
     return {
       lng: Number(json.location.longitude.toFixed(6)),
       lat: Number(json.location.latitude.toFixed(6)),
       label: json.displayName?.text ?? json.formattedAddress ?? "Selected place",
+      area: localityFromAddress(json.addressComponents ?? [], json.displayName?.text ?? json.formattedAddress ?? ""),
     };
   });

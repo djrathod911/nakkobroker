@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { CITIES, withinCity } from "@/lib/cities";
 
 export const accommodationTypes = {
   entire_property: "Entire Property",
@@ -40,7 +41,7 @@ export const sharedDraftSchema = z
     propertyId: z.string().default(""),
     existingListingId: z.string().default(""),
     title: z.string().trim().min(6).max(120),
-    city: z.string().min(1),
+    city: z.string().refine((city) => CITIES.includes(city), "Pick a city"),
     area: z.string().trim().min(1),
     lng: z.number(),
     lat: z.number(),
@@ -75,6 +76,8 @@ export const sharedDraftSchema = z
     photos: z.array(z.string()),
   })
   .superRefine((v, ctx) => {
+    if (!withinCity(v.city, v.lng, v.lat))
+      ctx.addIssue({ code: "custom", path: ["lat"], message: `That pin is outside ${v.city} — move it inside the city` });
     if (v.category === "flatmate" && v.relationship !== "tenant")
       ctx.addIssue({
         code: "custom",

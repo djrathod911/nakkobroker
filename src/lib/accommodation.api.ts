@@ -107,11 +107,18 @@ export async function accommodationProperties() {
     .select("id,details")
     .order("created_at", { ascending: false });
   if (error) throw error;
-  const listings = await supabase.from("listings").select("id,city,area,bhk,bathrooms,shared_details,listing_category").eq("owner_id", auth.user.id).eq("listing_category", "entire_property");
+  const listings = await supabase.from("listings").select("id,city,area,lng,lat,bhk,bathrooms,shared_details,listing_category").eq("owner_id", auth.user.id).eq("listing_category", "entire_property");
   if (listings.error) throw listings.error;
+  // Older property-group details omit coordinates; get them from the group's offers.
+  const offers = await supabase.from("listings").select("property_group_id,city,area,lng,lat").eq("owner_id", auth.user.id).not("property_group_id", "is", null).order("updated_at", { ascending: false });
+  if (offers.error) throw offers.error;
   return [
-    ...data.map((p) => ({ ...p, existingListingId: "" })),
-    ...(listings.data ?? []).map((l) => ({ id: `listing:${l.id}`, existingListingId: l.id, details: { city: l.city, area: l.area, bhk: l.bhk, bathrooms: l.bathrooms, building_name: `Existing property · ${l.area}` } as Json })),
+    ...data.map((p) => {
+      const offer = offers.data.find((listing) => listing.property_group_id === p.id);
+      const details = p.details && typeof p.details === "object" && !Array.isArray(p.details) ? p.details : {};
+      return { ...p, details: { ...details, ...(offer ? { city: offer.city, area: offer.area, lng: offer.lng, lat: offer.lat } : {}) } as Json, existingListingId: "" };
+    }),
+    ...(listings.data ?? []).map((l) => ({ id: `listing:${l.id}`, existingListingId: l.id, details: { city: l.city, area: l.area, lng: l.lng, lat: l.lat, bhk: l.bhk, bathrooms: l.bathrooms, building_name: `Existing property · ${l.area}` } as Json })),
   ];
 }
 export async function setAccommodationState(
