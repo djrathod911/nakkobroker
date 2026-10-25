@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { localityFromAddress, movedListingPin, selectedListingLocation } from "./listing-location";
-import { emptyDraft, stepSchemas, loadDraftState, saveDraft, clearDraft } from "./list-flat";
+import { emptyDraft, stepSchemas } from "./list-flat";
+import { emptySharedDraft, sharedDraftSchema } from "./accommodation";
 
 describe("listing location consistency", () => {
   it("selects Boduppal together with its pin instead of retaining Madhapur", () => {
@@ -28,5 +29,11 @@ describe("listing location consistency", () => {
 
   it("rejects an address outside the selected city", () => {
     expect(() => selectedListingLocation("Pune", { area: "Boduppal", lng: 78.5783, lat: 17.4139 })).toThrow("outside Pune");
+  });
+
+  it("also rejects shared-room pins outside the selected city", () => {
+    const draft = { ...emptySharedDraft, title: "Boduppal room", city: "Pune", area: "Boduppal", lng: 78.5783, lat: 17.4139, declaration: true, permission: "confirmed" };
+    expect(sharedDraftSchema.safeParse(draft).success).toBe(false);
+    expect(sharedDraftSchema.safeParse({ ...draft, city: "Hyderabad" }).success).toBe(true);
   });
 });
