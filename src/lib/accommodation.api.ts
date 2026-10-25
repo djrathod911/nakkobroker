@@ -107,11 +107,11 @@ export async function accommodationProperties() {
     .select("id,details")
     .order("created_at", { ascending: false });
   if (error) throw error;
-  const listings = await supabase.from("listings").select("id,city,area,bhk,bathrooms,shared_details,listing_category").eq("owner_id", auth.user.id).eq("listing_category", "entire_property");
+  const listings = await supabase.from("listings").select("id,city,area,lng,lat,bhk,bathrooms,shared_details,listing_category").eq("owner_id", auth.user.id).eq("listing_category", "entire_property");
   if (listings.error) throw listings.error;
   return [
     ...data.map((p) => ({ ...p, existingListingId: "" })),
-    ...(listings.data ?? []).map((l) => ({ id: `listing:${l.id}`, existingListingId: l.id, details: { city: l.city, area: l.area, bhk: l.bhk, bathrooms: l.bathrooms, building_name: `Existing property · ${l.area}` } as Json })),
+    ...(listings.data ?? []).map((l) => ({ id: `listing:${l.id}`, existingListingId: l.id, details: { city: l.city, area: l.area, lng: l.lng, lat: l.lat, bhk: l.bhk, bathrooms: l.bathrooms, building_name: `Existing property · ${l.area}` } as Json })),
   ];
 }
 export async function setAccommodationState(

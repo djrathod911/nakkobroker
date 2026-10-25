@@ -3,7 +3,6 @@ import {
   CITIES as CITY_NAMES,
   areaRate,
   areasForCity,
-  canonicalCity,
   withinCity,
 } from "@/lib/cities";
 
@@ -116,15 +115,12 @@ export const stepSchemas = [
     .object({
       city: z.string().refine((v) => CITIES.includes(v), "Pick a city"),
       house_type: z.string().refine((v) => (HOUSE_TYPES as readonly string[]).includes(v), "Pick Flat or Villa"),
-      area: z.string().min(1, "Pick an area"),
+      area: z.string().trim().min(1, "Enter the locality for your pin").max(200),
       lng: z.number(),
       lat: z.number(),
     })
     .superRefine((v, ctx) => {
-      const city = canonicalCity(v.city);
-      if (!(v.area in areasForCity(city))) {
-        ctx.addIssue({ code: "custom", path: ["area"], message: `Pick an area in ${city}` });
-      }
+      const city = v.city;
       if (!withinCity(city, v.lng, v.lat)) {
         ctx.addIssue({
           code: "custom",
@@ -246,7 +242,7 @@ export function priceHint(draft: FlatDraft): { tone: "ok" | "low" | "high"; text
 export function completeness(draft: FlatDraft, photoCount: number): number {
   const checks = [
     draft.title.trim().length >= 6,
-    !!AREAS[draft.area],
+    !!draft.area.trim() && withinCity(draft.city, draft.lng, draft.lat),
     draft.rent >= 1000,
     draft.sqft >= 100,
     draft.amenities.length > 0,

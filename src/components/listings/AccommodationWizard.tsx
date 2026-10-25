@@ -15,6 +15,7 @@ import { AddressSearch } from "@/components/list-flat/AddressSearch";
 import { PinPicker } from "@/components/list-flat/PinPicker";
 import { CITIES, AMENITIES, FURNISHING, PARKING } from "@/lib/list-flat";
 import { defaultAreaFor } from "@/lib/cities";
+import { movedListingPin } from "@/lib/listing-location";
 import { signedPhotoUrls } from "@/lib/listings.api";
 import {
   accommodationProperties,
@@ -458,6 +459,8 @@ export function AccommodationWizard({
                         | {
                             city?: string;
                             area?: string;
+                            lng?: number;
+                            lat?: number;
                             building_name?: string;
                             bhk?: number;
                             bathrooms?: number;
@@ -470,6 +473,8 @@ export function AccommodationWizard({
                           ? {
                               city: d.city ?? draft.city,
                               area: d.area ?? draft.area,
+                              lng: d.lng ?? draft.lng,
+                              lat: d.lat ?? draft.lat,
                               bedrooms: d.bhk ?? draft.bedrooms,
                               bathrooms: d.bathrooms ?? draft.bathrooms,
                               details: { ...draft.details, building_name: d.building_name ?? "" },
@@ -518,11 +523,11 @@ export function AccommodationWizard({
                   onChange={(parking) => patch({ parking })}
                 />
               </div>
-              <AddressSearch city={draft.city} onPick={(lng, lat) => patch({ lng, lat })} />
+              <AddressSearch key={`${draft.city}:${draft.area}:${draft.lng}:${draft.lat}`} city={draft.city} onPick={patch} />
               <PinPicker
                 lng={draft.lng}
                 lat={draft.lat}
-                onChange={(lng, lat) => patch({ lng, lat })}
+                onChange={(lng, lat) => patch(movedListingPin(lng, lat))}
               />
               <div className="flex flex-wrap gap-2">
                 {AMENITIES.map((a) => (

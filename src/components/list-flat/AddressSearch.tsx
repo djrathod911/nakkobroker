@@ -4,9 +4,10 @@ import { Loader2, MapPin, Search } from "lucide-react";
 import { getPlaceLocation, searchPlaces, type PlaceSuggestion } from "@/lib/places.functions";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { selectedListingLocation, type ListingLocation } from "@/lib/listing-location";
 
 interface AddressSearchProps {
-  onPick: (lng: number, lat: number, label: string) => void;
+  onPick: (location: ListingLocation) => void;
   /** Keeps suggestions inside the city the owner picked. */
   city?: string;
 }
@@ -20,8 +21,14 @@ export function AddressSearch({ onPick, city }: AddressSearchProps) {
   const [loading, setLoading] = useState(false);
   const [suggestions, setSuggestions] = useState<PlaceSuggestion[]>([]);
   const requestId = useRef(0);
+  const alive = useRef(true);
   const sessionToken = useRef(crypto.randomUUID());
   const boxRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    alive.current = true;
+    return () => { alive.current = false; requestId.current++; };
+  }, []);
 
   useEffect(() => {
     const onDocClick = (e: MouseEvent) => {
@@ -32,13 +39,13 @@ export function AddressSearch({ onPick, city }: AddressSearchProps) {
   }, []);
 
   useEffect(() => {
+    const id = ++requestId.current;
     const q = query.trim();
     if (q.length < 3) {
       setSuggestions([]);
       setOpen(false);
       return;
     }
-    const id = ++requestId.current;
     const timer = window.setTimeout(async () => {
       setLoading(true);
       try {
@@ -55,21 +62,25 @@ export function AddressSearch({ onPick, city }: AddressSearchProps) {
       }
     }, 300);
     return () => window.clearTimeout(timer);
-  }, [query, runSearch]);
+  }, [query, city, runSearch]);
 
   const pick = async (s: PlaceSuggestion) => {
+    const id = ++requestId.current;
     setOpen(false);
     setLoading(true);
     const token = sessionToken.current;
     sessionToken.current = crypto.randomUUID(); // retire token after selection
     try {
       const place = await resolvePlace({ data: { placeId: s.placeId, sessionToken: token } });
+      if (!alive.current || id !== requestId.current) return;
+      const location = selectedListingLocation(city ?? "Hyderabad", place);
       setQuery(place.label);
-      onPick(place.lng, place.lat, place.label);
-    } catch {
-      toast.error("Couldn't find that address — try a nearby landmark");
+      onPick(location);
+    } catch (error) {
+      if (alive.current && id === requestId.current)
+        toast.error(error instanceof Error ? error.message : "Couldn't find that address — try a nearby landmark");
     } finally {
-      setLoading(false);
+      if (alive.current && id === requestId.current) setLoading(false);
     }
   };
 
@@ -80,7 +91,7 @@ export function AddressSearch({ onPick, city }: AddressSearchProps) {
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         onFocus={() => suggestions.length && setOpen(true)}
-        placeholder="Search an address or landmark, e.g. Mindspace Madhapur"
+        placeholder="Search an address or landmark"
         aria-label="Search for your flat's address"
         className="rounded-2xl pl-9 pr-9"
       />
