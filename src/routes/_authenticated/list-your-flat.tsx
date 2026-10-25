@@ -44,6 +44,8 @@ import {
   normalizeIndianPhone,
   saveDraft,
   stepSchemas,
+  sectionStatuses,
+  restoreFlatDraft,
   type FlatDraft,
 } from "@/lib/list-flat";
 import { getCloudDraft, saveCloudDraft, deleteCloudDraft } from "@/lib/drafts.functions";
@@ -157,11 +159,11 @@ function OwnerListingWizard() {
         }
         const useCloud = !local || cloud.savedAt > local.savedAt;
         if (useCloud) {
-          setDraft({ ...emptyDraft, ...cloud.draft });
+          setDraft(restoreFlatDraft(cloud.draft, cloud.step));
           setStep(Math.min(Math.max(cloud.step, 0), STEPS.length - 1));
           setSavedAt(cloud.savedAt);
           setRestored(true);
-          saveDraft({ ...emptyDraft, ...cloud.draft } as FlatDraft, cloud.step);
+          saveDraft(restoreFlatDraft(cloud.draft, cloud.step), cloud.step);
           toast.info("Restored your draft from the cloud", {
             description: `Synced ${new Date(cloud.savedAt).toLocaleString("en-IN")}`,
           });
@@ -238,7 +240,7 @@ function OwnerListingWizard() {
       for (const k of Object.keys(patch)) next[k] = true;
       return next;
     });
-    setDraft((d) => ({ ...d, ...patch }));
+    setDraft((d) => ({ ...d, ...patch, enteredFields: [...new Set([...(d.enteredFields ?? []), ...Object.keys(patch)])] }));
   }, []);
 
   const num = (key: keyof FlatDraft) => (e: React.ChangeEvent<HTMLInputElement>) =>
@@ -277,35 +279,8 @@ function OwnerListingWizard() {
 
   // Per-step completion status so users see what's already valid before hitting Continue.
   const stepStatuses = useMemo(() => {
-    return STEPS.map((s, i) => {
-      if (s.key === "photos") {
-        const hasPhotos = photos.length > 0;
-        return {
-          complete: hasPhotos,
-          touched: true,
-          errors: hasPhotos ? 0 : 1,
-          optional: true,
-          label: s.label,
-        };
-      }
-      const schema = stepSchemas[i];
-      if (!schema) return { complete: true, touched: true, errors: 0, optional: false, label: s.label };
-      const parsed = schema.safeParse(liveDraft);
-      const stepFields = new Set(
-        parsed.success
-          ? []
-          : parsed.error.issues.map((issue) => String(issue.path[0] ?? "form")),
-      );
-      const anyTouched = Array.from(stepFields).some((k) => touched[k]);
-      return {
-        complete: parsed.success,
-        touched: anyTouched,
-        errors: parsed.success ? 0 : stepFields.size,
-        optional: false,
-        label: s.label,
-      };
-    });
-  }, [liveDraft, touched, photos.length]);
+    return sectionStatuses(draft, photos.length);
+  }, [draft, photos.length]);
 
   const progress = useMemo(() => completeness(draft, photos.length), [draft, photos.length]);
 
@@ -317,6 +292,8 @@ function OwnerListingWizard() {
     if (!schema) return true;
     const parsed = schema.safeParse(draft);
     if (parsed.success) {
+      setDraft((draft) => ({ ...draft, confirmedSections: [...new Set([...(draft.confirmedSections ?? []), index])] }));
+      setDirty(true);
       if (index === step) setShowAllErrors(false);
       return true;
     }
@@ -562,7 +539,8 @@ function OwnerListingWizard() {
         <div className="mt-6 space-y-3">
           <ol className="flex items-center gap-2 overflow-x-auto pb-1">
             {STEPS.map((s, i) => {
-              const status = stepStatuses[i]!;
+              const status = stepStatuses[i];
+              if (!status) return null;
               const isCurrent = i === step;
               const isPast = i < step;
               const isFuture = i > step;
@@ -570,7 +548,7 @@ function OwnerListingWizard() {
 
               let statusIcon: React.ReactNode;
               let statusClass = "";
-              if (status.complete || (isPast && !status.errors)) {
+              if (status.complete) {
                 statusIcon = <Check className="size-3.5" />;
                 statusClass = "border-emerald-500/60 bg-emerald-500/15 text-emerald-400";
               } else if (status.optional && !status.complete) {
@@ -622,7 +600,7 @@ function OwnerListingWizard() {
                     <span
                       className={cn(
                         "h-px w-4 transition-colors",
-                        (stepStatuses[i]!.complete || i < step) && stepStatuses[i + 1]!.complete
+                        status.complete && stepStatuses[i + 1]?.complete
                           ? "bg-emerald-500/40"
                           : "bg-border",
                       )}
