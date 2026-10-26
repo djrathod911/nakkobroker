@@ -18,3 +18,4 @@
 - Address selection updates locality and coordinates atomically in every listing journey; pin moves require fresh locality confirmation, and reused properties carry their coordinates, preventing stale locality labels from being published.
 - Owner section completion requires valid values plus entered-field or explicit section-confirmation metadata stored in the draft; defaults and navigation alone never complete a section.
 - A shared launch policy disables all SMS request and verification endpoints before privileged imports or OTP writes; email signup and valid listing contacts stay independent of phone-verification badges, preventing charges and false verification.
+- Pass the Cloud-issued token to both signup and magic-link email templates because passwordless creation and returning-user sign-in dispatch different email actions.
