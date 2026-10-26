@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireSmsVerification } from "./phone-verification-policy";
 
 const PhoneInput = z.object({ phone: z.string().trim().min(6).max(20) });
 const VerifyInput = z.object({
@@ -17,6 +18,7 @@ export const requestPhoneOtp = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data: unknown) => PhoneInput.parse(data))
   .handler(async ({ data, context }): Promise<OtpRequestResult> => {
+    requireSmsVerification();
     const {
       normalizePhone,
       generateCode,
@@ -81,6 +83,7 @@ export const verifyPhoneOtp = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data: unknown) => VerifyInput.parse(data))
   .handler(async ({ data, context }): Promise<{ verified: true; phone: string }> => {
+    requireSmsVerification();
     const { normalizePhone, hashCode, hashesMatch, MAX_ATTEMPTS } = await import("./phone-verify.server");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 

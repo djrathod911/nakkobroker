@@ -1,3 +1,7 @@
+# Optional phone verification launch
+- [ ] Remove unavailable SMS actions, preserve email-code signup, and keep contact numbers honestly labelled.
+- [ ] Reject SMS endpoints before any OTP writes or charges; test signup, signed-in listing publication and cleanup.
+
 # Listing section completion
 - [x] Mark sections complete only when their own details are valid and entered or explicitly confirmed; preserve status in saved drafts.
 - [x] Test untouched pricing, partial entry, completed sections, invalid edits and restored drafts; signed-in checks and all 44 tests pass.

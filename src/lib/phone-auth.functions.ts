@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { requireSmsVerification } from "./phone-verification-policy";
 
 const PhoneInput = z.object({ phone: z.string().trim().min(6).max(20) });
 const VerifyInput = z.object({
@@ -24,6 +25,7 @@ export interface LoginSession {
 export const requestLoginOtp = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => PhoneInput.parse(data))
   .handler(async ({ data }): Promise<LoginOtpResult> => {
+    requireSmsVerification();
     const { normalizePhone, generateCode, hashCode, sendOtpSms, OTP_TTL_MINUTES } = await import(
       "./phone-verify.server"
     );
@@ -60,6 +62,7 @@ export const requestLoginOtp = createServerFn({ method: "POST" })
 export const verifyLoginOtp = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => VerifyInput.parse(data))
   .handler(async ({ data }): Promise<LoginSession> => {
+    requireSmsVerification();
     const { normalizePhone, hashCode, hashesMatch } = await import("./phone-verify.server");
     const { syntheticEmail, derivedPassword, createAuthClient } = await import("./phone-auth.server");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");

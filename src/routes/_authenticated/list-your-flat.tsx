@@ -1164,11 +1164,7 @@ function OwnerListingWizard() {
                   engines.
                 </p>
 
-                <OwnerVerification
-                  phone={draft.contact_phone.trim()}
-                  verified={phoneVerified}
-                  onVerified={(p) => setVerifiedPhones((prev) => (prev.includes(p) ? prev : [...prev, p]))}
-                />
+                <OwnerVerification verified={phoneVerified} />
 
                 <div className="rounded-2xl border border-border bg-secondary/30 p-4">
                   <div className="flex items-start justify-between gap-3">
