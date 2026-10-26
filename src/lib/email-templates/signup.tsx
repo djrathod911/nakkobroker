@@ -17,6 +17,7 @@ interface SignupEmailProps {
   siteUrl: string
   recipient: string
   confirmationUrl: string
+  token?: string
 }
 
 export const SignupEmail = ({
@@ -24,6 +25,7 @@ export const SignupEmail = ({
   siteUrl,
   recipient,
   confirmationUrl,
+  token,
 }: SignupEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head>
@@ -45,8 +47,9 @@ export const SignupEmail = ({
           <Link href={`mailto:${recipient}`} style={link}>
             {recipient}
           </Link>
-          ) by clicking the button below:
+          ) by entering the code below on the sign-in page, or using the button:
         </Text>
+        {token ? <Text style={codeBox}>{token}</Text> : null}
         <Button className="dm-btn" style={button} href={confirmationUrl}>
           Verify Email
         </Button>
@@ -75,6 +78,17 @@ const text = {
   margin: '0 0 25px',
 }
 const link = { color: 'inherit', textDecoration: 'underline' }
+const codeBox = {
+  fontSize: '32px',
+  fontWeight: 'bold' as const,
+  textAlign: 'center' as const,
+  color: '#0D1117',
+  backgroundColor: '#f3f4f6',
+  border: '1px solid #e5e7eb',
+  borderRadius: '8px',
+  padding: '16px 0',
+  margin: '0 0 25px',
+}
 const button = {
   backgroundColor: '#000000',
   color: '#ffffff',

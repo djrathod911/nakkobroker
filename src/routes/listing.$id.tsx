@@ -430,6 +430,12 @@ function ListingDetailPage() {
                 </p>
               )}
 
+              {user && contactPhone && (
+                <p className="mt-2 text-xs text-muted-foreground" role="status">
+                  {listing.ownerVerified ? "Phone verified" : "Contact number not verified"}
+                </p>
+              )}
+
               {isShared(listing) && <AskOwnerButton listingId={listing.id} ownerId={listing.ownerId} tenantId={user?.id ?? ""} userId={user?.id} label="I’m Interested" />}
               <ListingChat
                 listingId={listing.id}
