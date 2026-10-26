@@ -1,7 +1,9 @@
 # Optional phone verification launch
 - [x] Remove unavailable SMS actions, preserve email-code signup, and keep contact numbers honestly labelled.
 - [x] Reject all four SMS endpoints before privileged access; 51 tests pass, signup validation and signed-in publication/readback verified, temporary listing removed and original cloud draft restored.
-- [ ] Verify fresh signup inbox delivery, email-code sign-in and listing publication without SMS; fix failures and remove controlled test data.
+- [x] Find and fix missing signup-email token; 52 tests pass. Verify actual returning-user code delivery/sign-in for the fresh account, publish/read back an unverified-contact listing with zero SMS requests, and remove the listing.
+- [ ] Verify fresh signup code delivery after publishing: managed emails still use the live signup template; current emails contain only a link. Fresh account confirmed through its delivered link; subsequent email-code sign-in passed.
+- [ ] Remove the two controlled auth accounts through More → Users: no supported account-deletion tool is available; temporary listings and drafts are removed.
 
 # Listing section completion
 - [x] Mark sections complete only when their own details are valid and entered or explicitly confirmed; preserve status in saved drafts.
