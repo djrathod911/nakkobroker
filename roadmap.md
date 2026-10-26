@@ -1,6 +1,7 @@
 # Optional phone verification launch
-- [ ] Remove unavailable SMS actions, preserve email-code signup, and keep contact numbers honestly labelled.
-- [ ] Reject SMS endpoints before any OTP writes or charges; test signup, signed-in listing publication and cleanup.
+- [x] Remove unavailable SMS actions, preserve email-code signup, and keep contact numbers honestly labelled.
+- [x] Reject all four SMS endpoints before privileged access; 51 tests pass, signup validation and signed-in publication/readback verified, temporary listing removed and original cloud draft restored.
+- [ ] Recheck delivery and successful entry of a real signup email code: requires access to the recipient's email code; existing email OTP delivery was not changed.
 
 # Listing section completion
 - [x] Mark sections complete only when their own details are valid and entered or explicitly confirmed; preserve status in saved drafts.
