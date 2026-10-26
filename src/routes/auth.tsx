@@ -151,7 +151,7 @@ function AuthPage() {
             <>
               <h1 className="mt-4 text-xl font-semibold tracking-tight">Sign in or create an account</h1>
               <p className="mt-1 text-sm text-muted-foreground">
-                We'll email you a 6-digit code. No password needed.
+                We'll email you a 6-digit code. No password or SMS needed.
               </p>
 
               <form onSubmit={sendCode} className="mt-5 space-y-3" noValidate>
@@ -293,7 +293,7 @@ function AuthPage() {
 
           <p className="mt-5 flex items-start gap-2 text-[11px] leading-relaxed text-muted-foreground">
             <ShieldCheck className="mt-0.5 size-3.5 shrink-0 text-brand" aria-hidden />
-            One account per email. No brokers, no spam — just direct owner-to-tenant connections on NakkoBroker.
+            Email confirms your account, not your phone number. A valid contact number is needed when listing a home; SMS verification is optional.
           </p>
         </div>
         <SiteFooter className="mt-6" />
