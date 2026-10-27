@@ -50,22 +50,12 @@ export interface Listing {
   source: "Owner" | "To-Let Board";
 }
 
-/** Human-readable label for each availability status. */
+/** Human-readable availability line — single source of truth lives in @/lib/availability. */
 export function availabilityLabel(listing: Pick<Listing, "availabilityStatus" | "availableFrom" | "availableFromDate">): string {
-  switch (listing.availabilityStatus) {
-    case "available":
-      return listing.availableFrom === "Immediate" ? "Available Now" : `Available from ${listing.availableFrom}`;
-    case "occupied":
-      return listing.availableFromDate
-        ? `Currently Occupied — Available from ${new Date(listing.availableFromDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}`
-        : `Currently Occupied — ${listing.availableFrom}`;
-    case "available_soon":
-      return listing.availableFromDate
-        ? `Available from ${new Date(listing.availableFromDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}`
-        : `Available Soon — ${listing.availableFrom}`;
-    default:
-      return listing.availableFrom;
-  }
+  return availabilityText({
+    occupancyStatus: listing.availabilityStatus === "occupied" ? "occupied" : "vacant",
+    availabilityDate: listing.availableFromDate ?? "",
+  });
 }
 
 export const HYDERABAD_CENTER: [number, number] = [78.4483, 17.4239];

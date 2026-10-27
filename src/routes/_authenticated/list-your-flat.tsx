@@ -1195,7 +1195,13 @@ function OwnerListingWizard() {
                   <dl className="mt-3 grid grid-cols-2 gap-2 text-xs text-muted-foreground sm:grid-cols-4">
                     <Summary label="Config" value={`${draft.bhk} BHK`} />
                     <Summary label="Furnishing" value={draft.furnishing} />
-                    <Summary label="Available" value={draft.available_from} />
+                    <Summary
+                      label="Availability"
+                      value={availabilityText({
+                        occupancyStatus: draft.occupancy_status,
+                        availabilityDate: draft.available_from_date || (draft.occupancy_status === "vacant" ? todayISO() : ""),
+                      })}
+                    />
                     <Summary label="Photos" value={`${photos.length}`} />
                     <Summary label="Metro" value={`${draft.metro_km} km`} />
                     <Summary label="IT hub" value={`${draft.it_corridor_km} km`} />
