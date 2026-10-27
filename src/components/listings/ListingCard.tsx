@@ -8,7 +8,6 @@ import {
   TrainFront,
   Building2,
   ChevronRight,
-  Clock,
   CheckCircle2,
   Ban,
 } from "lucide-react";
