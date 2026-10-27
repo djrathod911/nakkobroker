@@ -27,7 +27,7 @@ export default defineTool({
     let query = supabase
       .from("listings")
       .select(
-        "id,title,city,area,house_type,bhk,rent,deposit,furnishing,tenant,sqft,available_from,owner_verified,source,votes,created_at",
+        "id,title,city,area,house_type,bhk,rent,deposit,furnishing,tenant,sqft,available_from,availability_status,available_from_date,owner_verified,source,votes,created_at",
       )
       .eq("status", "published")
       .order("created_at", { ascending: false })

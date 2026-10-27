@@ -16,7 +16,7 @@ export default defineTool({
     const { data, error } = await supabase
       .from("listings")
       .select(
-        "id,title,description,city,area,house_type,bhk,bathrooms,balconies,floor,total_floors,parking,facing,rent,deposit,maintenance,negotiable,furnishing,tenant,sqft,metro_km,it_corridor_km,available_from,amenities,owner_verified,community_verified,suspicious_price,source,votes,created_at",
+        "id,title,description,city,area,house_type,bhk,bathrooms,balconies,floor,total_floors,parking,facing,rent,deposit,maintenance,negotiable,furnishing,tenant,sqft,metro_km,it_corridor_km,available_from,availability_status,available_from_date,amenities,owner_verified,community_verified,suspicious_price,source,votes,created_at",
       )
       .eq("id", id)
       .maybeSingle();
