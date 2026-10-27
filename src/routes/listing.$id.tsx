@@ -17,7 +17,6 @@ import {
   AlertTriangle,
   ImageOff,
   CheckCircle2,
-  Clock,
   Ban,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
