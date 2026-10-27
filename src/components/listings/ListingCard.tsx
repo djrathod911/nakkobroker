@@ -138,8 +138,8 @@ export function ListingCard({
           <Users className="size-3.5 shrink-0" aria-hidden /> {listing.votes} votes
         </span>
       </div>
-      {/* Availability detail line */}
-      {listing.availabilityStatus !== "available" && (
+      {/* Availability detail line — show whenever it adds info beyond "Available Now" */}
+      {(listing.availabilityStatus === "occupied" || !!listing.availableFromDate) && (
         <p className="mt-1.5 text-[11px] text-muted-foreground">{availabilityLabel(listing)}</p>
       )}
 
