@@ -25,18 +25,8 @@ export const AMENITIES = [
   "Water Supply 24x7",
   "Pet Friendly",
 ];
-export const AVAILABILITY = ["Immediate", "Within 15 days", "Next month", "After 2 months"];
-export const AVAILABILITY_STATUS_OPTIONS = [
-  { value: "available", label: "Available Now", description: "Property is ready to move in" },
-  { value: "occupied", label: "Currently Occupied", description: "Tenant is living here; available later" },
-  { value: "available_soon", label: "Available Soon", description: "Will be available on a specific date" },
-] as const;
-export const AVAILABLE_SOON_OPTIONS = [
-  { value: "1_month", label: "In 1 month" },
-  { value: "2_months", label: "In 2 months" },
-  { value: "3_months", label: "In 3 months" },
-  { value: "custom", label: "Pick a date" },
-] as const;
+export { OCCUPANCY_OPTIONS, availabilityText, validateAvailability, todayISO, legacyAvailableFrom } from "@/lib/availability";
+export type { OccupancyStatus } from "@/lib/availability";
 export const CITIES = CITY_NAMES;
 export const HOUSE_TYPES = ["Flat", "Villa"] as const;
 export const PARKING = ["None", "Bike", "Car", "Bike + Car"];
@@ -63,10 +53,10 @@ export interface FlatDraft {
   furnishing: string;
   tenant: string;
   amenities: string[];
-  available_from: string;
-  availability_status: "available" | "occupied" | "available_soon";
-  available_soon_preset: string; // "1_month" | "2_months" | "3_months" | "custom"
-  available_from_date: string; // ISO date string when custom date is picked
+  /** Single availability model: occupancy first, then the relevant date. */
+  occupancy_status: "vacant" | "occupied";
+  /** ISO date — move-in date when vacant, expected vacancy when occupied; "" = not decided (occupied only). */
+  available_from_date: string;
   map_visible: boolean;
   metro_km: number;
   it_corridor_km: number;
