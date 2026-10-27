@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { validateAvailability } from "@/lib/availability";
 import {
   CITIES as CITY_NAMES,
   areaRate,
@@ -197,7 +198,24 @@ export function sectionStatuses(draft: FlatDraft, photoCount: number) {
 
 /** Legacy drafts only confirm sections the owner already continued past. */
 export function restoreFlatDraft(draft: Partial<FlatDraft>, step: number): FlatDraft {
-  return { ...emptyDraft, ...draft, enteredFields: draft.enteredFields ?? [], confirmedSections: draft.confirmedSections ?? [0, 1, 2, 4].filter((index) => index < step) };
+  // Migrate pre-redesign drafts that stored availability_status / available_from.
+  const legacy = draft as Partial<FlatDraft> & {
+    availability_status?: "available" | "occupied" | "available_soon";
+    available_from?: string;
+  };
+  const migrated: Partial<FlatDraft> = { ...draft };
+  if (migrated.occupancy_status === undefined && legacy.availability_status) {
+    migrated.occupancy_status = legacy.availability_status === "occupied" ? "occupied" : "vacant";
+    if (legacy.availability_status === "available" && legacy.available_from === "Immediate") {
+      migrated.available_from_date = "";
+    }
+  }
+  return {
+    ...emptyDraft,
+    ...migrated,
+    enteredFields: draft.enteredFields ?? [],
+    confirmedSections: draft.confirmedSections ?? [0, 1, 2, 4].filter((index) => index < step),
+  };
 }
 
 const DRAFT_KEY = "nakko:list-flat-draft";
