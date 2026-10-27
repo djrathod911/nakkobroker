@@ -19,8 +19,9 @@ export function matchesListing(l: Listing, f: Filters, query = "") {
       : (l.listingCategory ?? "entire_property") === "entire_property" ||
         l.availabilityStatus !== "occupied") &&
     (!f.moveInBy ||
-      (l.availabilityStatus !== "occupied" &&
-        (!l.availableFromDate || l.availableFromDate <= f.moveInBy))) &&
+      // Occupied with an undecided date can never promise a move-in deadline.
+      !(l.availabilityStatus === "occupied" && !l.availableFromDate) &&
+      (!l.availableFromDate || l.availableFromDate <= f.moveInBy)) &&
     (!f.bathroomType || l.sharedDetails?.bathroom_type === f.bathroomType) &&
     (!f.preference ||
       Object.entries(l.sharedDetails ?? {})

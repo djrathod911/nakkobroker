@@ -263,6 +263,7 @@ export interface MyListingRow {
   accommodation_type: string;
   creator_relationship: string;
   availability_status: string;
+  available_from_date: string | null;
   id: string;
   title: string;
   area: string;
@@ -283,7 +284,7 @@ export interface MyListingRow {
 export async function fetchMyListings(userId: string): Promise<MyListingRow[]> {
   const { data, error } = await supabase
     .from("listings")
-    .select("listing_category,accommodation_type,creator_relationship,availability_status,id,title,area,city,house_type,bhk,rent,status,votes,owner_verified,photos,created_at,last_confirmed_at,lifecycle_state,warned_at")
+    .select("listing_category,accommodation_type,creator_relationship,availability_status,available_from_date,id,title,area,city,house_type,bhk,rent,status,votes,owner_verified,photos,created_at,last_confirmed_at,lifecycle_state,warned_at")
     .eq("owner_id", userId)
     .order("created_at", { ascending: false });
   if (error) throw error;
