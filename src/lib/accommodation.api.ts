@@ -123,7 +123,7 @@ export async function accommodationProperties() {
 }
 export async function setAccommodationState(
   id: string,
-  patch: { status?: string; availability_status?: string },
+  patch: { status?: string; availability_status?: string; available_from_date?: string | null },
 ) {
   const { error } = await supabase.from("listings").update(patch).eq("id", id);
   if (error) throw error;
