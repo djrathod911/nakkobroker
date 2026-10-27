@@ -1,4 +1,5 @@
 import type { AccommodationType, SharedDetails } from "@/lib/accommodation";
+import { availabilityText, occupancyBadgeLabel } from "@/lib/availability";
 
 export type Furnishing = "Unfurnished" | "Semi Furnished" | "Fully Furnished";
 export type Tenant = "Family" | "Bachelor" | "Anyone";
@@ -62,14 +63,8 @@ export const HYDERABAD_CENTER: [number, number] = [78.4483, 17.4239];
 
 /** Short, plain-language status used on map pins, cards, and filters. */
 export function availabilityStatusLabel(status: AvailabilityStatus): string {
-  switch (status) {
-    case "available":
-      return "Vacant";
-    case "occupied":
-      return "Living Here Now";
-    case "available_soon":
-      return "Available Soon";
-  }
+  // Legacy "available_soon" rows are vacant with a future date.
+  return occupancyBadgeLabel(status === "occupied" ? "occupied" : "vacant");
 }
 
 export const formatRent = (value: number) =>
