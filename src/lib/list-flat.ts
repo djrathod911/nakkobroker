@@ -86,9 +86,7 @@ export const emptyDraft: FlatDraft = {
   furnishing: "Semi Furnished",
   tenant: "Anyone",
   amenities: [],
-  available_from: "Immediate",
-  availability_status: "available",
-  available_soon_preset: "1_month",
+  occupancy_status: "vacant",
   available_from_date: "",
   map_visible: true,
   metro_km: 1,
@@ -134,13 +132,22 @@ export const stepSchemas = [
     sqft: z.number().int().min(100, "Enter a realistic carpet area").max(20_000),
     furnishing: z.string().min(1),
     tenant: z.string().min(1),
-    available_from: z.string().trim().min(1, "Pick availability").max(40),
+    occupancy_status: z.enum(["vacant", "occupied"]),
+    available_from_date: z.string(),
     metro_km: z.number().min(0).max(60, "Distance looks too far"),
     it_corridor_km: z.number().min(0).max(60, "Distance looks too far"),
-  }).refine((v) => v.total_floors === 0 || v.floor <= v.total_floors, {
-    message: "Floor cannot be above the building's total floors",
-    path: ["floor"],
-  }),
+  })
+    .refine((v) => v.total_floors === 0 || v.floor <= v.total_floors, {
+      message: "Floor cannot be above the building's total floors",
+      path: ["floor"],
+    })
+    .superRefine((v, ctx) => {
+      const message = validateAvailability({
+        occupancyStatus: v.occupancy_status,
+        availabilityDate: v.available_from_date,
+      });
+      if (message) ctx.addIssue({ code: "custom", path: ["available_from_date"], message });
+    }),
   z.object({
     rent: z.number().int().min(1000, "Rent must be at least ₹1,000").max(1_000_000),
     deposit: z.number().int().min(0).max(10_000_000),
@@ -166,7 +173,7 @@ export const STEPS = [
 
 export const SECTION_FIELDS: readonly (readonly string[])[] = [
   ["city", "house_type", "area", "lng", "lat"],
-  ["title", "description", "bhk", "bathrooms", "balconies", "floor", "total_floors", "parking", "facing", "sqft", "furnishing", "tenant", "available_from", "metro_km", "it_corridor_km"],
+  ["title", "description", "bhk", "bathrooms", "balconies", "floor", "total_floors", "parking", "facing", "sqft", "furnishing", "tenant", "occupancy_status", "available_from_date", "metro_km", "it_corridor_km"],
   ["rent", "deposit", "maintenance"],
   [],
   ["contact_phone"],
