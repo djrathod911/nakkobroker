@@ -17,7 +17,6 @@ import {
   AlertTriangle,
   ImageOff,
   CheckCircle2,
-  Clock,
   Ban,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -260,18 +259,14 @@ function ListingDetailPage() {
                 <AlertTriangle className="size-3.5" aria-hidden /> Price looks off
               </span>
             )}
-            {/* Availability status */}
-            {listing.availabilityStatus === "available" ? (
-              <span className="inline-flex items-center gap-1 rounded-full bg-success/15 px-2.5 py-1 text-xs font-medium text-success">
-                 <CheckCircle2 className="size-3.5" aria-hidden /> {availabilityStatusLabel(listing.availabilityStatus)}
-              </span>
-            ) : listing.availabilityStatus === "occupied" ? (
+            {/* Availability status — occupied vs vacant, never both */}
+            {listing.availabilityStatus === "occupied" ? (
               <span className="inline-flex items-center gap-1 rounded-full bg-warning/15 px-2.5 py-1 text-xs font-medium text-warning">
-                 <Ban className="size-3.5" aria-hidden /> {availabilityStatusLabel(listing.availabilityStatus)}
+                  <Ban className="size-3.5" aria-hidden /> {availabilityStatusLabel(listing.availabilityStatus)}
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1 rounded-full bg-blue-500/15 px-2.5 py-1 text-xs font-medium text-blue-400">
-                 <Clock className="size-3.5" aria-hidden /> {availabilityStatusLabel(listing.availabilityStatus)}
+              <span className="inline-flex items-center gap-1 rounded-full bg-success/15 px-2.5 py-1 text-xs font-medium text-success">
+                 <CheckCircle2 className="size-3.5" aria-hidden /> {availabilityStatusLabel(listing.availabilityStatus)}
               </span>
             )}
             {isStale(listing) && (
@@ -280,12 +275,8 @@ function ListingDetailPage() {
               </span>
             )}
           </div>
-          {/* Full availability detail */}
-          {listing.availabilityStatus !== "available" && (
-            <p className="mt-2 text-sm text-muted-foreground">
-              {availabilityLabel(listing)}
-            </p>
-          )}
+          {/* Full availability detail — one consistent line everywhere */}
+          <p className="mt-2 text-sm text-muted-foreground">{availabilityLabel(listing)}</p>
           <h1 className="mt-3 break-words text-2xl font-bold sm:text-3xl">{listing.title}</h1>
           <p className="mt-1 text-muted-foreground">
             {listing.area}, {listing.city ?? "Hyderabad"} · {listing.sqft ? `${listing.sqft} sqft · ` : ""}posted{" "}

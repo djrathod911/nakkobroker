@@ -8,7 +8,6 @@ import {
   TrainFront,
   Building2,
   ChevronRight,
-  Clock,
   CheckCircle2,
   Ban,
 } from "lucide-react";
@@ -76,20 +75,15 @@ export function ListingCard({
             {listing.source === "To-Let Board" && (
               <Badge className="rounded-full bg-teal/15 text-teal">Board spotted</Badge>
             )}
-            {/* Availability badge */}
-            {listing.availabilityStatus === "available" ? (
-              <span className="inline-flex items-center gap-1 rounded-full bg-success/15 px-2 py-0.5 text-xs text-success">
-                <CheckCircle2 className="size-3 shrink-0" aria-hidden />{" "}
-                {availabilityStatusLabel(listing.availabilityStatus)}
-              </span>
-            ) : listing.availabilityStatus === "occupied" ? (
+            {/* Availability badge — occupied vs vacant, never both */}
+            {listing.availabilityStatus === "occupied" ? (
               <span className="inline-flex items-center gap-1 rounded-full bg-warning/15 px-2 py-0.5 text-xs text-warning">
                 <Ban className="size-3 shrink-0" aria-hidden />{" "}
                 {availabilityStatusLabel(listing.availabilityStatus)}
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1 rounded-full bg-blue-500/15 px-2 py-0.5 text-xs text-blue-400">
-                <Clock className="size-3 shrink-0" aria-hidden />{" "}
+              <span className="inline-flex items-center gap-1 rounded-full bg-success/15 px-2 py-0.5 text-xs text-success">
+                <CheckCircle2 className="size-3 shrink-0" aria-hidden />{" "}
                 {availabilityStatusLabel(listing.availabilityStatus)}
               </span>
             )}
@@ -144,8 +138,8 @@ export function ListingCard({
           <Users className="size-3.5 shrink-0" aria-hidden /> {listing.votes} votes
         </span>
       </div>
-      {/* Availability detail line */}
-      {listing.availabilityStatus !== "available" && (
+      {/* Availability detail line — show whenever it adds info beyond "Available Now" */}
+      {(listing.availabilityStatus === "occupied" || !!listing.availableFromDate) && (
         <p className="mt-1.5 text-[11px] text-muted-foreground">{availabilityLabel(listing)}</p>
       )}
 

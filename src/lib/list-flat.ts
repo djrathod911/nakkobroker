@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { validateAvailability } from "@/lib/availability";
 import {
   CITIES as CITY_NAMES,
   areaRate,
@@ -25,18 +26,8 @@ export const AMENITIES = [
   "Water Supply 24x7",
   "Pet Friendly",
 ];
-export const AVAILABILITY = ["Immediate", "Within 15 days", "Next month", "After 2 months"];
-export const AVAILABILITY_STATUS_OPTIONS = [
-  { value: "available", label: "Available Now", description: "Property is ready to move in" },
-  { value: "occupied", label: "Currently Occupied", description: "Tenant is living here; available later" },
-  { value: "available_soon", label: "Available Soon", description: "Will be available on a specific date" },
-] as const;
-export const AVAILABLE_SOON_OPTIONS = [
-  { value: "1_month", label: "In 1 month" },
-  { value: "2_months", label: "In 2 months" },
-  { value: "3_months", label: "In 3 months" },
-  { value: "custom", label: "Pick a date" },
-] as const;
+export { OCCUPANCY_OPTIONS, availabilityText, validateAvailability, todayISO, legacyAvailableFrom } from "@/lib/availability";
+export type { OccupancyStatus } from "@/lib/availability";
 export const CITIES = CITY_NAMES;
 export const HOUSE_TYPES = ["Flat", "Villa"] as const;
 export const PARKING = ["None", "Bike", "Car", "Bike + Car"];
@@ -63,10 +54,10 @@ export interface FlatDraft {
   furnishing: string;
   tenant: string;
   amenities: string[];
-  available_from: string;
-  availability_status: "available" | "occupied" | "available_soon";
-  available_soon_preset: string; // "1_month" | "2_months" | "3_months" | "custom"
-  available_from_date: string; // ISO date string when custom date is picked
+  /** Single availability model: occupancy first, then the relevant date. */
+  occupancy_status: "vacant" | "occupied";
+  /** ISO date — move-in date when vacant, expected vacancy when occupied; "" = not decided (occupied only). */
+  available_from_date: string;
   map_visible: boolean;
   metro_km: number;
   it_corridor_km: number;
@@ -96,9 +87,7 @@ export const emptyDraft: FlatDraft = {
   furnishing: "Semi Furnished",
   tenant: "Anyone",
   amenities: [],
-  available_from: "Immediate",
-  availability_status: "available",
-  available_soon_preset: "1_month",
+  occupancy_status: "vacant",
   available_from_date: "",
   map_visible: true,
   metro_km: 1,
@@ -144,13 +133,22 @@ export const stepSchemas = [
     sqft: z.number().int().min(100, "Enter a realistic carpet area").max(20_000),
     furnishing: z.string().min(1),
     tenant: z.string().min(1),
-    available_from: z.string().trim().min(1, "Pick availability").max(40),
+    occupancy_status: z.enum(["vacant", "occupied"]),
+    available_from_date: z.string(),
     metro_km: z.number().min(0).max(60, "Distance looks too far"),
     it_corridor_km: z.number().min(0).max(60, "Distance looks too far"),
-  }).refine((v) => v.total_floors === 0 || v.floor <= v.total_floors, {
-    message: "Floor cannot be above the building's total floors",
-    path: ["floor"],
-  }),
+  })
+    .refine((v) => v.total_floors === 0 || v.floor <= v.total_floors, {
+      message: "Floor cannot be above the building's total floors",
+      path: ["floor"],
+    })
+    .superRefine((v, ctx) => {
+      const message = validateAvailability({
+        occupancyStatus: v.occupancy_status,
+        availabilityDate: v.available_from_date,
+      });
+      if (message) ctx.addIssue({ code: "custom", path: ["available_from_date"], message });
+    }),
   z.object({
     rent: z.number().int().min(1000, "Rent must be at least ₹1,000").max(1_000_000),
     deposit: z.number().int().min(0).max(10_000_000),
@@ -176,7 +174,7 @@ export const STEPS = [
 
 export const SECTION_FIELDS: readonly (readonly string[])[] = [
   ["city", "house_type", "area", "lng", "lat"],
-  ["title", "description", "bhk", "bathrooms", "balconies", "floor", "total_floors", "parking", "facing", "sqft", "furnishing", "tenant", "available_from", "metro_km", "it_corridor_km"],
+  ["title", "description", "bhk", "bathrooms", "balconies", "floor", "total_floors", "parking", "facing", "sqft", "furnishing", "tenant", "occupancy_status", "available_from_date", "metro_km", "it_corridor_km"],
   ["rent", "deposit", "maintenance"],
   [],
   ["contact_phone"],
@@ -200,7 +198,24 @@ export function sectionStatuses(draft: FlatDraft, photoCount: number) {
 
 /** Legacy drafts only confirm sections the owner already continued past. */
 export function restoreFlatDraft(draft: Partial<FlatDraft>, step: number): FlatDraft {
-  return { ...emptyDraft, ...draft, enteredFields: draft.enteredFields ?? [], confirmedSections: draft.confirmedSections ?? [0, 1, 2, 4].filter((index) => index < step) };
+  // Migrate pre-redesign drafts that stored availability_status / available_from.
+  const legacy = draft as Partial<FlatDraft> & {
+    availability_status?: "available" | "occupied" | "available_soon";
+    available_from?: string;
+  };
+  const migrated: Partial<FlatDraft> = { ...draft };
+  if (migrated.occupancy_status === undefined && legacy.availability_status) {
+    migrated.occupancy_status = legacy.availability_status === "occupied" ? "occupied" : "vacant";
+    if (legacy.availability_status === "available" && legacy.available_from === "Immediate") {
+      migrated.available_from_date = "";
+    }
+  }
+  return {
+    ...emptyDraft,
+    ...migrated,
+    enteredFields: draft.enteredFields ?? [],
+    confirmedSections: draft.confirmedSections ?? [0, 1, 2, 4].filter((index) => index < step),
+  };
 }
 
 const DRAFT_KEY = "nakko:list-flat-draft";

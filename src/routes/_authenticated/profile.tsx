@@ -17,6 +17,7 @@ import {
   type MyListingRow,
 } from "@/lib/listings.api";
 import { HOUSE_TYPES } from "@/lib/list-flat";
+import { availabilityText, isValidFutureOrToday, todayISO } from "@/lib/availability";
 import { CITIES } from "@/lib/cities";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -136,8 +137,24 @@ function ProfilePage() {
     }
   }
 
-  async function updateState(row: MyListingRow, patch: { status?: string; availability_status?: string }) {
+  async function updateState(row: MyListingRow, patch: { status?: string; availability_status?: string; available_from_date?: string | null }) {
     try { await setAccommodationState(row.id, patch); await Promise.all([queryClient.invalidateQueries({ queryKey: ["my-listings"] }), queryClient.invalidateQueries({ queryKey: ["listings"] }), queryClient.invalidateQueries({ queryKey: ["listing", row.id] })]); toast.success("Listing updated"); } catch (e) { toast.error(e instanceof Error ? e.message : "Could not update listing"); }
+  }
+
+  /** Occupied → vacant: confirm the actual move-in date before flipping the state. */
+  function markVacant(row: MyListingRow) {
+    const today = todayISO();
+    const answer = window.prompt(
+      "Confirm the move-in date tenants will see (YYYY-MM-DD). Today or a future date.",
+      row.available_from_date && row.available_from_date >= today ? row.available_from_date : today,
+    );
+    if (answer === null) return;
+    const date = answer.trim();
+    if (!isValidFutureOrToday(date)) {
+      toast.error("Enter a valid date that is today or in the future");
+      return;
+    }
+    void updateState(row, { availability_status: "available", available_from_date: date });
   }
 
   async function remove(row: MyListingRow) {
@@ -284,6 +301,37 @@ function ProfilePage() {
                   </div>
                   </div>
 
+                  {row.listing_category === "entire_property" && (
+                    <div className="mt-3 flex flex-wrap items-center gap-2">
+                      <span className="w-full text-xs text-muted-foreground">
+                        {availabilityText({
+                          occupancyStatus: row.availability_status === "occupied" ? "occupied" : "vacant",
+                          availabilityDate: row.available_from_date ?? "",
+                        })}
+                        {row.status !== "published" ? " · Not listed — hidden from tenants" : ""}
+                      </span>
+                      {row.availability_status === "occupied" ? (
+                        <Button size="sm" variant="secondary" onClick={() => markVacant(row)}>
+                          Tenant vacated — mark vacant
+                        </Button>
+                      ) : (
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => void updateState(row, { availability_status: "occupied", available_from_date: null })}
+                        >
+                          Mark occupied
+                        </Button>
+                      )}
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => void updateState(row, { status: row.status === "published" ? "delisted" : "published" })}
+                      >
+                        {row.status === "published" ? "Unlist temporarily" : "Relist"}
+                      </Button>
+                    </div>
+                  )}
                   {row.listing_category !== "entire_property" && <div className="mt-3 flex flex-wrap gap-2"><span className="w-full text-xs text-muted-foreground">{row.listing_category === "flatmate" ? "Looking for a Flatmate" : "Shared accommodation"} · {row.creator_relationship === "tenant" ? "Tenant-created" : "Advertiser-created"} · {row.availability_status === "occupied" ? "Occupied" : "Available"}</span><Button asChild size="sm" variant="outline"><Link to="/list-accommodation" search={{ category: row.listing_category === "flatmate" ? "flatmate" : "room_bed", edit: row.id }}>Edit</Link></Button><Button size="sm" variant="secondary" onClick={() => void updateState(row, { availability_status: row.availability_status === "occupied" ? "available" : "occupied" })}>{row.availability_status === "occupied" ? "Mark available" : "Mark occupied"}</Button><Button size="sm" variant="outline" onClick={() => void updateState(row, { status: row.status === "published" ? "delisted" : "published" })}>{row.status === "published" ? "Deactivate" : "Reactivate"}</Button></div>}
                   <ListingStats row={row} t={tracking.data?.[row.id] ?? emptyTracking()} />
 

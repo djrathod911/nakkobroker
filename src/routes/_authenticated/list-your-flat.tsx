@@ -26,9 +26,10 @@ import { ListingCategoryChooser } from "@/components/listings/ListingCategoryCho
 import { createListing, fetchVerifiedPhones } from "@/lib/listings.api";
 import {
   AMENITIES,
-  AVAILABILITY,
-  AVAILABILITY_STATUS_OPTIONS,
-  AVAILABLE_SOON_OPTIONS,
+  OCCUPANCY_OPTIONS,
+  availabilityText,
+  legacyAvailableFrom,
+  todayISO,
   CITIES,
   FACING,
   FURNISHING,
@@ -396,8 +397,11 @@ function OwnerListingWizard() {
           metro_km: draft.metro_km,
           it_corridor_km: draft.it_corridor_km,
           sqft: draft.sqft,
-          available_from: draft.available_from.trim(),
-          availability_status: draft.availability_status,
+          available_from: legacyAvailableFrom({
+            occupancyStatus: draft.occupancy_status,
+            availabilityDate: draft.available_from_date,
+          }),
+          availability_status: draft.occupancy_status === "occupied" ? "occupied" : "available",
           available_from_date: draft.available_from_date || null,
           map_visible: draft.map_visible,
           amenities: draft.amenities,
@@ -893,32 +897,29 @@ function OwnerListingWizard() {
                     error={errors["tenant"]}
                   />
                 </div>
-                <PillGroup
-                  label="Available from"
-                  required
-                  options={AVAILABILITY}
-                  value={draft.available_from}
-                  onChange={(v) => set({ available_from: v })}
-                  error={errors["available_from"]}
-                />
-
-                {/* ── Availability Status ── */}
+                {/* ── Property Availability: one question first, then only the relevant date ── */}
                 <div className="space-y-3 rounded-2xl border border-border bg-secondary/30 p-4">
                   <div>
-                    <FieldLabel required>Availability Status</FieldLabel>
+                    <FieldLabel required>Property Availability</FieldLabel>
                     <p className="text-[11px] text-muted-foreground">
-                      List your property even when it's occupied — tenants can plan ahead.
+                      What is the property's current occupancy status? List it even when occupied — tenants can plan ahead.
                     </p>
                   </div>
-                  <div className="grid gap-2 sm:grid-cols-3">
-                    {AVAILABILITY_STATUS_OPTIONS.map((opt) => (
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {OCCUPANCY_OPTIONS.map((opt) => (
                       <button
                         key={opt.value}
                         type="button"
-                        onClick={() => set({ availability_status: opt.value })}
+                        onClick={() =>
+                          set({
+                            occupancy_status: opt.value,
+                            // Vacant defaults to today; occupied keeps any expected date already picked.
+                            available_from_date: opt.value === "vacant" ? todayISO() : draft.available_from_date,
+                          })
+                        }
                         className={cn(
                           "rounded-xl border p-3 text-left transition-all",
-                          draft.availability_status === opt.value
+                          draft.occupancy_status === opt.value
                             ? "border-brand bg-brand/10 text-foreground"
                             : "border-border bg-secondary/40 text-muted-foreground hover:border-brand/40 hover:text-foreground",
                         )}
@@ -929,39 +930,49 @@ function OwnerListingWizard() {
                     ))}
                   </div>
 
-                  {/* Available Soon sub-options */}
-                  {(draft.availability_status === "available_soon" || draft.availability_status === "occupied") && (
+                  {draft.occupancy_status === "vacant" ? (
+                    <div className="space-y-1.5 pt-1">
+                      <FieldLabel htmlFor="avail-date" required>
+                        Available for move-in from
+                      </FieldLabel>
+                      <Input
+                        id="avail-date"
+                        type="date"
+                        min={todayISO()}
+                        value={draft.available_from_date || todayISO()}
+                        onChange={(e) => set({ available_from_date: e.target.value })}
+                      />
+                      <p className="text-[11px] text-muted-foreground">
+                        {availabilityText({ occupancyStatus: "vacant", availabilityDate: draft.available_from_date || todayISO() })}
+                      </p>
+                      {errors["available_from_date"] && (
+                        <p className="text-[11px] text-destructive">{errors["available_from_date"]}</p>
+                      )}
+                    </div>
+                  ) : (
                     <div className="space-y-2 pt-1">
-                      <FieldLabel>Expected availability</FieldLabel>
-                      <div className="flex flex-wrap gap-2">
-                        {AVAILABLE_SOON_OPTIONS.map((opt) => (
-                          <Pill
-                            key={opt.value}
-                            label={opt.label}
-                            active={draft.available_soon_preset === opt.value}
-                            onClick={() => {
-                              set({ available_soon_preset: opt.value });
-                              if (opt.value !== "custom") {
-                                const months = opt.value === "1_month" ? 1 : opt.value === "2_months" ? 2 : 3;
-                                const d = new Date();
-                                d.setMonth(d.getMonth() + months);
-                                set({ available_from_date: d.toISOString().split("T")[0] ?? "" });
-                              }
-                            }}
-                          />
-                        ))}
+                      <FieldLabel htmlFor="avail-date">Expected vacancy / available from</FieldLabel>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Input
+                          id="avail-date"
+                          type="date"
+                          min={todayISO()}
+                          className="w-auto"
+                          value={draft.available_from_date}
+                          onChange={(e) => set({ available_from_date: e.target.value })}
+                        />
+                        <Pill
+                          label="Date not decided yet"
+                          active={!draft.available_from_date}
+                          onClick={() => set({ available_from_date: "" })}
+                        />
                       </div>
-                      {draft.available_soon_preset === "custom" && (
-                        <div className="space-y-1.5">
-                          <FieldLabel htmlFor="avail-date">Expected date</FieldLabel>
-                          <Input
-                            id="avail-date"
-                            type="date"
-                            min={new Date().toISOString().split("T")[0]}
-                            value={draft.available_from_date}
-                            onChange={(e) => set({ available_from_date: e.target.value })}
-                          />
-                        </div>
+                      <p className="text-[11px] text-muted-foreground">
+                        {availabilityText({ occupancyStatus: "occupied", availabilityDate: draft.available_from_date })}
+                        {" — "}publish now and update the status when the tenant vacates.
+                      </p>
+                      {errors["available_from_date"] && (
+                        <p className="text-[11px] text-destructive">{errors["available_from_date"]}</p>
                       )}
                     </div>
                   )}
@@ -1184,7 +1195,13 @@ function OwnerListingWizard() {
                   <dl className="mt-3 grid grid-cols-2 gap-2 text-xs text-muted-foreground sm:grid-cols-4">
                     <Summary label="Config" value={`${draft.bhk} BHK`} />
                     <Summary label="Furnishing" value={draft.furnishing} />
-                    <Summary label="Available" value={draft.available_from} />
+                    <Summary
+                      label="Availability"
+                      value={availabilityText({
+                        occupancyStatus: draft.occupancy_status,
+                        availabilityDate: draft.available_from_date || (draft.occupancy_status === "vacant" ? todayISO() : ""),
+                      })}
+                    />
                     <Summary label="Photos" value={`${photos.length}`} />
                     <Summary label="Metro" value={`${draft.metro_km} km`} />
                     <Summary label="IT hub" value={`${draft.it_corridor_km} km`} />

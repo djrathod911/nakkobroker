@@ -1,4 +1,5 @@
 import type { AccommodationType, SharedDetails } from "@/lib/accommodation";
+import { availabilityText, occupancyBadgeLabel } from "@/lib/availability";
 
 export type Furnishing = "Unfurnished" | "Semi Furnished" | "Fully Furnished";
 export type Tenant = "Family" | "Bachelor" | "Anyone";
@@ -50,36 +51,20 @@ export interface Listing {
   source: "Owner" | "To-Let Board";
 }
 
-/** Human-readable label for each availability status. */
+/** Human-readable availability line — single source of truth lives in @/lib/availability. */
 export function availabilityLabel(listing: Pick<Listing, "availabilityStatus" | "availableFrom" | "availableFromDate">): string {
-  switch (listing.availabilityStatus) {
-    case "available":
-      return listing.availableFrom === "Immediate" ? "Available Now" : `Available from ${listing.availableFrom}`;
-    case "occupied":
-      return listing.availableFromDate
-        ? `Currently Occupied — Available from ${new Date(listing.availableFromDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}`
-        : `Currently Occupied — ${listing.availableFrom}`;
-    case "available_soon":
-      return listing.availableFromDate
-        ? `Available from ${new Date(listing.availableFromDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}`
-        : `Available Soon — ${listing.availableFrom}`;
-    default:
-      return listing.availableFrom;
-  }
+  return availabilityText({
+    occupancyStatus: listing.availabilityStatus === "occupied" ? "occupied" : "vacant",
+    availabilityDate: listing.availableFromDate ?? "",
+  });
 }
 
 export const HYDERABAD_CENTER: [number, number] = [78.4483, 17.4239];
 
 /** Short, plain-language status used on map pins, cards, and filters. */
 export function availabilityStatusLabel(status: AvailabilityStatus): string {
-  switch (status) {
-    case "available":
-      return "Vacant";
-    case "occupied":
-      return "Living Here Now";
-    case "available_soon":
-      return "Available Soon";
-  }
+  // Legacy "available_soon" rows are vacant with a future date.
+  return occupancyBadgeLabel(status === "occupied" ? "occupied" : "vacant");
 }
 
 export const formatRent = (value: number) =>

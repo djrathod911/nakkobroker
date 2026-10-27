@@ -477,7 +477,7 @@ export function FilterPanel({
         onClear={() => onChange({ ...filters, availabilityStatus: [] })}
       >
         <div className="flex flex-wrap gap-2">
-          {(["available", "available_soon", "occupied"] as AvailabilityStatus[]).map((value) => (
+          {(["available", "occupied"] as AvailabilityStatus[]).map((value) => (
             <Chip
               key={value}
               label={availabilityStatusLabel(value)}
