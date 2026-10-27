@@ -26,9 +26,10 @@ import { ListingCategoryChooser } from "@/components/listings/ListingCategoryCho
 import { createListing, fetchVerifiedPhones } from "@/lib/listings.api";
 import {
   AMENITIES,
-  AVAILABILITY,
-  AVAILABILITY_STATUS_OPTIONS,
-  AVAILABLE_SOON_OPTIONS,
+  OCCUPANCY_OPTIONS,
+  availabilityText,
+  legacyAvailableFrom,
+  todayISO,
   CITIES,
   FACING,
   FURNISHING,
@@ -396,8 +397,11 @@ function OwnerListingWizard() {
           metro_km: draft.metro_km,
           it_corridor_km: draft.it_corridor_km,
           sqft: draft.sqft,
-          available_from: draft.available_from.trim(),
-          availability_status: draft.availability_status,
+          available_from: legacyAvailableFrom({
+            occupancyStatus: draft.occupancy_status,
+            availabilityDate: draft.available_from_date,
+          }),
+          availability_status: draft.occupancy_status === "occupied" ? "occupied" : "available",
           available_from_date: draft.available_from_date || null,
           map_visible: draft.map_visible,
           amenities: draft.amenities,
